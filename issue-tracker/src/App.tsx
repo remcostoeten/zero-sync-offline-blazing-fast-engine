@@ -1,24 +1,16 @@
 import './App.css'
-import { ZeroAppProvider } from './zero-react'
-import { IssueList } from './components/IssueList'
-import { KanbanBoard } from './components/KanbanBoard'
-import { SeedData } from './components/SeedData'
+import { Link, Outlet } from 'react-router-dom'
 
 function App() {
   return (
-    <ZeroAppProvider>
-      <SeedData />
-      <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 16, padding: 16 }}>
-        <div>
-          <h2>Issues</h2>
-          <IssueList />
-        </div>
-        <div>
-          <h2>Kanban</h2>
-          <KanbanBoard />
-        </div>
-      </div>
-    </ZeroAppProvider>
+    <div>
+      <header style={{ display: 'flex', gap: 12, padding: 12, borderBottom: '1px solid #e5e5e5' }}>
+        <strong>Zero Issue Tracker</strong>
+        <Link to="/">Board</Link>
+        <Link to="/issues">Issues</Link>
+      </header>
+      <Outlet />
+    </div>
   )
 }
 
