@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: zero
+      POSTGRES_PASSWORD: zero
+      POSTGRES_DB: zero
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  zero-cache:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm i -g @rocicorp/zero && zero-cache-dev --schema-path schema.ts --upstream-db postgres://zero:zero@db:5432/zero --replica-file /app/.replica.db --log-level info"
+    depends_on:
+      - db
+    ports:
+      - '4848:4848'
+    volumes:
+      - ./:/app
+
+volumes:
+  db-data:
+
