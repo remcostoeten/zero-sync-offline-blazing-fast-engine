@@ -1,0 +1,30 @@
+{
+  "name": "db-connection-manager",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "solid-start dev",
+    "build": "solid-start build",
+    "start": "solid-start start",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.1",
+    "@solidjs/router": "^0.8.4",
+    "drizzle-orm": "^0.44.5",
+    "postgres": "^3.4.7",
+    "solid-start": "^0.3.11",
+    "solid-start-node": "^0.3.11"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "drizzle-kit": "^0.31.4",
+    "typescript": "^5.9.2"
+  }
+}
