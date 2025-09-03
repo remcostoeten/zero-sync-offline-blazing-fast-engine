@@ -7,8 +7,8 @@ dotenv.config();
 // Create the Turso client with offline sync enabled
 const client = createClient({
   url: 'file:enterprise.db',
-  syncUrl: process.env.TURSO_SYNC_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
+  syncUrl: process.env.TURSO_DATABASE_URL || '',
+  authToken: process.env.TURSO_AUTH_TOKEN || '',
 });
 
 // ============================================================================
@@ -304,11 +304,11 @@ async function updateTaskStatus(taskId: number, newStatus: string, actualHours?:
     
     if (actualHours !== undefined) {
       sql += `, actual_hours = ?`;
-      args.push(actualHours);
+      args.push(actualHours.toString());
     }
     
     sql += ` WHERE id = ?`;
-    args.push(taskId);
+    args.push(taskId.toString());
     
     await client.execute({ sql, args });
 
@@ -518,8 +518,8 @@ async function syncAllData() {
     for (const table of tables) {
       const result = await client.execute(`SELECT COUNT(*) as count FROM ${table} WHERE synced = 0`);
       const count = result.rows[0]?.count || 0;
-      totalUnsynced += count;
-      if (count > 0) {
+      totalUnsynced += Number(count);
+      if (Number(count) > 0) {
         console.log(`  📊 ${table}: ${count} unsynced records`);
       }
     }
@@ -556,9 +556,9 @@ async function getSyncStatus() {
       const unsyncedResult = await client.execute(`SELECT COUNT(*) as count FROM ${table} WHERE synced = 0`);
       
       status[table] = {
-        total: totalResult.rows[0]?.count || 0,
-        synced: (totalResult.rows[0]?.count || 0) - (unsyncedResult.rows[0]?.count || 0),
-        unsynced: unsyncedResult.rows[0]?.count || 0
+        total: Number(totalResult.rows[0]?.count || 0),
+        synced: Number(totalResult.rows[0]?.count || 0) - Number(unsyncedResult.rows[0]?.count || 0),
+        unsynced: Number(unsyncedResult.rows[0]?.count || 0)
       };
     }
     
@@ -663,9 +663,9 @@ async function populateDemoData() {
     const analyst1 = users.find((u: any) => u.username === 'analyst1');
     
     // Create demo projects
-    await createProject('E-commerce Platform Redesign', 'Modernize our online store with new UI/UX', 'active', 'high', manager1?.id || 1, 50000, '2025-01-01', '2025-06-30');
-    await createProject('Mobile App Development', 'Create iOS and Android apps for our service', 'planning', 'medium', manager2?.id || 1, 75000, '2025-03-01', '2025-12-31');
-    await createProject('Data Analytics Dashboard', 'Build comprehensive reporting system', 'active', 'critical', manager1?.id || 1, 30000, '2025-02-01', '2025-05-31');
+    await createProject('E-commerce Platform Redesign', 'Modernize our online store with new UI/UX', 'active', 'high', Number(manager1?.id) || 1, 50000, '2025-01-01', '2025-06-30');
+    await createProject('Mobile App Development', 'Create iOS and Android apps for our service', 'planning', 'medium', Number(manager2?.id) || 1, 75000, '2025-03-01', '2025-12-31');
+    await createProject('Data Analytics Dashboard', 'Build comprehensive reporting system', 'active', 'critical', Number(manager1?.id) || 1, 30000, '2025-02-01', '2025-05-31');
     
     // Get project IDs
     const projects = await getProjects();
@@ -675,19 +675,19 @@ async function populateDemoData() {
     
     // Create demo tasks
     if (ecommerceProject) {
-      await createTask('Design new homepage layout', 'Create wireframes and mockups for homepage', ecommerceProject.id, designer1?.id, 'high', 16, '2025-02-15');
-      await createTask('Implement responsive navigation', 'Build mobile-friendly navigation component', ecommerceProject.id, dev1?.id, 'medium', 24, '2025-02-28');
-      await createTask('Set up e-commerce backend', 'Configure product catalog and payment system', ecommerceProject.id, dev2?.id, 'critical', 40, '2025-03-15');
+      await createTask('Design new homepage layout', 'Create wireframes and mockups for homepage', Number(ecommerceProject.id), Number(designer1?.id), 'high', 16, '2025-02-15');
+      await createTask('Implement responsive navigation', 'Build mobile-friendly navigation component', Number(ecommerceProject.id), Number(dev1?.id), 'medium', 24, '2025-02-28');
+      await createTask('Set up e-commerce backend', 'Configure product catalog and payment system', Number(ecommerceProject.id), Number(dev2?.id), 'critical', 40, '2025-03-15');
     }
     
     if (mobileProject) {
-      await createTask('Create app wireframes', 'Design user interface mockups', mobileProject.id, designer1?.id, 'high', 20, '2025-04-01');
-      await createTask('Set up development environment', 'Configure iOS and Android development tools', mobileProject.id, dev1?.id, 'medium', 8, '2025-03-15');
+      await createTask('Create app wireframes', 'Design user interface mockups', Number(mobileProject.id), Number(designer1?.id), 'high', 20, '2025-04-01');
+      await createTask('Set up development environment', 'Configure iOS and Android development tools', Number(mobileProject.id), Number(dev1?.id), 'medium', 8, '2025-03-15');
     }
     
     if (analyticsProject) {
-      await createTask('Design database schema', 'Plan data structure for analytics', analyticsProject.id, analyst1?.id, 'high', 12, '2025-02-28');
-      await createTask('Build data ingestion pipeline', 'Create ETL process for data collection', analyticsProject.id, dev2?.id, 'critical', 32, '2025-03-31');
+      await createTask('Design database schema', 'Plan data structure for analytics', Number(analyticsProject.id), Number(analyst1?.id), 'high', 12, '2025-02-28');
+      await createTask('Build data ingestion pipeline', 'Create ETL process for data collection', Number(analyticsProject.id), Number(dev2?.id), 'critical', 32, '2025-03-31');
     }
     
     // Get task IDs and log some time
@@ -696,20 +696,20 @@ async function populateDemoData() {
       const task = tasks[i];
       const user = users[Math.floor(Math.random() * users.length)];
       if (user && task) {
-        await logTimeEntry(user.id, task.id, task.project_id, '2025-01-15', Math.floor(Math.random() * 8) + 1, 'Working on task implementation');
-        await logTimeEntry(user.id, task.id, task.project_id, '2025-01-16', Math.floor(Math.random() * 8) + 1, 'Continued development work');
+        await logTimeEntry(Number(user.id), Number(task.id), Number(task.project_id), '2025-01-15', Math.floor(Math.random() * 8) + 1, 'Working on task implementation');
+        await logTimeEntry(Number(user.id), Number(task.id), Number(task.project_id), '2025-01-16', Math.floor(Math.random() * 8) + 1, 'Continued development work');
       }
     }
     
     // Add some comments
     if (ecommerceProject) {
-      await addComment('Great progress on the homepage design!', designer1?.id || 1, ecommerceProject.id);
-      await addComment('The navigation looks excellent on mobile devices', manager1?.id || 1, ecommerceProject.id);
+      await addComment('Great progress on the homepage design!', Number(designer1?.id) || 1, Number(ecommerceProject.id));
+      await addComment('The navigation looks excellent on mobile devices', Number(manager1?.id) || 1, Number(ecommerceProject.id));
     }
     
     if (analyticsProject) {
-      await addComment('Database schema looks solid, ready to proceed with implementation', analyst1?.id || 1, analyticsProject.id);
-      await addComment('Starting work on the ETL pipeline this week', dev2?.id || 1, analyticsProject.id);
+      await addComment('Database schema looks solid, ready to proceed with implementation', Number(analyst1?.id) || 1, Number(analyticsProject.id));
+      await addComment('Starting work on the ETL pipeline this week', Number(dev2?.id) || 1, Number(analyticsProject.id));
     }
     
     console.log('✅ Demo data populated successfully');
@@ -762,14 +762,15 @@ async function main() {
     console.log('─'.repeat(50));
     const syncStatus = await getSyncStatus();
     for (const [table, status] of Object.entries(syncStatus)) {
-      console.log(`${table}: ${status.synced}/${status.total} synced (${status.unsynced} pending)`);
+      const statusData = status as { synced: number; total: number; unsynced: number };
+      console.log(`${table}: ${statusData.synced}/${statusData.total} synced (${statusData.unsynced} pending)`);
     }
     
     // Generate and display a sample report
     if (projects.length > 0) {
       console.log('\n📈 Sample Project Report:');
       console.log('─'.repeat(50));
-      const report = await generateProjectReport(projects[0].id);
+      const report = await generateProjectReport(Number(projects[0].id));
       if (report) {
         console.log(`Project: ${report.project.name}`);
         console.log(`Status: ${report.project.status}`);

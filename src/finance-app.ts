@@ -7,8 +7,8 @@ dotenv.config();
 // Create the Turso client with offline sync enabled
 const client = createClient({
   url: 'file:finance.db',
-  syncUrl: process.env.TURSO_SYNC_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
+  syncUrl: process.env.TURSO_DATABASE_URL || '',
+  authToken: process.env.TURSO_AUTH_TOKEN || '',
 });
 
 // ============================================================================
@@ -355,7 +355,7 @@ async function deleteCategory(id: number) {
     const transactions = await client.execute('SELECT COUNT(*) as count FROM transactions WHERE category_id = ?', [id]);
     const count = transactions.rows[0]?.count || 0;
     
-    if (count > 0) {
+    if (Number(count) > 0) {
       console.log(`⚠️  Cannot delete category ${id} - it has ${count} associated transactions`);
       return false;
     }
@@ -659,7 +659,7 @@ async function getFinancialSummary(filters?: { startDate?: string; endDate?: str
     `, args);
     
     const overall = overallResult.rows[0];
-    const netIncome = (overall.total_income || 0) - (overall.total_expense || 0);
+    const netIncome = Number(overall.total_income || 0) - Number(overall.total_expense || 0);
     
     // Monthly breakdown
     const monthlyResult = await client.execute(`
@@ -1045,10 +1045,10 @@ async function generateRecurringTransactions() {
     for (const rec of recurring) {
       if (rec.next_due_date <= today) {
         // Create the transaction
-        await createTransaction(rec.amount, rec.type, rec.category_id, rec.note, rec.next_due_date);
+        await createTransaction(Number(rec.amount), rec.type as 'income' | 'expense', Number(rec.category_id), rec.note as string, rec.next_due_date as string);
         
         // Calculate next due date
-        let nextDate = new Date(rec.next_due_date);
+        let nextDate = new Date(rec.next_due_date as string);
         switch (rec.recurrence_rule) {
           case 'weekly':
             nextDate.setDate(nextDate.getDate() + 7);
@@ -1062,7 +1062,7 @@ async function generateRecurringTransactions() {
         }
         
         // Update next due date
-        await updateRecurringTransaction(rec.id, { nextDueDate: nextDate.toISOString().split('T')[0] });
+        await updateRecurringTransaction(Number(rec.id), { nextDueDate: nextDate.toISOString().split('T')[0] });
         generated++;
       }
     }
@@ -1180,15 +1180,15 @@ async function checkBudgetWarnings() {
     const warnings: any[] = [];
     
     for (const item of budgetVsActual) {
-      if (item.budget_amount > 0) {
-        const percentageUsed = item.percentage_used || 0;
+      if (Number(item.budget_amount) > 0) {
+        const percentageUsed = Number(item.percentage_used) || 0;
         
         if (percentageUsed >= 90) {
           const severity = percentageUsed >= 100 ? 'critical' : percentageUsed >= 95 ? 'high' : 'medium';
           const title = `Budget Warning: ${item.category_name}`;
-          const message = `You've used ${percentageUsed.toFixed(1)}% of your $${item.budget_amount} budget for ${item.category_name}. Current spending: $${item.actual_amount}`;
+          const message = `You've used ${percentageUsed.toFixed(1)}% of your $${Number(item.budget_amount)} budget for ${item.category_name}. Current spending: $${Number(item.actual_amount)}`;
           
-          await createAlert('budget_warning', title, message, severity, undefined, item.category_id, 'category');
+          await createAlert('budget_warning', title, message, severity, undefined, Number(item.category_id), 'category');
           warnings.push({ category: item.category_name, percentageUsed, severity });
         }
       }
@@ -1214,15 +1214,15 @@ async function checkRecurringReminders() {
     
     for (const rec of recurring) {
       if (rec.is_active) {
-        const dueDate = new Date(rec.next_due_date);
+        const dueDate = new Date(rec.next_due_date as string);
         
         if (dueDate <= threeDaysFromNow && dueDate >= today) {
           const daysUntil = Math.ceil((dueDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
           const severity = daysUntil === 0 ? 'high' : daysUntil <= 1 ? 'medium' : 'low';
           const title = `Recurring Transaction Due: ${rec.name}`;
-          const message = `Your ${rec.recurrence_rule} ${rec.type} of $${rec.amount} for ${rec.category_name} is due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
+          const message = `Your ${rec.recurrence_rule} ${rec.type} of $${Number(rec.amount)} for ${rec.category_name} is due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
           
-          await createAlert('recurring_due', title, message, severity, rec.next_due_date, rec.id, 'recurring_transaction');
+          await createAlert('recurring_due', title, message, severity, rec.next_due_date as string, Number(rec.id), 'recurring_transaction');
           reminders.push({ name: rec.name, dueDate: rec.next_due_date, daysUntil, severity });
         }
       }
@@ -1349,10 +1349,10 @@ async function generateFinancialForecast(months: number = 6, currency: string = 
     });
     
     // Calculate growth trends
-    const months = Array.from(monthlyData.keys()).sort();
-    if (months.length >= 2) {
-      const recent = monthlyData.get(months[months.length - 1]);
-      const previous = monthlyData.get(months[months.length - 2]);
+    const monthKeys = Array.from(monthlyData.keys()).sort();
+    if (monthKeys.length >= 2) {
+      const recent = monthlyData.get(monthKeys[monthKeys.length - 1]);
+      const previous = monthlyData.get(monthKeys[monthKeys.length - 2]);
       
       if (previous.income > 0) {
         forecast.trends.incomeGrowth = ((recent.income - previous.income) / previous.income) * 100;
@@ -1397,15 +1397,15 @@ async function generateFinancialForecast(months: number = 6, currency: string = 
       
       for (const rec of recurring) {
         if (rec.is_active) {
-          const dueDate = new Date(rec.next_due_date);
+          const dueDate = new Date(rec.next_due_date as string);
           const monthDiff = (projectionDate.getFullYear() - dueDate.getFullYear()) * 12 + 
                            (projectionDate.getMonth() - dueDate.getMonth());
           
-          if (monthDiff >= 0 && monthDiff % getRecurrenceMonths(rec.recurrence_rule) === 0) {
+          if (monthDiff >= 0 && monthDiff % getRecurrenceMonths(rec.recurrence_rule as string) === 0) {
             if (rec.type === 'income') {
-              recurringIncome += rec.amount;
+              recurringIncome += Number(rec.amount);
             } else {
-              recurringExpense += rec.amount;
+              recurringExpense += Number(rec.amount);
             }
           }
         }
@@ -1490,7 +1490,7 @@ async function setDefaultCurrency(currency: string) {
 async function getDefaultCurrency(): Promise<string> {
   try {
     const result = await client.execute('SELECT value FROM user_preferences WHERE key = ?', ['default_currency']);
-    return result.rows[0]?.value || 'USD';
+    return String(result.rows[0]?.value) || 'USD';
   } catch (error) {
     console.error('❌ Error getting default currency:', error);
     return 'USD';
@@ -1522,7 +1522,7 @@ async function getExchangeRate(fromCurrency: string, toCurrency: string): Promis
     );
     
     if (result.rows.length > 0) {
-      return result.rows[0].rate;
+      return Number(result.rows[0].rate);
     }
     
     // Try reverse rate
@@ -1532,7 +1532,7 @@ async function getExchangeRate(fromCurrency: string, toCurrency: string): Promis
     );
     
     if (reverseResult.rows.length > 0) {
-      return 1 / reverseResult.rows[0].rate;
+      return 1 / Number(reverseResult.rows[0].rate);
     }
     
     return 1; // Default to 1 if no rate found
@@ -1552,7 +1552,7 @@ async function populateDefaultExchangeRates() {
     const defaultRates = [
       { from: 'USD', to: 'EUR', rate: 0.85 },
       { from: 'USD', to: 'GBP', rate: 0.73 },
-      { from: 'USD', to 'JPY', rate: 110.0 },
+      { from: 'USD', to: 'JPY', rate: 110.0 },
       { from: 'EUR', to: 'USD', rate: 1.18 },
       { from: 'GBP', to: 'USD', rate: 1.37 },
       { from: 'JPY', to: 'USD', rate: 0.0091 }
@@ -1675,7 +1675,7 @@ async function addDebtPayment(debtId: number, amount: number, paymentDate: strin
 
     // Update debt balance
     const debt = await client.execute('SELECT current_balance FROM debts WHERE id = ?', [debtId]);
-    const newBalance = Math.max(0, debt.rows[0].current_balance - amount);
+    const newBalance = Math.max(0, Number(debt.rows[0].current_balance) - amount);
     
     await client.execute('UPDATE debts SET current_balance = ?, updated_at = datetime(\'now\') WHERE id = ?', [newBalance, debtId]);
 
@@ -1840,8 +1840,8 @@ async function deleteFinancialGoal(id: number) {
 async function addToFinancialGoal(id: number, amount: number) {
   try {
     const goal = await client.execute('SELECT current_amount, target_amount FROM financial_goals WHERE id = ?', [id]);
-    const currentAmount = goal.rows[0].current_amount;
-    const targetAmount = goal.rows[0].target_amount;
+    const currentAmount = Number(goal.rows[0].current_amount);
+    const targetAmount = Number(goal.rows[0].target_amount);
     
     const newAmount = Math.min(currentAmount + amount, targetAmount);
     const isComplete = newAmount >= targetAmount;
@@ -1895,15 +1895,15 @@ async function checkRecurringBudgetAlerts() {
         if (budget && budget.period === 'monthly') {
           const currentSpending = categorySpending.get(rec.category_id) || 0;
           const projectedSpending = currentSpending + rec.amount;
-          const budgetRemaining = budget.amount - currentSpending;
+          const budgetRemaining = Number(budget.amount) - currentSpending;
           
           // Alert if recurring transaction would exceed budget
-          if (projectedSpending > budget.amount && budgetRemaining > 0) {
-            const severity = budgetRemaining < rec.amount ? 'critical' : 'high';
+          if (projectedSpending > Number(budget.amount) && budgetRemaining > 0) {
+            const severity = budgetRemaining < Number(rec.amount) ? 'critical' : 'high';
             const title = `Budget Alert: ${rec.name}`;
-            const message = `Your recurring ${rec.name} expense of $${rec.amount} will exceed your $${budget.amount} budget for ${rec.category_name}. Current spending: $${currentSpending}, Budget remaining: $${budgetRemaining}`;
+            const message = `Your recurring ${rec.name} expense of $${Number(rec.amount)} will exceed your $${Number(budget.amount)} budget for ${rec.category_name}. Current spending: $${currentSpending}, Budget remaining: $${budgetRemaining}`;
             
-            await createAlert('budget_warning', title, message, severity, undefined, rec.category_id, 'category');
+            await createAlert('budget_warning', title, message, severity, undefined, Number(rec.category_id), 'category');
             alerts.push({ 
               recurringTransaction: rec.name, 
               category: rec.category_name, 
@@ -2183,8 +2183,8 @@ async function deleteSavingsGoal(id: number) {
     const transactions = await client.execute('SELECT COUNT(*) as count FROM savings_transactions WHERE savings_goal_id = ?', [id]);
     const count = transactions.rows[0]?.count || 0;
     
-    if (count > 0) {
-      console.log(`⚠️  Cannot delete savings goal ${id} - it has ${count} associated transactions`);
+    if (Number(count) > 0) {
+      console.log(`⚠️  Cannot delete savings goal ${id} - it has ${Number(count)} associated transactions`);
       return false;
     }
     
@@ -2216,7 +2216,7 @@ async function addSavingsTransaction(goalId: number, amount: number, type: 'depo
     // Update the goal's current amount
     const goal = await client.execute('SELECT * FROM savings_goals WHERE id = ?', [goalId]);
     const currentAmount = goal.rows[0]?.current_amount || 0;
-    const newAmount = type === 'deposit' ? currentAmount + amount : currentAmount - amount;
+    const newAmount = type === 'deposit' ? Number(currentAmount) + amount : Number(currentAmount) - amount;
     
     await client.execute('UPDATE savings_goals SET current_amount = ? WHERE id = ?', [newAmount, goalId]);
 
@@ -2309,8 +2309,8 @@ async function syncFinanceData() {
     for (const table of tables) {
       const result = await client.execute(`SELECT COUNT(*) as count FROM ${table} WHERE synced = 0`);
       const count = result.rows[0]?.count || 0;
-      totalUnsynced += count;
-      if (count > 0) {
+      totalUnsynced += Number(count);
+      if (Number(count) > 0) {
         console.log(`  📊 ${table}: ${count} unsynced records`);
       }
     }
@@ -2347,9 +2347,9 @@ async function getSyncStatus() {
       const unsyncedResult = await client.execute(`SELECT COUNT(*) as count FROM ${table} WHERE synced = 0`);
       
       status[table] = {
-        total: totalResult.rows[0]?.count || 0,
-        synced: (totalResult.rows[0]?.count || 0) - (unsyncedResult.rows[0]?.count || 0),
-        unsynced: unsyncedResult.rows[0]?.count || 0
+        total: Number(totalResult.rows[0]?.count || 0),
+        synced: Number(totalResult.rows[0]?.count || 0) - Number(unsyncedResult.rows[0]?.count || 0),
+        unsynced: Number(unsyncedResult.rows[0]?.count || 0)
       };
     }
     
@@ -2393,29 +2393,29 @@ async function populateFinanceDemoData() {
     
     // Income transactions
     if (salary) {
-      await createTransaction(5000, 'income', salary.id, 'Monthly salary', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`);
+      await createTransaction(5000, 'income', Number(salary.id), 'Monthly salary', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`);
     }
     
     if (freelance) {
-      await createTransaction(1200, 'income', freelance.id, 'Web development project', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-15`);
+      await createTransaction(1200, 'income', Number(freelance.id), 'Web development project', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-15`);
     }
     
     // Expense transactions
     if (grocery) {
-      await createTransaction(350, 'expense', grocery.id, 'Weekly groceries', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05`);
-      await createTransaction(280, 'expense', grocery.id, 'Weekly groceries', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-12`);
-      await createTransaction(320, 'expense', grocery.id, 'Weekly groceries', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-19`);
-      await createTransaction(295, 'expense', grocery.id, 'Weekly groceries', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-26`);
+      await createTransaction(350, 'expense', Number(grocery.id), 'Weekly groceries', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05`);
+      await createTransaction(280, 'expense', Number(grocery.id), 'Weekly groceries', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-12`);
+      await createTransaction(320, 'expense', Number(grocery.id), 'Weekly groceries', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-19`);
+      await createTransaction(295, 'expense', Number(grocery.id), 'Weekly groceries', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-26`);
     }
     
     if (transport) {
-      await createTransaction(120, 'expense', transport.id, 'Gas and parking', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-08`);
-      await createTransaction(85, 'expense', transport.id, 'Public transportation', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-22`);
+      await createTransaction(120, 'expense', Number(transport.id), 'Gas and parking', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-08`);
+      await createTransaction(85, 'expense', Number(transport.id), 'Public transportation', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-22`);
     }
     
     if (entertainment) {
-      await createTransaction(75, 'expense', entertainment.id, 'Movie night', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-10`);
-      await createTransaction(45, 'expense', entertainment.id, 'Restaurant dinner', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-18`);
+      await createTransaction(75, 'expense', Number(entertainment.id), 'Movie night', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-10`);
+      await createTransaction(45, 'expense', Number(entertainment.id), 'Restaurant dinner', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-18`);
     }
     
     // Create sample savings goals
@@ -2454,21 +2454,21 @@ async function populateFinanceDemoData() {
     
     // Create sample budgets
     if (grocery) {
-      await createBudget(grocery.id, 500, 'monthly', '2025-09-01');
+      await createBudget(Number(grocery.id), 500, 'monthly', '2025-09-01');
     }
     if (transport) {
-      await createBudget(transport.id, 200, 'monthly', '2025-09-01');
+      await createBudget(Number(transport.id), 200, 'monthly', '2025-09-01');
     }
     if (entertainment) {
-      await createBudget(entertainment.id, 150, 'monthly', '2025-09-01');
+      await createBudget(Number(entertainment.id), 150, 'monthly', '2025-09-01');
     }
     
     // Create sample recurring transactions
     if (salary) {
-      await createRecurringTransaction('Monthly Salary', 5000, 'income', salary.id, 'monthly', '2025-10-01', 'Regular monthly salary');
+      await createRecurringTransaction('Monthly Salary', 5000, 'income', Number(salary.id), 'monthly', '2025-10-01', 'Regular monthly salary');
     }
     if (grocery) {
-      await createRecurringTransaction('Weekly Groceries', 125, 'expense', grocery.id, 'weekly', '2025-09-08', 'Weekly grocery shopping');
+      await createRecurringTransaction('Weekly Groceries', 125, 'expense', Number(grocery.id), 'weekly', '2025-09-08', 'Weekly grocery shopping');
     }
     
     // Create sample tags
@@ -2483,16 +2483,16 @@ async function populateFinanceDemoData() {
     const personalTag = tags.find((t: any) => t.name === 'Personal');
     
     if (workTag && salary) {
-      const salaryTransactions = await getTransactions({ categoryId: salary.id });
+      const salaryTransactions = await getTransactions({ categoryId: Number(salary.id) });
       if (salaryTransactions.length > 0) {
-        await addTagsToTransaction(salaryTransactions[0].id, [workTag.id]);
+        await addTagsToTransaction(Number(salaryTransactions[0].id), [Number(workTag.id)]);
       }
     }
     
     if (personalTag && grocery) {
-      const groceryTransactions = await getTransactions({ categoryId: grocery.id });
+      const groceryTransactions = await getTransactions({ categoryId: Number(grocery.id) });
       if (groceryTransactions.length > 0) {
-        await addTagsToTransaction(groceryTransactions[0].id, [personalTag.id]);
+        await addTagsToTransaction(Number(groceryTransactions[0].id), [Number(personalTag.id)]);
       }
     }
     
@@ -2540,7 +2540,8 @@ async function main() {
     console.log('─'.repeat(50));
     const syncStatus = await getSyncStatus();
     for (const [table, status] of Object.entries(syncStatus)) {
-      console.log(`${table}: ${status.synced}/${status.total} synced (${status.unsynced} pending)`);
+      const statusData = status as { synced: number; total: number; unsynced: number };
+      console.log(`${table}: ${statusData.synced}/${statusData.total} synced (${statusData.unsynced} pending)`);
     }
     
     // Generate and display financial summary
@@ -2549,8 +2550,8 @@ async function main() {
     const summary = await getFinancialSummary();
     
     if (summary) {
-      console.log(`💰 Total Income: $${summary.overall.totalIncome.toFixed(2)}`);
-      console.log(`💸 Total Expenses: $${summary.overall.totalExpense.toFixed(2)}`);
+      console.log(`💰 Total Income: $${Number(summary.overall.totalIncome).toFixed(2)}`);
+      console.log(`💸 Total Expenses: $${Number(summary.overall.totalExpense).toFixed(2)}`);
       console.log(`📊 Net Income: $${summary.overall.netIncome.toFixed(2)}`);
       console.log(`📝 Total Transactions: ${summary.overall.totalTransactions}`);
       

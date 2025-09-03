@@ -7,8 +7,8 @@ dotenv.config();
 // Create the Turso client with offline sync enabled
 const client = createClient({
   url: 'file:field-data.db',
-  syncUrl: process.env.TURSO_SYNC_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
+  syncUrl: process.env.TURSO_DATABASE_URL || '',
+  authToken: process.env.TURSO_AUTH_TOKEN || '',
 });
 
 // Initialize the field data database

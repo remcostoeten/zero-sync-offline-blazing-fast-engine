@@ -519,7 +519,8 @@ async function showSyncStatusCLI() {
     console.log('─'.repeat(50));
     
     for (const [table, status] of Object.entries(syncStatus)) {
-      console.log(`${table}: ${status.synced}/${status.total} synced (${status.unsynced} pending)`);
+      const statusData = status as { synced: number; total: number; unsynced: number };
+      console.log(`${table}: ${statusData.synced}/${statusData.total} synced (${statusData.unsynced} pending)`);
     }
   } catch (error) {
     console.error('❌ Error getting sync status:', error);

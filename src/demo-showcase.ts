@@ -96,7 +96,7 @@ async function demoProjectLifecycle() {
     'Modernize the customer-facing portal with improved UX and mobile responsiveness',
     'planning',
     'high',
-    manager.id,
+    Number(manager.id),
     75000,
     '2025-01-15',
     '2025-07-31'
@@ -119,8 +119,8 @@ async function demoProjectLifecycle() {
   await createTask(
     'User Research and Personas',
     'Conduct user interviews and create detailed personas for target users',
-    customerPortalProject.id,
-    designer.id,
+    Number(customerPortalProject.id),
+    Number(designer.id),
     'high',
     24,
     '2025-02-15'
@@ -130,8 +130,8 @@ async function demoProjectLifecycle() {
   await createTask(
     'Wireframe Design',
     'Create low-fidelity wireframes for all portal pages',
-    customerPortalProject.id,
-    designer.id,
+    Number(customerPortalProject.id),
+    Number(designer.id),
     'high',
     32,
     '2025-02-28'
@@ -141,8 +141,8 @@ async function demoProjectLifecycle() {
   await createTask(
     'Frontend Architecture',
     'Design the frontend architecture and component structure',
-    customerPortalProject.id,
-    developer.id,
+    Number(customerPortalProject.id),
+    Number(developer.id),
     'critical',
     40,
     '2025-03-15'
@@ -152,8 +152,8 @@ async function demoProjectLifecycle() {
   await createTask(
     'API Integration',
     'Integrate with existing backend APIs and create new endpoints',
-    customerPortalProject.id,
-    developer.id,
+    Number(customerPortalProject.id),
+    Number(developer.id),
     'critical',
     48,
     '2025-04-01'
@@ -163,24 +163,24 @@ async function demoProjectLifecycle() {
   // Phase 3: Project Activation
   printSubsectionHeader('Phase 3: Project Activation');
   console.log('🔄 Activating project...');
-  await updateProjectStatus(customerPortalProject.id, 'active');
+  await updateProjectStatus(Number(customerPortalProject.id), 'active');
   await delay(500);
   
   // Phase 4: Task Progress Updates
   printSubsectionHeader('Phase 4: Task Progress Updates');
   console.log('🔄 Updating task progress...');
   
-  const tasks = await getTasks(customerPortalProject.id);
+  const tasks = await getTasks(Number(customerPortalProject.id));
   const researchTask = tasks.find((t: any) => t.title.includes('User Research'));
   const wireframeTask = tasks.find((t: any) => t.title.includes('Wireframe'));
   
   if (researchTask) {
-    await updateTaskStatus(researchTask.id, 'done', 22);
+    await updateTaskStatus(Number(researchTask.id), 'done', 22);
     console.log('✅ User Research task completed (22 hours)');
   }
   
   if (wireframeTask) {
-    await updateTaskStatus(wireframeTask.id, 'in-progress', 18);
+    await updateTaskStatus(Number(wireframeTask.id), 'in-progress', 18);
     console.log('🔄 Wireframe Design task in progress (18 hours)');
   }
   
@@ -215,17 +215,17 @@ async function demoTimeTrackingAndCollaboration() {
   console.log('⏱️  Logging time entries for team members...');
   
   // Developer time entries
-  await logTimeEntry(developer.id, tasks[0].id, project.id, '2025-01-20', 8, 'Frontend development and component building');
+  await logTimeEntry(Number(developer.id), Number(tasks[0].id), Number(project.id), '2025-01-20', 8, 'Frontend development and component building');
   await delay(200);
-  await logTimeEntry(developer.id, tasks[0].id, project.id, '2025-01-21', 7.5, 'API integration and testing');
+  await logTimeEntry(Number(developer.id), Number(tasks[0].id), Number(project.id), '2025-01-21', 7.5, 'API integration and testing');
   await delay(200);
-  await logTimeEntry(developer.id, tasks[0].id, project.id, '2025-01-22', 6, 'Bug fixes and code review');
+  await logTimeEntry(Number(developer.id), Number(tasks[0].id), Number(project.id), '2025-01-22', 6, 'Bug fixes and code review');
   await delay(200);
   
   // Designer time entries
-  await logTimeEntry(designer.id, tasks[1].id, project.id, '2025-01-20', 6, 'User research and persona creation');
+  await logTimeEntry(Number(designer.id), Number(tasks[1].id), Number(project.id), '2025-01-20', 6, 'User research and persona creation');
   await delay(200);
-  await logTimeEntry(designer.id, tasks[1].id, project.id, '2025-01-21', 8, 'Wireframe design and iteration');
+  await logTimeEntry(Number(designer.id), Number(tasks[1].id), Number(project.id), '2025-01-21', 8, 'Wireframe design and iteration');
   await delay(200);
   
   console.log('✅ Time tracking completed');
@@ -234,11 +234,11 @@ async function demoTimeTrackingAndCollaboration() {
   printSubsectionHeader('Team Collaboration');
   console.log('💬 Adding team comments and feedback...');
   
-  await addComment('Great work on the user research! The personas are very detailed.', developer.id, project.id);
+  await addComment('Great work on the user research! The personas are very detailed.', Number(developer.id), Number(project.id));
   await delay(200);
-  await addComment('Thanks! The wireframes are coming along nicely too.', designer.id, project.id);
+  await addComment('Thanks! The wireframes are coming along nicely too.', Number(designer.id), Number(project.id));
   await delay(200);
-  await addComment('Looking forward to seeing the final designs!', developer.id, project.id);
+  await addComment('Looking forward to seeing the final designs!', Number(developer.id), Number(project.id));
   await delay(200);
   
   console.log('✅ Collaboration demo completed successfully!');
@@ -261,7 +261,7 @@ async function demoReportingAndAnalytics() {
   
   // Project Report
   printSubsectionHeader('Project Performance Report');
-  const projectReport = await generateProjectReport(projects[0].id);
+  const projectReport = await generateProjectReport(Number(projects[0].id));
   
   if (projectReport) {
     console.log(`📊 Project: ${projectReport.project.name}`);
@@ -283,7 +283,7 @@ async function demoReportingAndAnalytics() {
   const employee = users.find((u: any) => u.role === 'employee');
   
   if (employee) {
-    const workloadReport = await generateUserWorkloadReport(employee.id);
+    const workloadReport = await generateUserWorkloadReport(Number(employee.id));
     
     if (workloadReport) {
       console.log(`👤 User: ${workloadReport.user.full_name}`);
@@ -315,8 +315,9 @@ async function demoOfflineSyncAndConflictResolution() {
   
   console.log('📊 Database Sync Status:');
   for (const [table, status] of Object.entries(syncStatus)) {
-    const syncIcon = status.unsynced > 0 ? '⏳' : '✅';
-    console.log(`${syncIcon} ${table}: ${status.synced}/${status.total} synced (${status.unsynced} pending)`);
+    const statusData = status as { synced: number; total: number; unsynced: number };
+    const syncIcon = statusData.unsynced > 0 ? '⏳' : '✅';
+    console.log(`${syncIcon} ${table}: ${statusData.synced}/${statusData.total} synced (${statusData.unsynced} pending)`);
   }
   
   await delay(1000);
@@ -340,18 +341,18 @@ async function demoOfflineSyncAndConflictResolution() {
     await createTask(
       'Offline Created Task',
       'This task was created while the application was offline',
-      project.id,
-      user.id,
+      Number(project.id),
+      Number(user.id),
       'medium',
       16,
       '2025-02-15'
     );
     
     // Create offline comment
-    await addComment('This comment was added offline and will sync later!', user.id, project.id);
+    await addComment('This comment was added offline and will sync later!', Number(user.id), Number(project.id));
     
     // Log offline time
-    await logTimeEntry(user.id, 1, project.id, '2025-01-23', 4, 'Working offline on new features');
+    await logTimeEntry(Number(user.id), 1, Number(project.id), '2025-01-23', 4, 'Working offline on new features');
     
     console.log('✅ Offline data created successfully');
   }
@@ -364,8 +365,9 @@ async function demoOfflineSyncAndConflictResolution() {
   
   console.log('📊 Updated Database Sync Status:');
   for (const [table, status] of Object.entries(updatedSyncStatus)) {
-    const syncIcon = status.unsynced > 0 ? '⏳' : '✅';
-    console.log(`${syncIcon} ${table}: ${status.synced}/${status.total} synced (${status.unsynced} pending)`);
+    const statusData = status as { synced: number; total: number; unsynced: number };
+    const syncIcon = statusData.unsynced > 0 ? '⏳' : '✅';
+    console.log(`${syncIcon} ${table}: ${statusData.synced}/${statusData.total} synced (${statusData.unsynced} pending)`);
   }
   
   await delay(1000);
@@ -392,8 +394,9 @@ async function demoOfflineSyncAndConflictResolution() {
   
   console.log('📊 Final Database Sync Status:');
   for (const [table, status] of Object.entries(finalSyncStatus)) {
-    const syncIcon = status.unsynced > 0 ? '⏳' : '✅';
-    console.log(`${syncIcon} ${table}: ${status.synced}/${status.total} synced (${status.unsynced} pending)`);
+    const statusData = status as { synced: number; total: number; unsynced: number };
+    const syncIcon = statusData.unsynced > 0 ? '⏳' : '✅';
+    console.log(`${syncIcon} ${table}: ${statusData.synced}/${statusData.total} synced (${statusData.unsynced} pending)`);
   }
   
   console.log('✅ Offline sync and conflict resolution demo completed successfully!');

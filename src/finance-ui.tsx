@@ -182,7 +182,8 @@ const Button: React.FC<{
   variant?: 'primary' | 'secondary' | 'danger';
   disabled?: boolean;
   className?: string;
-}> = ({ children, onClick, variant = 'primary', disabled = false, className = '' }) => {
+  type?: 'button' | 'submit' | 'reset';
+}> = ({ children, onClick, variant = 'primary', disabled = false, className = '', type = 'button' }) => {
   const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50';
   const variantClasses = {
     primary: 'bg-blue-600 text-white hover:bg-blue-700',
@@ -192,6 +193,7 @@ const Button: React.FC<{
 
   return (
     <button
+      type={type}
       className={`${baseClasses} ${variantClasses[variant]} ${className}`}
       onClick={onClick}
       disabled={disabled}
@@ -209,7 +211,8 @@ const Input: React.FC<{
   placeholder?: string;
   required?: boolean;
   className?: string;
-}> = ({ label, value, onChange, type = 'text', placeholder, required = false, className = '' }) => (
+  step?: string;
+}> = ({ label, value, onChange, type = 'text', placeholder, required = false, className = '', step }) => (
   <div className={`mb-4 ${className}`}>
     <label className="block text-sm font-medium text-gray-700 mb-2">
       {label} {required && <span className="text-red-500">*</span>}
@@ -220,6 +223,7 @@ const Input: React.FC<{
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       required={required}
+      step={step}
       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
     />
   </div>
@@ -540,15 +544,19 @@ const TransactionManager: React.FC = () => {
     try {
       if (editingTransaction) {
         await api.updateTransaction(editingTransaction.id, {
-          ...formData,
           amount: parseFloat(formData.amount),
-          categoryId: parseInt(formData.categoryId)
+          type: formData.type,
+          category_id: parseInt(formData.categoryId),
+          note: formData.note,
+          date: formData.date
         });
       } else {
         await api.createTransaction({
-          ...formData,
           amount: parseFloat(formData.amount),
-          categoryId: parseInt(formData.categoryId)
+          type: formData.type,
+          categoryId: parseInt(formData.categoryId),
+          note: formData.note,
+          date: formData.date
         });
       }
       

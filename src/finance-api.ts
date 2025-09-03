@@ -296,7 +296,7 @@ const errorHandler = (err: AppError, req: express.Request, res: express.Response
 
   // Zod validation errors
   if (err instanceof z.ZodError) {
-    const message = err.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+    const message = err.issues.map((e: z.ZodIssue) => `${e.path.join('.')}: ${e.message}`).join(', ');
     error = new CustomError(`Validation Error: ${message}`, 400);
   }
 
@@ -343,7 +343,8 @@ const validateQuery = (schema: z.ZodSchema) => {
   return (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
       const validatedData = schema.parse(req.query);
-      req.query = validatedData;
+      // Store validated data in a custom property instead of overriding req.query
+      (req as any).validatedQuery = validatedData;
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -413,7 +414,7 @@ app.get('/categories', async (req, res, next) => {
 // PUT /categories/:id - Update category
 app.put('/categories/:id', validateRequest(updateCategorySchema), async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid category ID', 400);
     }
@@ -437,7 +438,7 @@ app.put('/categories/:id', validateRequest(updateCategorySchema), async (req, re
 // DELETE /categories/:id - Remove category
 app.delete('/categories/:id', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid category ID', 400);
     }
@@ -490,9 +491,9 @@ app.get('/transactions', async (req, res, next) => {
     const filters = {
       startDate: startDate && startDate !== '' ? startDate as string : undefined,
       endDate: endDate && endDate !== '' ? endDate as string : undefined,
-      categoryId: categoryId && categoryId !== '' ? categoryId as number : undefined,
+      categoryId: categoryId && categoryId !== '' ? parseInt(categoryId as string) || undefined : undefined,
       type: type && type !== '' ? type as 'income' | 'expense' : undefined,
-      limit: limit && limit !== '' ? limit as number : undefined
+      limit: limit && limit !== '' ? parseInt(limit as string) || undefined : undefined
     };
     
     const transactions = await getTransactions(filters);
@@ -511,7 +512,7 @@ app.get('/transactions', async (req, res, next) => {
 // PUT /transactions/:id - Update transaction
 app.put('/transactions/:id', validateRequest(updateTransactionSchema), async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid transaction ID', 400);
     }
@@ -535,7 +536,7 @@ app.put('/transactions/:id', validateRequest(updateTransactionSchema), async (re
 // DELETE /transactions/:id - Remove transaction
 app.delete('/transactions/:id', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid transaction ID', 400);
     }
@@ -598,7 +599,7 @@ app.get('/savings', async (req, res, next) => {
 // PUT /savings/:id - Update savings goal
 app.put('/savings/:id', validateRequest(updateSavingsGoalSchema), async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid savings goal ID', 400);
     }
@@ -622,7 +623,7 @@ app.put('/savings/:id', validateRequest(updateSavingsGoalSchema), async (req, re
 // DELETE /savings/:id - Remove savings goal
 app.delete('/savings/:id', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid savings goal ID', 400);
     }
@@ -645,7 +646,7 @@ app.delete('/savings/:id', async (req, res, next) => {
 // POST /savings/:id/transactions - Add savings transaction
 app.post('/savings/:id/transactions', validateRequest(savingsTransactionSchema), async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid savings goal ID', 400);
     }
@@ -671,7 +672,7 @@ app.post('/savings/:id/transactions', validateRequest(savingsTransactionSchema),
 // GET /savings/:id/transactions - Get savings transactions for a goal
 app.get('/savings/:id/transactions', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid savings goal ID', 400);
     }
@@ -731,7 +732,7 @@ app.get('/budgets', async (req, res, next) => {
 // PUT /budgets/:id - Update budget
 app.put('/budgets/:id', validateRequest(updateBudgetSchema), async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid budget ID', 400);
     }
@@ -755,7 +756,7 @@ app.put('/budgets/:id', validateRequest(updateBudgetSchema), async (req, res, ne
 // DELETE /budgets/:id - Remove budget
 app.delete('/budgets/:id', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid budget ID', 400);
     }
@@ -818,7 +819,7 @@ app.get('/recurring', async (req, res, next) => {
 // PUT /recurring/:id - Update recurring transaction
 app.put('/recurring/:id', validateRequest(updateRecurringTransactionSchema), async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid recurring transaction ID', 400);
     }
@@ -842,7 +843,7 @@ app.put('/recurring/:id', validateRequest(updateRecurringTransactionSchema), asy
 // DELETE /recurring/:id - Remove recurring transaction
 app.delete('/recurring/:id', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid recurring transaction ID', 400);
     }
@@ -920,7 +921,7 @@ app.get('/tags', async (req, res, next) => {
 // PUT /tags/:id - Update tag
 app.put('/tags/:id', validateRequest(updateTagSchema), async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid tag ID', 400);
     }
@@ -944,7 +945,7 @@ app.put('/tags/:id', validateRequest(updateTagSchema), async (req, res, next) =>
 // DELETE /tags/:id - Remove tag
 app.delete('/tags/:id', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid tag ID', 400);
     }
@@ -967,7 +968,7 @@ app.delete('/tags/:id', async (req, res, next) => {
 // POST /transactions/:id/tags - Add tags to transaction
 app.post('/transactions/:id/tags', validateRequest(transactionTagsSchema), async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid transaction ID', 400);
     }
@@ -993,7 +994,7 @@ app.post('/transactions/:id/tags', validateRequest(transactionTagsSchema), async
 // DELETE /transactions/:id/tags - Remove tags from transaction
 app.delete('/transactions/:id/tags', validateRequest(transactionTagsSchema), async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid transaction ID', 400);
     }
@@ -1019,7 +1020,7 @@ app.delete('/transactions/:id/tags', validateRequest(transactionTagsSchema), asy
 // GET /transactions/:id/tags - Get tags for transaction
 app.get('/transactions/:id/tags', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid transaction ID', 400);
     }
@@ -1087,7 +1088,7 @@ app.get('/alerts', async (req, res, next) => {
 // PUT /alerts/:id/read - Mark alert as read
 app.put('/alerts/:id/read', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid alert ID', 400);
     }
@@ -1110,7 +1111,7 @@ app.put('/alerts/:id/read', async (req, res, next) => {
 // PUT /alerts/:id/dismiss - Dismiss alert
 app.put('/alerts/:id/dismiss', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid alert ID', 400);
     }
@@ -1133,7 +1134,7 @@ app.put('/alerts/:id/dismiss', async (req, res, next) => {
 // DELETE /alerts/:id - Delete alert
 app.delete('/alerts/:id', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid alert ID', 400);
     }
@@ -1307,7 +1308,7 @@ app.get('/dashboard', async (req, res, next) => {
 // ============================================================================
 
 // GET /forecast - Generate financial forecast
-app.get('/forecast', validateRequest(forecastSchema, 'query'), async (req, res, next) => {
+app.get('/forecast', validateQuery(forecastSchema), async (req, res, next) => {
   try {
     const { months, currency } = req.query;
     const numMonths = parseInt(months as string) || 6;
@@ -1371,7 +1372,7 @@ app.get('/debts', async (req, res, next) => {
 // PUT /debts/:id - Update debt
 app.put('/debts/:id', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid debt ID', 400);
     }
@@ -1394,7 +1395,7 @@ app.put('/debts/:id', async (req, res, next) => {
 // DELETE /debts/:id - Delete debt
 app.delete('/debts/:id', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid debt ID', 400);
     }
@@ -1417,7 +1418,7 @@ app.delete('/debts/:id', async (req, res, next) => {
 // POST /debts/:id/payments - Add debt payment
 app.post('/debts/:id/payments', validateRequest(debtPaymentSchema), async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid debt ID', 400);
     }
@@ -1443,7 +1444,7 @@ app.post('/debts/:id/payments', validateRequest(debtPaymentSchema), async (req, 
 // GET /debts/:id/payments - Get debt payments
 app.get('/debts/:id/payments', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid debt ID', 400);
     }
@@ -1521,7 +1522,7 @@ app.get('/goals', async (req, res, next) => {
 // PUT /goals/:id - Update financial goal
 app.put('/goals/:id', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid goal ID', 400);
     }
@@ -1544,7 +1545,7 @@ app.put('/goals/:id', async (req, res, next) => {
 // DELETE /goals/:id - Delete financial goal
 app.delete('/goals/:id', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid goal ID', 400);
     }
@@ -1567,7 +1568,7 @@ app.delete('/goals/:id', async (req, res, next) => {
 // POST /goals/:id/contribute - Add contribution to goal
 app.post('/goals/:id/contribute', async (req, res, next) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id || '');
     if (isNaN(id)) {
       throw new CustomError('Invalid goal ID', 400);
     }

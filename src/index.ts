@@ -1,4 +1,5 @@
 import { createClient } from '@libsql/client';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -7,8 +8,8 @@ dotenv.config();
 // Create the Turso client with offline sync enabled
 const client = createClient({
   url: 'file:local.db',
-  syncUrl: process.env.TURSO_SYNC_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
+  syncUrl: process.env.TURSO_DATABASE_URL || '',
+  authToken: process.env.TURSO_AUTH_TOKEN || '',
 });
 
 // Function to save a note that works offline
@@ -111,7 +112,7 @@ async function main() {
 }
 
 // Run the application
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main().catch(console.error);
 }
 
