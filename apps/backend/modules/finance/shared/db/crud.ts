@@ -154,4 +154,5 @@ function createCrudFactory<TSchema extends SQLiteTable, TInsert, TSelect>(
   };
 }
 
-export type { createCrudFactory, TCrudOperations, TQueryFilters };
+export { createCrudFactory };
+export type { TCrudOperations, TQueryFilters };

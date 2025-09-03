@@ -7,19 +7,17 @@
   "scripts": {
     "dev": "bun run --watch server.ts",
     "start": "bun run server.ts",
-    "build": "bun build server.ts --outdir=dist",
+    "build": "bun build server.ts --outdir=dist --target=bun",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "hono": "^4.0.0",
     "@hono/node-server": "^1.8.0",
     "@hono/zod-validator": "^0.2.0",
-    "@hono/cors": "^1.1.0",
-    "@hono/logger": "^1.0.0",
-    "drizzle-orm": "^0.29.0",
     "@libsql/client": "^0.15.14",
-    "zod": "^3.22.0",
-    "dotenv": "^17.2.2"
+    "dotenv": "^17.2.2",
+    "drizzle-orm": "^0.29.0",
+    "hono": "^4.9.6",
+    "zod": "^3.22.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

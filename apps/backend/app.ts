@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { cors } from '@hono/cors';
-import { logger } from '@hono/logger';
+import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
 import { categoriesRoutes } from './modules/finance/features/categories/routes';
 import { transactionsRoutes } from './modules/finance/features/transactions/routes';
 import { savingsRoutes } from './modules/finance/features/savings/routes';
