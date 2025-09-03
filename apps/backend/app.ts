@@ -4,6 +4,8 @@ import { logger } from '@hono/logger';
 import { categoriesRoutes } from './modules/finance/features/categories/routes';
 import { transactionsRoutes } from './modules/finance/features/transactions/routes';
 import { savingsRoutes } from './modules/finance/features/savings/routes';
+import { budgetsRouter } from './modules/finance/features/budgets';
+import { recurringRouter } from './modules/finance/features/recurring';
 
 const app = new Hono();
 
@@ -28,6 +30,8 @@ app.get('/health', (c) => {
 app.route('/api/finance/categories', categoriesRoutes);
 app.route('/api/finance/transactions', transactionsRoutes);
 app.route('/api/finance/savings', savingsRoutes);
+app.route('/api/finance/budgets', budgetsRouter);
+app.route('/api/finance/recurring', recurringRouter);
 
 app.get('/api/finance', (c) => {
   return c.json({
@@ -86,14 +90,40 @@ app.get('/api/finance', (c) => {
       
       budgets: {
         base: '/api/finance/budgets',
-        status: '🚧 Coming Soon', 
-        planned: ['Budget CRUD', 'Utilization tracking', 'Alerts']
+        methods: {
+          'GET /': 'List budgets with utilization tracking (advanced filtering)',
+          'GET /:id': 'Get single budget with category and utilization data',
+          'GET /utilization/overview': 'Get budget utilization overview with alerts',
+          'POST /': 'Create new budget with period validation',
+          'POST /:id/reset': 'Reset budget period and optionally amount',
+          'POST /bulk': 'Bulk create budgets',
+          'PUT /:id': 'Update budget with conflict checking',
+          'PUT /bulk': 'Bulk update budgets',
+          'DELETE /:id': 'Delete budget',
+          'DELETE /bulk': 'Bulk delete budgets',
+          'PATCH /:id/toggle': 'Toggle budget active status'
+        }
       },
       
       recurring: {
         base: '/api/finance/recurring',
-        status: '🚧 Coming Soon',
-        planned: ['Recurring rules', 'Auto-generation', 'Scheduling']
+        methods: {
+          'GET /': 'List recurring transactions with next execution dates (advanced filtering)',
+          'GET /stats': 'Get recurring transactions statistics and totals',
+          'GET /due': 'Get recurring transactions due for generation',
+          'GET /:id': 'Get single recurring transaction with schedule details',
+          'GET /:id/schedule': 'Get schedule preview with upcoming dates',
+          'POST /': 'Create new recurring transaction with frequency rules',
+          'POST /generate': 'Generate transactions for all or specific recurring rules',
+          'POST /:id/generate': 'Generate transactions for specific recurring transaction',
+          'POST /bulk': 'Bulk create recurring transactions',
+          'PUT /:id': 'Update recurring transaction and schedule',
+          'PUT /bulk': 'Bulk update recurring transactions',
+          'DELETE /:id': 'Delete recurring transaction (optionally with generated transactions)',
+          'DELETE /bulk': 'Bulk delete recurring transactions',
+          'PATCH /:id/toggle': 'Toggle recurring transaction active status',
+          'PATCH /:id/schedule': 'Update recurring transaction schedule settings'
+        }
       },
       
       debt: {
@@ -151,9 +181,9 @@ app.get('/api/finance', (c) => {
     },
     
     stats: {
-      implemented: 3,
+      implemented: 5,
       total: 11,
-      progress: '27%'
+      progress: '45%'
     },
     
     features: {
@@ -166,10 +196,16 @@ app.get('/api/finance', (c) => {
       '✅ Relationships': 'Complex joins and data enrichment',
       '✅ Bulk Operations': 'Batch processing support',
       '✅ Progress Tracking': 'Real-time savings goal calculations',
-      '✅ Smart Withdrawals': 'Balance validation and protection'
+      '✅ Smart Withdrawals': 'Balance validation and protection',
+      '✅ Budget Utilization': 'Real-time budget tracking with spending analysis',
+      '✅ Budget Alerts': 'Smart notifications for budget thresholds',
+      '✅ Period Management': 'Monthly/yearly budget cycles with reset functionality',
+      '✅ Recurring Patterns': 'Complex frequency rules with date calculations',
+      '✅ Schedule Engine': 'Automated transaction generation with duplicate prevention',
+      '✅ Generation Control': 'Dry-run mode, force generation, and batch processing'
     },
     
-    next: 'Implement Budget module with utilization tracking'
+    next: 'Implement Debt module with payment schedules and interest calculations'
   });
 });
 
