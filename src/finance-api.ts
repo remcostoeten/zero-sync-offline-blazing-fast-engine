@@ -36,6 +36,33 @@ import {
   addTagsToTransaction,
   removeTagsFromTransaction,
   getTransactionTags,
+  createAlert,
+  getAlerts,
+  markAlertAsRead,
+  dismissAlert,
+  deleteAlert,
+  generateAllAlerts,
+  setDefaultCurrency,
+  getDefaultCurrency,
+  updateExchangeRate,
+  getExchangeRate,
+  convertCurrency,
+  populateDefaultExchangeRates,
+  generateFinancialForecast,
+  createDebt,
+  getDebts,
+  updateDebt,
+  deleteDebt,
+  addDebtPayment,
+  getDebtPayments,
+  getDebtSummary,
+  createFinancialGoal,
+  getFinancialGoals,
+  updateFinancialGoal,
+  deleteFinancialGoal,
+  addToFinancialGoal,
+  checkRecurringBudgetAlerts,
+  getDashboardData,
   getFinancialSummary,
   logAuditAction,
   getAuditLog,
@@ -154,6 +181,65 @@ const updateTagSchema = createTagSchema.partial();
 // Transaction tags validation schema
 const transactionTagsSchema = z.object({
   tagIds: z.array(z.number().int().positive('Tag ID must be a positive integer')).min(1, 'At least one tag ID is required')
+});
+
+// Alert validation schemas
+const createAlertSchema = z.object({
+  type: z.enum(['budget_warning', 'recurring_due', 'savings_deadline', 'custom'], { message: 'Invalid alert type' }),
+  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
+  message: z.string().min(1, 'Message is required').max(1000, 'Message too long'),
+  severity: z.enum(['low', 'medium', 'high', 'critical'], { message: 'Invalid severity level' }),
+  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Due date must be in YYYY-MM-DD format').optional(),
+  relatedId: z.number().int().positive('Related ID must be a positive integer').optional(),
+  relatedType: z.string().max(100, 'Related type too long').optional()
+});
+
+// Currency validation schemas
+const currencySchema = z.object({
+  currency: z.string().length(3, 'Currency must be 3 characters').regex(/^[A-Z]{3}$/, 'Currency must be uppercase letters')
+});
+
+const exchangeRateSchema = z.object({
+  fromCurrency: z.string().length(3, 'From currency must be 3 characters').regex(/^[A-Z]{3}$/, 'From currency must be uppercase letters'),
+  toCurrency: z.string().length(3, 'To currency must be 3 characters').regex(/^[A-Z]{3}$/, 'To currency must be uppercase letters'),
+  rate: z.number().positive('Exchange rate must be positive')
+});
+
+// Debt validation schemas
+const createDebtSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200, 'Name too long'),
+  type: z.enum(['loan', 'credit_card', 'mortgage', 'personal_debt', 'other'], { message: 'Invalid debt type' }),
+  originalAmount: z.number().positive('Original amount must be positive'),
+  currentBalance: z.number().min(0, 'Current balance cannot be negative'),
+  interestRate: z.number().min(0, 'Interest rate cannot be negative'),
+  minimumPayment: z.number().min(0, 'Minimum payment cannot be negative'),
+  paymentFrequency: z.enum(['weekly', 'biweekly', 'monthly', 'quarterly', 'yearly'], { message: 'Invalid payment frequency' }),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format'),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'End date must be in YYYY-MM-DD format').optional(),
+  notes: z.string().max(1000, 'Notes too long').optional()
+});
+
+const debtPaymentSchema = z.object({
+  amount: z.number().positive('Payment amount must be positive'),
+  paymentDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Payment date must be in YYYY-MM-DD format'),
+  isExtraPayment: z.boolean().default(false),
+  notes: z.string().max(1000, 'Notes too long').optional()
+});
+
+// Financial goals validation schemas
+const createFinancialGoalSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200, 'Name too long'),
+  type: z.string().min(1, 'Type is required').max(100, 'Type too long'),
+  targetAmount: z.number().positive('Target amount must be positive'),
+  targetDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Target date must be in YYYY-MM-DD format').optional(),
+  priority: z.enum(['low', 'medium', 'high', 'critical'], { message: 'Invalid priority level' }).default('medium'),
+  monthlyContribution: z.number().min(0, 'Monthly contribution cannot be negative').default(0),
+  notes: z.string().max(1000, 'Notes too long').optional()
+});
+
+const forecastSchema = z.object({
+  months: z.number().int().min(1, 'Months must be at least 1').max(60, 'Months cannot exceed 60').default(6),
+  currency: z.string().length(3, 'Currency must be 3 characters').regex(/^[A-Z]{3}$/, 'Currency must be uppercase letters').default('USD')
 });
 
 // Query parameter validation schemas
@@ -944,6 +1030,581 @@ app.get('/transactions/:id/tags', async (req, res, next) => {
       success: true,
       data: tags,
       count: tags.length
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================================================
+// ALERTS & REMINDERS ENDPOINTS
+// ============================================================================
+
+// POST /alerts - Create custom alert
+app.post('/alerts', validateRequest(createAlertSchema), async (req, res, next) => {
+  try {
+    const { type, title, message, severity, dueDate, relatedId, relatedType } = req.body;
+    
+    const success = await createAlert(type, title, message, severity, dueDate, relatedId, relatedType);
+    
+    if (success) {
+      res.status(201).json({
+        success: true,
+        message: 'Alert created successfully',
+        data: { type, title, message, severity, dueDate, relatedId, relatedType }
+      });
+    } else {
+      throw new CustomError('Failed to create alert', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /alerts - List alerts
+app.get('/alerts', async (req, res, next) => {
+  try {
+    const { isRead, isDismissed, type, severity } = req.query;
+    
+    const filters: any = {};
+    if (isRead !== undefined) filters.isRead = isRead === 'true';
+    if (isDismissed !== undefined) filters.isDismissed = isDismissed === 'true';
+    if (type) filters.type = type;
+    if (severity) filters.severity = severity;
+    
+    const alerts = await getAlerts(filters);
+    
+    res.json({
+      success: true,
+      data: alerts,
+      count: alerts.length
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PUT /alerts/:id/read - Mark alert as read
+app.put('/alerts/:id/read', async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      throw new CustomError('Invalid alert ID', 400);
+    }
+    
+    const success = await markAlertAsRead(id);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: 'Alert marked as read'
+      });
+    } else {
+      throw new CustomError('Failed to mark alert as read', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PUT /alerts/:id/dismiss - Dismiss alert
+app.put('/alerts/:id/dismiss', async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      throw new CustomError('Invalid alert ID', 400);
+    }
+    
+    const success = await dismissAlert(id);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: 'Alert dismissed'
+      });
+    } else {
+      throw new CustomError('Failed to dismiss alert', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// DELETE /alerts/:id - Delete alert
+app.delete('/alerts/:id', async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      throw new CustomError('Invalid alert ID', 400);
+    }
+    
+    const success = await deleteAlert(id);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: 'Alert deleted successfully'
+      });
+    } else {
+      throw new CustomError('Failed to delete alert', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /alerts/generate - Generate all alerts and reminders
+app.post('/alerts/generate', async (req, res, next) => {
+  try {
+    const alerts = await generateAllAlerts();
+    
+    res.json({
+      success: true,
+      message: `Generated ${alerts.total} alerts and reminders`,
+      data: alerts
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================================================
+// CURRENCY & CONVERSION ENDPOINTS
+// ============================================================================
+
+// PUT /currency/default - Set default currency
+app.put('/currency/default', validateRequest(currencySchema), async (req, res, next) => {
+  try {
+    const { currency } = req.body;
+    
+    const success = await setDefaultCurrency(currency);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: `Default currency set to ${currency}`,
+        data: { currency }
+      });
+    } else {
+      throw new CustomError('Failed to set default currency', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /currency/default - Get default currency
+app.get('/currency/default', async (req, res, next) => {
+  try {
+    const currency = await getDefaultCurrency();
+    
+    res.json({
+      success: true,
+      data: { currency }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PUT /currency/rates - Update exchange rate
+app.put('/currency/rates', validateRequest(exchangeRateSchema), async (req, res, next) => {
+  try {
+    const { fromCurrency, toCurrency, rate } = req.body;
+    
+    const success = await updateExchangeRate(fromCurrency, toCurrency, rate);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: 'Exchange rate updated successfully',
+        data: { fromCurrency, toCurrency, rate }
+      });
+    } else {
+      throw new CustomError('Failed to update exchange rate', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /currency/convert - Convert amount between currencies
+app.get('/currency/convert', async (req, res, next) => {
+  try {
+    const { amount, from, to } = req.query;
+    
+    if (!amount || !from || !to) {
+      throw new CustomError('Amount, from, and to parameters are required', 400);
+    }
+    
+    const numAmount = parseFloat(amount as string);
+    if (isNaN(numAmount)) {
+      throw new CustomError('Invalid amount', 400);
+    }
+    
+    const convertedAmount = await convertCurrency(numAmount, from as string, to as string);
+    
+    res.json({
+      success: true,
+      data: {
+        originalAmount: numAmount,
+        fromCurrency: from,
+        toCurrency: to,
+        convertedAmount,
+        rate: convertedAmount / numAmount
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /currency/populate - Populate default exchange rates
+app.post('/currency/populate', async (req, res, next) => {
+  try {
+    const success = await populateDefaultExchangeRates();
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: 'Default exchange rates populated successfully'
+      });
+    } else {
+      throw new CustomError('Failed to populate exchange rates', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================================================
+// DASHBOARD ENDPOINTS
+// ============================================================================
+
+// GET /dashboard - Get comprehensive dashboard data
+app.get('/dashboard', async (req, res, next) => {
+  try {
+    const { currency } = req.query;
+    const defaultCurrency = currency as string || 'USD';
+    
+    const dashboardData = await getDashboardData(defaultCurrency);
+    
+    if (dashboardData) {
+      res.json({
+        success: true,
+        data: dashboardData
+      });
+    } else {
+      throw new CustomError('Failed to generate dashboard data', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================================================
+// FORECASTING ENDPOINTS
+// ============================================================================
+
+// GET /forecast - Generate financial forecast
+app.get('/forecast', validateRequest(forecastSchema, 'query'), async (req, res, next) => {
+  try {
+    const { months, currency } = req.query;
+    const numMonths = parseInt(months as string) || 6;
+    const defaultCurrency = currency as string || 'USD';
+    
+    const forecast = await generateFinancialForecast(numMonths, defaultCurrency);
+    
+    if (forecast) {
+      res.json({
+        success: true,
+        data: forecast
+      });
+    } else {
+      throw new CustomError('Failed to generate financial forecast', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================================================
+// DEBT & LOANS ENDPOINTS
+// ============================================================================
+
+// POST /debts - Create new debt
+app.post('/debts', validateRequest(createDebtSchema), async (req, res, next) => {
+  try {
+    const { name, type, originalAmount, currentBalance, interestRate, minimumPayment, paymentFrequency, startDate, endDate, notes } = req.body;
+    
+    const success = await createDebt(name, type, originalAmount, currentBalance, interestRate, minimumPayment, paymentFrequency, startDate, endDate, notes);
+    
+    if (success) {
+      res.status(201).json({
+        success: true,
+        message: 'Debt created successfully',
+        data: { name, type, originalAmount, currentBalance, interestRate, minimumPayment, paymentFrequency, startDate, endDate, notes }
+      });
+    } else {
+      throw new CustomError('Failed to create debt', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /debts - List all debts
+app.get('/debts', async (req, res, next) => {
+  try {
+    const debts = await getDebts();
+    
+    res.json({
+      success: true,
+      data: debts,
+      count: debts.length
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PUT /debts/:id - Update debt
+app.put('/debts/:id', async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      throw new CustomError('Invalid debt ID', 400);
+    }
+    
+    const success = await updateDebt(id, req.body);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: 'Debt updated successfully'
+      });
+    } else {
+      throw new CustomError('Failed to update debt', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// DELETE /debts/:id - Delete debt
+app.delete('/debts/:id', async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      throw new CustomError('Invalid debt ID', 400);
+    }
+    
+    const success = await deleteDebt(id);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: 'Debt deleted successfully'
+      });
+    } else {
+      throw new CustomError('Failed to delete debt', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /debts/:id/payments - Add debt payment
+app.post('/debts/:id/payments', validateRequest(debtPaymentSchema), async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      throw new CustomError('Invalid debt ID', 400);
+    }
+    
+    const { amount, paymentDate, isExtraPayment, notes } = req.body;
+    
+    const success = await addDebtPayment(id, amount, paymentDate, isExtraPayment, notes);
+    
+    if (success) {
+      res.status(201).json({
+        success: true,
+        message: 'Debt payment recorded successfully',
+        data: { debtId: id, amount, paymentDate, isExtraPayment, notes }
+      });
+    } else {
+      throw new CustomError('Failed to record debt payment', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /debts/:id/payments - Get debt payments
+app.get('/debts/:id/payments', async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      throw new CustomError('Invalid debt ID', 400);
+    }
+    
+    const payments = await getDebtPayments(id);
+    
+    res.json({
+      success: true,
+      data: payments,
+      count: payments.length
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /debts/summary - Get debt summary
+app.get('/debts/summary', async (req, res, next) => {
+  try {
+    const summary = await getDebtSummary();
+    
+    if (summary) {
+      res.json({
+        success: true,
+        data: summary
+      });
+    } else {
+      throw new CustomError('Failed to generate debt summary', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================================================
+// FINANCIAL GOALS ENDPOINTS
+// ============================================================================
+
+// POST /goals - Create financial goal
+app.post('/goals', validateRequest(createFinancialGoalSchema), async (req, res, next) => {
+  try {
+    const { name, type, targetAmount, targetDate, priority, monthlyContribution, notes } = req.body;
+    
+    const success = await createFinancialGoal(name, type, targetAmount, targetDate, priority, monthlyContribution, notes);
+    
+    if (success) {
+      res.status(201).json({
+        success: true,
+        message: 'Financial goal created successfully',
+        data: { name, type, targetAmount, targetDate, priority, monthlyContribution, notes }
+      });
+    } else {
+      throw new CustomError('Failed to create financial goal', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /goals - List financial goals
+app.get('/goals', async (req, res, next) => {
+  try {
+    const goals = await getFinancialGoals();
+    
+    res.json({
+      success: true,
+      data: goals,
+      count: goals.length
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PUT /goals/:id - Update financial goal
+app.put('/goals/:id', async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      throw new CustomError('Invalid goal ID', 400);
+    }
+    
+    const success = await updateFinancialGoal(id, req.body);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: 'Financial goal updated successfully'
+      });
+    } else {
+      throw new CustomError('Failed to update financial goal', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// DELETE /goals/:id - Delete financial goal
+app.delete('/goals/:id', async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      throw new CustomError('Invalid goal ID', 400);
+    }
+    
+    const success = await deleteFinancialGoal(id);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: 'Financial goal deleted successfully'
+      });
+    } else {
+      throw new CustomError('Failed to delete financial goal', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /goals/:id/contribute - Add contribution to goal
+app.post('/goals/:id/contribute', async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      throw new CustomError('Invalid goal ID', 400);
+    }
+    
+    const { amount } = req.body;
+    if (!amount || amount <= 0) {
+      throw new CustomError('Valid contribution amount is required', 400);
+    }
+    
+    const success = await addToFinancialGoal(id, amount);
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: `$${amount} contributed to financial goal`
+      });
+    } else {
+      throw new CustomError('Failed to add contribution', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================================================
+// RECURRING BUDGET ALERTS
+// ============================================================================
+
+// POST /alerts/recurring-budget - Check recurring budget alerts
+app.post('/alerts/recurring-budget', async (req, res, next) => {
+  try {
+    const alerts = await checkRecurringBudgetAlerts();
+    
+    res.json({
+      success: true,
+      message: `Generated ${alerts.length} recurring budget alerts`,
+      data: alerts
     });
   } catch (error) {
     next(error);

@@ -144,6 +144,104 @@ async function setupFinanceDatabase() {
       )
     `);
 
+    // Alerts and reminders table
+    await client.execute(`
+      CREATE TABLE IF NOT EXISTS alerts (
+        id INTEGER PRIMARY KEY,
+        type TEXT NOT NULL CHECK (type IN ('budget_warning', 'recurring_due', 'savings_deadline', 'custom')),
+        title TEXT NOT NULL,
+        message TEXT NOT NULL,
+        severity TEXT NOT NULL CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+        is_read INTEGER DEFAULT 0,
+        is_dismissed INTEGER DEFAULT 0,
+        due_date TEXT,
+        related_id INTEGER,
+        related_type TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        synced INTEGER DEFAULT 0
+      )
+    `);
+
+    // Currency exchange rates table
+    await client.execute(`
+      CREATE TABLE IF NOT EXISTS exchange_rates (
+        id INTEGER PRIMARY KEY,
+        from_currency TEXT NOT NULL,
+        to_currency TEXT NOT NULL,
+        rate REAL NOT NULL,
+        last_updated TEXT NOT NULL DEFAULT (datetime('now')),
+        synced INTEGER DEFAULT 0,
+        UNIQUE(from_currency, to_currency)
+      )
+    `);
+
+    // User preferences table (for default currency)
+    await client.execute(`
+      CREATE TABLE IF NOT EXISTS user_preferences (
+        id INTEGER PRIMARY KEY,
+        key TEXT NOT NULL UNIQUE,
+        value TEXT NOT NULL,
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        synced INTEGER DEFAULT 0
+      )
+    `);
+
+    // Debts and loans table
+    await client.execute(`
+      CREATE TABLE IF NOT EXISTS debts (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL CHECK (type IN ('loan', 'credit_card', 'mortgage', 'personal_debt', 'other')),
+        original_amount REAL NOT NULL,
+        current_balance REAL NOT NULL,
+        interest_rate REAL NOT NULL,
+        minimum_payment REAL NOT NULL,
+        payment_frequency TEXT NOT NULL CHECK (payment_frequency IN ('weekly', 'biweekly', 'monthly', 'quarterly', 'yearly')),
+        start_date TEXT NOT NULL,
+        end_date TEXT,
+        is_active INTEGER DEFAULT 1,
+        notes TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        synced INTEGER DEFAULT 0
+      )
+    `);
+
+    // Debt payments tracking table
+    await client.execute(`
+      CREATE TABLE IF NOT EXISTS debt_payments (
+        id INTEGER PRIMARY KEY,
+        debt_id INTEGER NOT NULL,
+        amount REAL NOT NULL,
+        payment_date TEXT NOT NULL,
+        is_extra_payment INTEGER DEFAULT 0,
+        notes TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        synced INTEGER DEFAULT 0,
+        FOREIGN KEY (debt_id) REFERENCES debts (id) ON DELETE CASCADE
+      )
+    `);
+
+    // Financial goals table (broader than savings)
+    await client.execute(`
+      CREATE TABLE IF NOT EXISTS financial_goals (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL CHECK (type IN ('savings', 'debt_payoff', 'investment', 'purchase', 'emergency_fund', 'travel', 'education', 'other')),
+        target_amount REAL NOT NULL,
+        current_amount REAL DEFAULT 0,
+        target_date TEXT,
+        priority TEXT NOT NULL CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+        status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paused', 'completed', 'cancelled')),
+        monthly_contribution REAL DEFAULT 0,
+        notes TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        synced INTEGER DEFAULT 0
+      )
+    `);
+
     // Audit log table for tracking changes
     await client.execute(`
       CREATE TABLE IF NOT EXISTS finance_audit_log (
@@ -419,6 +517,115 @@ async function deleteTransaction(id: number) {
   } catch (error) {
     console.error('❌ Error deleting transaction:', error);
     return false;
+  }
+}
+
+// ============================================================================
+// DASHBOARD & FINANCIAL SUMMARY
+// ============================================================================
+
+async function getDashboardData(currency: string = 'USD') {
+  try {
+    console.log(`📊 Generating dashboard data for currency: ${currency}`);
+    
+    // Get current month data
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const currentMonthData = await getTransactions({ startDate: `${currentMonth}-01`, endDate: `${currentMonth}-31` });
+    
+    // Calculate monthly totals
+    const monthlyIncome = currentMonthData.filter((t: any) => t.type === 'income').reduce((sum: any, t: any) => sum + t.amount, 0);
+    const monthlyExpense = currentMonthData.filter((t: any) => t.type === 'expense').reduce((sum: any, t: any) => sum + t.amount, 0);
+    const monthlyNet = monthlyIncome - monthlyExpense;
+    
+    // Get budget analysis
+    const budgetVsActual = await getBudgetVsActual();
+    const totalBudget = budgetVsActual.reduce((sum: any, item: any) => sum + item.budget_amount, 0);
+    const totalActual = budgetVsActual.reduce((sum: any, item: any) => sum + item.actual_amount, 0);
+    const budgetRemaining = totalBudget - totalActual;
+    const budgetWarnings = budgetVsActual.filter((item: any) => (item.percentage_used || 0) >= 90);
+    
+    // Get savings progress
+    const savingsGoals = await getSavingsGoals();
+    const totalSavingsTarget = savingsGoals.reduce((sum: any, goal: any) => sum + goal.target_amount, 0);
+    const totalSavingsProgress = savingsGoals.reduce((sum: any, goal: any) => sum + goal.net_contribution, 0);
+    const overallSavingsProgress = totalSavingsTarget > 0 ? (totalSavingsProgress / totalSavingsTarget) * 100 : 0;
+    
+    // Get upcoming recurring transactions
+    const recurring = await getRecurringTransactions();
+    const upcomingRecurring = recurring.filter((rec: any) => {
+      const dueDate = new Date(rec.next_due_date);
+      const today = new Date();
+      const daysUntil = Math.ceil((dueDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+      return daysUntil <= 7 && daysUntil >= 0;
+    });
+    
+    // Get recent alerts
+    const recentAlerts = await getAlerts({ isRead: false, isDismissed: false });
+    const criticalAlerts = recentAlerts.filter((alert: any) => alert.severity === 'critical');
+    const highAlerts = recentAlerts.filter((alert: any) => alert.severity === 'high');
+    
+    // Currency conversion if needed
+    let convertedMonthlyIncome = monthlyIncome;
+    let convertedMonthlyExpense = monthlyExpense;
+    let convertedMonthlyNet = monthlyNet;
+    let convertedTotalBudget = totalBudget;
+    let convertedTotalActual = totalActual;
+    let convertedBudgetRemaining = budgetRemaining;
+    let convertedTotalSavingsTarget = totalSavingsTarget;
+    let convertedTotalSavingsProgress = totalSavingsProgress;
+    
+    if (currency !== 'USD') {
+      convertedMonthlyIncome = await convertCurrency(monthlyIncome, 'USD', currency);
+      convertedMonthlyExpense = await convertCurrency(monthlyExpense, 'USD', currency);
+      convertedMonthlyNet = await convertCurrency(monthlyNet, 'USD', currency);
+      convertedTotalBudget = await convertCurrency(totalBudget, 'USD', currency);
+      convertedTotalActual = await convertCurrency(totalActual, 'USD', currency);
+      convertedBudgetRemaining = await convertCurrency(budgetRemaining, 'USD', currency);
+      convertedTotalSavingsTarget = await convertCurrency(totalSavingsTarget, 'USD', currency);
+      convertedTotalSavingsProgress = await convertCurrency(totalSavingsProgress, 'USD', currency);
+    }
+    
+    return {
+      currency,
+      monthly: {
+        income: convertedMonthlyIncome,
+        expense: convertedMonthlyExpense,
+        net: convertedMonthlyNet,
+        savingsRate: monthlyIncome > 0 ? (monthlyNet / monthlyIncome) * 100 : 0
+      },
+      budgets: {
+        total: convertedTotalBudget,
+        actual: convertedTotalActual,
+        remaining: convertedBudgetRemaining,
+        warnings: budgetWarnings.length,
+        critical: budgetWarnings.filter((w: any) => (w.percentage_used || 0) >= 100).length
+      },
+      savings: {
+        target: convertedTotalSavingsTarget,
+        progress: convertedTotalSavingsProgress,
+        overallProgress: overallSavingsProgress,
+        activeGoals: savingsGoals.filter((g: any) => !g.is_complete).length,
+        completedGoals: savingsGoals.filter((g: any) => g.is_complete).length
+      },
+      recurring: {
+        total: recurring.length,
+        upcoming: upcomingRecurring.length,
+        dueThisWeek: upcomingRecurring.length
+      },
+      alerts: {
+        total: recentAlerts.length,
+        critical: criticalAlerts.length,
+        high: highAlerts.length,
+        unread: recentAlerts.length
+      },
+      quickActions: {
+        needsAttention: budgetWarnings.length + criticalAlerts.length + upcomingRecurring.length,
+        canGenerateRecurring: recurring.filter((r: any) => new Date(r.next_due_date) <= new Date()).length
+      }
+    };
+  } catch (error) {
+    console.error('❌ Error generating dashboard data:', error);
+    return null;
   }
 }
 
@@ -872,6 +1079,855 @@ async function generateRecurringTransactions() {
 }
 
 // ============================================================================
+// ALERTS & REMINDERS MANAGEMENT
+// ============================================================================
+
+async function createAlert(type: 'budget_warning' | 'recurring_due' | 'savings_deadline' | 'custom', title: string, message: string, severity: 'low' | 'medium' | 'high' | 'critical', dueDate?: string, relatedId?: number, relatedType?: string) {
+  try {
+    await client.execute({
+      sql: `INSERT INTO alerts (type, title, message, severity, due_date, related_id, related_type) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      args: [type, title, message, severity, dueDate || null, relatedId || null, relatedType || null],
+    });
+
+    console.log(`🔔 Alert created: ${title} (${severity})`);
+    
+    await logAuditAction('CREATE', 'alerts', undefined, JSON.stringify({ type, title, message, severity, dueDate, relatedId, relatedType }));
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error creating alert:', error);
+    return false;
+  }
+}
+
+async function getAlerts(filters?: { isRead?: boolean; isDismissed?: boolean; type?: string; severity?: string }) {
+  try {
+    let sql = 'SELECT * FROM alerts WHERE 1=1';
+    let args: any[] = [];
+    
+    if (filters?.isRead !== undefined) {
+      sql += ' AND is_read = ?';
+      args.push(filters.isRead ? 1 : 0);
+    }
+    
+    if (filters?.isDismissed !== undefined) {
+      sql += ' AND is_dismissed = ?';
+      args.push(filters.isDismissed ? 1 : 0);
+    }
+    
+    if (filters?.type) {
+      sql += ' AND type = ?';
+      args.push(filters.type);
+    }
+    
+    if (filters?.severity) {
+      sql += ' AND severity = ?';
+      args.push(filters.severity);
+    }
+    
+    sql += ' ORDER BY severity DESC, due_date ASC, created_at DESC';
+    
+    const result = await client.execute({ sql, args });
+    return result.rows;
+  } catch (error) {
+    console.error('❌ Error fetching alerts:', error);
+    return [];
+  }
+}
+
+async function markAlertAsRead(id: number) {
+  try {
+    await client.execute('UPDATE alerts SET is_read = 1, updated_at = datetime(\'now\') WHERE id = ?', [id]);
+    console.log(`✅ Alert ${id} marked as read`);
+    return true;
+  } catch (error) {
+    console.error('❌ Error marking alert as read:', error);
+    return false;
+  }
+}
+
+async function dismissAlert(id: number) {
+  try {
+    await client.execute('UPDATE alerts SET is_dismissed = 1, updated_at = datetime(\'now\') WHERE id = ?', [id]);
+    console.log(`✅ Alert ${id} dismissed`);
+    return true;
+  } catch (error) {
+    console.error('❌ Error dismissing alert:', error);
+    return false;
+  }
+}
+
+async function deleteAlert(id: number) {
+  try {
+    const oldAlert = await client.execute('SELECT * FROM alerts WHERE id = ?', [id]);
+    
+    await client.execute('DELETE FROM alerts WHERE id = ?', [id]);
+
+    console.log(`🗑️  Alert ${id} deleted successfully`);
+    
+    await logAuditAction('DELETE', 'alerts', id, JSON.stringify(oldAlert.rows[0]), undefined);
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error deleting alert:', error);
+    return false;
+  }
+}
+
+async function checkBudgetWarnings() {
+  try {
+    const budgetVsActual = await getBudgetVsActual();
+    const warnings: any[] = [];
+    
+    for (const item of budgetVsActual) {
+      if (item.budget_amount > 0) {
+        const percentageUsed = item.percentage_used || 0;
+        
+        if (percentageUsed >= 90) {
+          const severity = percentageUsed >= 100 ? 'critical' : percentageUsed >= 95 ? 'high' : 'medium';
+          const title = `Budget Warning: ${item.category_name}`;
+          const message = `You've used ${percentageUsed.toFixed(1)}% of your $${item.budget_amount} budget for ${item.category_name}. Current spending: $${item.actual_amount}`;
+          
+          await createAlert('budget_warning', title, message, severity, undefined, item.category_id, 'category');
+          warnings.push({ category: item.category_name, percentageUsed, severity });
+        }
+      }
+    }
+    
+    if (warnings.length > 0) {
+      console.log(`🔔 Generated ${warnings.length} budget warnings`);
+    }
+    
+    return warnings;
+  } catch (error) {
+    console.error('❌ Error checking budget warnings:', error);
+    return [];
+  }
+}
+
+async function checkRecurringReminders() {
+  try {
+    const recurring = await getRecurringTransactions();
+    const reminders: any[] = [];
+    const today = new Date();
+    const threeDaysFromNow = new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000);
+    
+    for (const rec of recurring) {
+      if (rec.is_active) {
+        const dueDate = new Date(rec.next_due_date);
+        
+        if (dueDate <= threeDaysFromNow && dueDate >= today) {
+          const daysUntil = Math.ceil((dueDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+          const severity = daysUntil === 0 ? 'high' : daysUntil <= 1 ? 'medium' : 'low';
+          const title = `Recurring Transaction Due: ${rec.name}`;
+          const message = `Your ${rec.recurrence_rule} ${rec.type} of $${rec.amount} for ${rec.category_name} is due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}`;
+          
+          await createAlert('recurring_due', title, message, severity, rec.next_due_date, rec.id, 'recurring_transaction');
+          reminders.push({ name: rec.name, dueDate: rec.next_due_date, daysUntil, severity });
+        }
+      }
+    }
+    
+    if (reminders.length > 0) {
+      console.log(`🔔 Generated ${reminders.length} recurring reminders`);
+    }
+    
+    return reminders;
+  } catch (error) {
+    console.error('❌ Error checking recurring reminders:', error);
+    return [];
+  }
+}
+
+async function checkSavingsDeadlines() {
+  try {
+    const savingsGoals = await getSavingsGoals();
+    const reminders: any[] = [];
+    const today = new Date();
+    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+    
+    for (const goal of savingsGoals) {
+      if (goal.deadline && !goal.is_complete) {
+        const deadline = new Date(goal.deadline);
+        
+        if (deadline <= thirtyDaysFromNow && deadline >= today) {
+          const daysUntil = Math.ceil((deadline.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+          const severity = daysUntil <= 7 ? 'critical' : daysUntil <= 14 ? 'high' : daysUntil <= 21 ? 'medium' : 'low';
+          const progress = goal.progress_percentage || 0;
+          const title = `Savings Deadline: ${goal.name}`;
+          const message = `Your savings goal "${goal.name}" is due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}. Current progress: ${progress.toFixed(1)}%`;
+          
+          await createAlert('savings_deadline', title, message, severity, goal.deadline, goal.id, 'savings_goal');
+          reminders.push({ name: goal.name, deadline: goal.deadline, daysUntil, progress, severity });
+        }
+      }
+    }
+    
+    if (reminders.length > 0) {
+      console.log(`🔔 Generated ${reminders.length} savings deadline reminders`);
+    }
+    
+    return reminders;
+  } catch (error) {
+    console.error('❌ Error checking savings deadlines:', error);
+    return [];
+  }
+}
+
+async function generateAllAlerts() {
+  try {
+    console.log('🔔 Generating alerts and reminders...');
+    
+    const budgetWarnings = await checkBudgetWarnings();
+    const recurringReminders = await checkRecurringReminders();
+    const savingsReminders = await checkSavingsDeadlines();
+    
+    const total = budgetWarnings.length + recurringReminders.length + savingsReminders.length;
+    
+    if (total > 0) {
+      console.log(`✅ Generated ${total} total alerts and reminders`);
+    } else {
+      console.log('✅ No new alerts or reminders needed');
+    }
+    
+    return {
+      budgetWarnings,
+      recurringReminders,
+      savingsReminders,
+      total
+    };
+  } catch (error) {
+    console.error('❌ Error generating alerts:', error);
+    return { budgetWarnings: [], recurringReminders: [], savingsReminders: [], total: 0 };
+  }
+}
+
+// ============================================================================
+// FORECASTING & PREDICTIONS
+// ============================================================================
+
+async function generateFinancialForecast(months: number = 6, currency: string = 'USD') {
+  try {
+    console.log(`🔮 Generating ${months}-month financial forecast for ${currency}`);
+    
+    const forecast = {
+      currency,
+      months: months,
+      projectedIncome: [],
+      projectedExpenses: [],
+      projectedSavings: [],
+      projectedBalances: [],
+      cashFlow: [],
+      trends: {
+        incomeGrowth: 0,
+        expenseGrowth: 0,
+        savingsRate: 0
+      }
+    };
+    
+    // Get historical data for trend analysis
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const historicalData = await getTransactions({ 
+      startDate: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 7) + '-01',
+      endDate: currentMonth + '-31'
+    });
+    
+    // Calculate monthly averages and trends
+    const monthlyData = new Map();
+    historicalData.forEach((transaction: any) => {
+      const month = transaction.date.slice(0, 7);
+      if (!monthlyData.has(month)) {
+        monthlyData.set(month, { income: 0, expense: 0, count: 0 });
+      }
+      const data = monthlyData.get(month);
+      if (transaction.type === 'income') {
+        data.income += transaction.amount;
+      } else {
+        data.expense += transaction.amount;
+      }
+      data.count++;
+    });
+    
+    // Calculate growth trends
+    const months = Array.from(monthlyData.keys()).sort();
+    if (months.length >= 2) {
+      const recent = monthlyData.get(months[months.length - 1]);
+      const previous = monthlyData.get(months[months.length - 2]);
+      
+      if (previous.income > 0) {
+        forecast.trends.incomeGrowth = ((recent.income - previous.income) / previous.income) * 100;
+      }
+      if (previous.expense > 0) {
+        forecast.trends.expenseGrowth = ((recent.expense - previous.expense) / previous.expense) * 100;
+      }
+    }
+    
+    // Calculate average monthly income and expenses
+    const totalIncome = Array.from(monthlyData.values()).reduce((sum, data) => sum + data.income, 0);
+    const totalExpense = Array.from(monthlyData.values()).reduce((sum, data) => sum + data.expense, 0);
+    const avgMonthlyIncome = totalIncome / monthlyData.size;
+    const avgMonthlyExpense = totalExpense / monthlyData.size;
+    
+    forecast.trends.savingsRate = avgMonthlyIncome > 0 ? ((avgMonthlyIncome - avgMonthlyExpense) / avgMonthlyIncome) * 100 : 0;
+    
+    // Generate projections for each month
+    let currentBalance = 0;
+    const startDate = new Date();
+    
+    for (let i = 0; i < months; i++) {
+      const projectionDate = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
+      const monthKey = projectionDate.toISOString().slice(0, 7);
+      
+      // Project income with growth trend
+      const projectedIncome = avgMonthlyIncome * Math.pow(1 + (forecast.trends.incomeGrowth / 100), i);
+      
+      // Project expenses with growth trend
+      const projectedExpense = avgMonthlyExpense * Math.pow(1 + (forecast.trends.expenseGrowth / 100), i);
+      
+      // Calculate projected savings
+      const projectedSavings = projectedIncome - projectedExpense;
+      
+      // Update running balance
+      currentBalance += projectedSavings;
+      
+      // Add recurring transactions
+      const recurring = await getRecurringTransactions();
+      let recurringIncome = 0;
+      let recurringExpense = 0;
+      
+      for (const rec of recurring) {
+        if (rec.is_active) {
+          const dueDate = new Date(rec.next_due_date);
+          const monthDiff = (projectionDate.getFullYear() - dueDate.getFullYear()) * 12 + 
+                           (projectionDate.getMonth() - dueDate.getMonth());
+          
+          if (monthDiff >= 0 && monthDiff % getRecurrenceMonths(rec.recurrence_rule) === 0) {
+            if (rec.type === 'income') {
+              recurringIncome += rec.amount;
+            } else {
+              recurringExpense += rec.amount;
+            }
+          }
+        }
+      }
+      
+      const adjustedIncome = projectedIncome + recurringIncome;
+      const adjustedExpense = projectedExpense + recurringExpense;
+      const adjustedSavings = adjustedIncome - adjustedExpense;
+      const adjustedBalance = currentBalance + (adjustedSavings - projectedSavings);
+      
+      forecast.projectedIncome.push({
+        month: monthKey,
+        amount: adjustedIncome,
+        base: projectedIncome,
+        recurring: recurringIncome
+      });
+      
+      forecast.projectedExpenses.push({
+        month: monthKey,
+        amount: adjustedExpense,
+        base: projectedExpense,
+        recurring: recurringExpense
+      });
+      
+      forecast.projectedSavings.push({
+        month: monthKey,
+        amount: adjustedSavings,
+        rate: adjustedIncome > 0 ? (adjustedSavings / adjustedIncome) * 100 : 0
+      });
+      
+      forecast.projectedBalances.push({
+        month: monthKey,
+        balance: adjustedBalance,
+        change: adjustedSavings
+      });
+      
+      forecast.cashFlow.push({
+        month: monthKey,
+        income: adjustedIncome,
+        expenses: adjustedExpense,
+        net: adjustedSavings,
+        balance: adjustedBalance
+      });
+    }
+    
+    console.log(`✅ Generated ${months}-month financial forecast`);
+    return forecast;
+  } catch (error) {
+    console.error('❌ Error generating financial forecast:', error);
+    return null;
+  }
+}
+
+function getRecurrenceMonths(recurrenceRule: string): number {
+  switch (recurrenceRule) {
+    case 'weekly': return 0.25; // 1/4 month
+    case 'monthly': return 1;
+    case 'yearly': return 12;
+    default: return 1;
+  }
+}
+
+// ============================================================================
+// CURRENCY & CONVERSION MANAGEMENT
+// ============================================================================
+
+async function setDefaultCurrency(currency: string) {
+  try {
+    await client.execute({
+      sql: `INSERT OR REPLACE INTO user_preferences (key, value, updated_at) VALUES ('default_currency', ?, datetime('now'))`,
+      args: [currency],
+    });
+
+    console.log(`💱 Default currency set to: ${currency}`);
+    return true;
+  } catch (error) {
+    console.error('❌ Error setting default currency:', error);
+    return false;
+  }
+}
+
+async function getDefaultCurrency(): Promise<string> {
+  try {
+    const result = await client.execute('SELECT value FROM user_preferences WHERE key = ?', ['default_currency']);
+    return result.rows[0]?.value || 'USD';
+  } catch (error) {
+    console.error('❌ Error getting default currency:', error);
+    return 'USD';
+  }
+}
+
+async function updateExchangeRate(fromCurrency: string, toCurrency: string, rate: number) {
+  try {
+    await client.execute({
+      sql: `INSERT OR REPLACE INTO exchange_rates (from_currency, to_currency, rate, last_updated) VALUES (?, ?, ?, datetime('now'))`,
+      args: [fromCurrency, toCurrency, rate],
+    });
+
+    console.log(`💱 Exchange rate updated: ${fromCurrency} → ${toCurrency} = ${rate}`);
+    return true;
+  } catch (error) {
+    console.error('❌ Error updating exchange rate:', error);
+    return false;
+  }
+}
+
+async function getExchangeRate(fromCurrency: string, toCurrency: string): Promise<number> {
+  try {
+    if (fromCurrency === toCurrency) return 1;
+    
+    const result = await client.execute(
+      'SELECT rate FROM exchange_rates WHERE from_currency = ? AND to_currency = ?',
+      [fromCurrency, toCurrency]
+    );
+    
+    if (result.rows.length > 0) {
+      return result.rows[0].rate;
+    }
+    
+    // Try reverse rate
+    const reverseResult = await client.execute(
+      'SELECT rate FROM exchange_rates WHERE from_currency = ? AND to_currency = ?',
+      [toCurrency, fromCurrency]
+    );
+    
+    if (reverseResult.rows.length > 0) {
+      return 1 / reverseResult.rows[0].rate;
+    }
+    
+    return 1; // Default to 1 if no rate found
+  } catch (error) {
+    console.error('❌ Error getting exchange rate:', error);
+    return 1;
+  }
+}
+
+async function convertCurrency(amount: number, fromCurrency: string, toCurrency: string): Promise<number> {
+  const rate = await getExchangeRate(fromCurrency, toCurrency);
+  return amount * rate;
+}
+
+async function populateDefaultExchangeRates() {
+  try {
+    const defaultRates = [
+      { from: 'USD', to: 'EUR', rate: 0.85 },
+      { from: 'USD', to: 'GBP', rate: 0.73 },
+      { from: 'USD', to 'JPY', rate: 110.0 },
+      { from: 'EUR', to: 'USD', rate: 1.18 },
+      { from: 'GBP', to: 'USD', rate: 1.37 },
+      { from: 'JPY', to: 'USD', rate: 0.0091 }
+    ];
+    
+    for (const rate of defaultRates) {
+      await updateExchangeRate(rate.from, rate.to, rate.rate);
+    }
+    
+    console.log('💱 Default exchange rates populated');
+    return true;
+  } catch (error) {
+    console.error('❌ Error populating exchange rates:', error);
+    return false;
+  }
+}
+
+// ============================================================================
+// DEBT & LOANS MANAGEMENT
+// ============================================================================
+
+async function createDebt(name: string, type: 'loan' | 'credit_card' | 'mortgage' | 'personal_debt' | 'other', originalAmount: number, currentBalance: number, interestRate: number, minimumPayment: number, paymentFrequency: 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'yearly', startDate: string, endDate?: string, notes?: string) {
+  try {
+    await client.execute({
+      sql: `INSERT INTO debts (name, type, original_amount, current_balance, interest_rate, minimum_payment, payment_frequency, start_date, end_date, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [name, type, originalAmount, currentBalance, interestRate, minimumPayment, paymentFrequency, startDate, endDate || null, notes || null],
+    });
+
+    console.log(`💳 Debt created: ${name} - $${currentBalance} balance`);
+    
+    await logAuditAction('CREATE', 'debts', undefined, JSON.stringify({ name, type, originalAmount, currentBalance, interestRate, minimumPayment, paymentFrequency, startDate, endDate, notes }));
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error creating debt:', error);
+    return false;
+  }
+}
+
+async function getDebts() {
+  try {
+    const result = await client.execute(`
+      SELECT 
+        d.*,
+        COALESCE(SUM(dp.amount), 0) as total_paid,
+        d.original_amount - COALESCE(SUM(dp.amount), 0) as remaining_balance,
+        CASE 
+          WHEN d.end_date IS NOT NULL THEN 
+            ROUND((julianday(d.end_date) - julianday('now')) / 30.44, 1)
+          ELSE NULL
+        END as months_remaining
+      FROM debts d
+      LEFT JOIN debt_payments dp ON d.id = dp.debt_id
+      WHERE d.is_active = 1
+      GROUP BY d.id, d.name, d.type, d.original_amount, d.current_balance, d.interest_rate, d.minimum_payment, d.payment_frequency, d.start_date, d.end_date, d.is_active, d.notes, d.created_at, d.updated_at, d.synced
+      ORDER BY d.priority DESC, d.current_balance DESC
+    `);
+    
+    return result.rows;
+  } catch (error) {
+    console.error('❌ Error fetching debts:', error);
+    return [];
+  }
+}
+
+async function updateDebt(id: number, updates: any) {
+  try {
+    const oldDebt = await client.execute('SELECT * FROM debts WHERE id = ?', [id]);
+    
+    let sql = 'UPDATE debts SET updated_at = datetime(\'now\')';
+    let args: any[] = [];
+    
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value !== undefined) {
+        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+        sql += `, ${dbKey} = ?`;
+        args.push(value);
+      }
+    });
+    
+    sql += ' WHERE id = ?';
+    args.push(id);
+    
+    await client.execute({ sql, args });
+
+    console.log(`🔄 Debt ${id} updated successfully`);
+    
+    await logAuditAction('UPDATE', 'debts', id, JSON.stringify(oldDebt.rows[0]), JSON.stringify(updates));
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error updating debt:', error);
+    return false;
+  }
+}
+
+async function deleteDebt(id: number) {
+  try {
+    const oldDebt = await client.execute('SELECT * FROM debts WHERE id = ?', [id]);
+    
+    await client.execute('DELETE FROM debts WHERE id = ?', [id]);
+
+    console.log(`🗑️  Debt ${id} deleted successfully`);
+    
+    await logAuditAction('DELETE', 'debts', id, JSON.stringify(oldDebt.rows[0]), undefined);
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error deleting debt:', error);
+    return false;
+  }
+}
+
+async function addDebtPayment(debtId: number, amount: number, paymentDate: string, isExtraPayment: boolean = false, notes?: string) {
+  try {
+    await client.execute({
+      sql: `INSERT INTO debt_payments (debt_id, amount, payment_date, is_extra_payment, notes) VALUES (?, ?, ?, ?, ?)`,
+      args: [debtId, amount, paymentDate, isExtraPayment ? 1 : 0, notes || null],
+    });
+
+    // Update debt balance
+    const debt = await client.execute('SELECT current_balance FROM debts WHERE id = ?', [debtId]);
+    const newBalance = Math.max(0, debt.rows[0].current_balance - amount);
+    
+    await client.execute('UPDATE debts SET current_balance = ?, updated_at = datetime(\'now\') WHERE id = ?', [newBalance, debtId]);
+
+    console.log(`💳 Debt payment recorded: $${amount} for debt ${debtId}`);
+    
+    await logAuditAction('CREATE', 'debt_payments', undefined, JSON.stringify({ debtId, amount, paymentDate, isExtraPayment, notes }));
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error adding debt payment:', error);
+    return false;
+  }
+}
+
+async function getDebtPayments(debtId: number) {
+  try {
+    const result = await client.execute(`
+      SELECT * FROM debt_payments 
+      WHERE debt_id = ? 
+      ORDER BY payment_date DESC
+    `, [debtId]);
+    
+    return result.rows;
+  } catch (error) {
+    console.error('❌ Error fetching debt payments:', error);
+    return [];
+  }
+}
+
+async function getDebtSummary() {
+  try {
+    const debts = await getDebts();
+    
+    const summary = {
+      totalDebts: debts.length,
+      totalBalance: debts.reduce((sum: any, debt: any) => sum + debt.current_balance, 0),
+      totalOriginal: debts.reduce((sum: any, debt: any) => sum + debt.original_amount, 0),
+      totalPaid: debts.reduce((sum: any, debt: any) => sum + (debt.total_paid || 0), 0),
+      totalInterest: debts.reduce((sum: any, debt: any) => {
+        const paid = debt.total_paid || 0;
+        const original = debt.original_amount;
+        return sum + Math.max(0, paid - original);
+      }, 0),
+      averageInterestRate: debts.length > 0 ? debts.reduce((sum: any, debt: any) => sum + debt.interest_rate, 0) / debts.length : 0,
+      monthlyPayments: debts.reduce((sum: any, debt: any) => sum + debt.minimum_payment, 0),
+      byType: {} as any
+    };
+    
+    // Group by debt type
+    debts.forEach((debt: any) => {
+      if (!summary.byType[debt.type]) {
+        summary.byType[debt.type] = { count: 0, balance: 0, totalPaid: 0 };
+      }
+      summary.byType[debt.type].count++;
+      summary.byType[debt.type].balance += debt.current_balance;
+      summary.byType[debt.type].totalPaid += debt.total_paid || 0;
+    });
+    
+    return summary;
+  } catch (error) {
+    console.error('❌ Error generating debt summary:', error);
+    return null;
+  }
+}
+
+// ============================================================================
+// FINANCIAL GOALS MANAGEMENT
+// ============================================================================
+
+async function createFinancialGoal(name: string, type: string, targetAmount: number, targetDate?: string, priority: 'low' | 'medium' | 'high' | 'critical' = 'medium', monthlyContribution: number = 0, notes?: string) {
+  try {
+    await client.execute({
+      sql: `INSERT INTO financial_goals (name, type, target_amount, target_date, priority, monthly_contribution, notes) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      args: [name, type, targetAmount, targetDate || null, priority, monthlyContribution, notes || null],
+    });
+
+    console.log(`🎯 Financial goal created: ${name} - $${targetAmount}`);
+    
+    await logAuditAction('CREATE', 'financial_goals', undefined, JSON.stringify({ name, type, targetAmount, targetDate, priority, monthlyContribution, notes }));
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error creating financial goal:', error);
+    return false;
+  }
+}
+
+async function getFinancialGoals() {
+  try {
+    const result = await client.execute(`
+      SELECT 
+        *,
+        CASE 
+          WHEN target_date IS NOT NULL THEN 
+            ROUND((julianday(target_date) - julianday('now')) / 30.44, 1)
+          ELSE NULL
+        END as months_remaining,
+        CASE 
+          WHEN target_amount > 0 THEN 
+            (current_amount / target_amount) * 100
+          ELSE 0
+        END as progress_percentage
+      FROM financial_goals 
+      ORDER BY priority DESC, target_date ASC
+    `);
+    
+    return result.rows;
+  } catch (error) {
+    console.error('❌ Error fetching financial goals:', error);
+    return [];
+  }
+}
+
+async function updateFinancialGoal(id: number, updates: any) {
+  try {
+    const oldGoal = await client.execute('SELECT * FROM financial_goals WHERE id = ?', [id]);
+    
+    let sql = 'UPDATE financial_goals SET updated_at = datetime(\'now\')';
+    let args: any[] = [];
+    
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value !== undefined) {
+        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+        sql += `, ${dbKey} = ?`;
+        args.push(value);
+      }
+    });
+    
+    sql += ' WHERE id = ?';
+    args.push(id);
+    
+    await client.execute({ sql, args });
+
+    console.log(`🔄 Financial goal ${id} updated successfully`);
+    
+    await logAuditAction('UPDATE', 'financial_goals', id, JSON.stringify(oldGoal.rows[0]), JSON.stringify(updates));
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error updating financial goal:', error);
+    return false;
+  }
+}
+
+async function deleteFinancialGoal(id: number) {
+  try {
+    const oldGoal = await client.execute('SELECT * FROM financial_goals WHERE id = ?', [id]);
+    
+    await client.execute('DELETE FROM financial_goals WHERE id = ?', [id]);
+
+    console.log(`🗑️  Financial goal ${id} deleted successfully`);
+    
+    await logAuditAction('DELETE', 'financial_goals', id, JSON.stringify(oldGoal.rows[0]), undefined);
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error deleting financial goal:', error);
+    return false;
+  }
+}
+
+async function addToFinancialGoal(id: number, amount: number) {
+  try {
+    const goal = await client.execute('SELECT current_amount, target_amount FROM financial_goals WHERE id = ?', [id]);
+    const currentAmount = goal.rows[0].current_amount;
+    const targetAmount = goal.rows[0].target_amount;
+    
+    const newAmount = Math.min(currentAmount + amount, targetAmount);
+    const isComplete = newAmount >= targetAmount;
+    
+    await client.execute(`
+      UPDATE financial_goals 
+      SET current_amount = ?, status = ?, updated_at = datetime('now') 
+      WHERE id = ?
+    `, [newAmount, isComplete ? 'completed' : 'active', id]);
+
+    console.log(`💰 Added $${amount} to financial goal ${id}`);
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error adding to financial goal:', error);
+    return false;
+  }
+}
+
+// ============================================================================
+// RECURRING BUDGET ALERTS
+// ============================================================================
+
+async function checkRecurringBudgetAlerts() {
+  try {
+    const recurring = await getRecurringTransactions();
+    const budgets = await getBudgets();
+    const alerts: any[] = [];
+    
+    // Get current month data
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const currentMonthData = await getTransactions({ startDate: `${currentMonth}-01`, endDate: `${currentMonth}-31` });
+    
+    // Calculate current month spending by category
+    const categorySpending = new Map();
+    currentMonthData.forEach((transaction: any) => {
+      if (transaction.type === 'expense') {
+        const categoryId = transaction.category_id;
+        if (!categorySpending.has(categoryId)) {
+          categorySpending.set(categoryId, 0);
+        }
+        categorySpending.set(categoryId, categorySpending.get(categoryId) + transaction.amount);
+      }
+    });
+    
+    // Check each recurring transaction against budgets
+    for (const rec of recurring) {
+      if (rec.is_active && rec.type === 'expense') {
+        const budget = budgets.find((b: any) => b.category_id === rec.category_id);
+        
+        if (budget && budget.period === 'monthly') {
+          const currentSpending = categorySpending.get(rec.category_id) || 0;
+          const projectedSpending = currentSpending + rec.amount;
+          const budgetRemaining = budget.amount - currentSpending;
+          
+          // Alert if recurring transaction would exceed budget
+          if (projectedSpending > budget.amount && budgetRemaining > 0) {
+            const severity = budgetRemaining < rec.amount ? 'critical' : 'high';
+            const title = `Budget Alert: ${rec.name}`;
+            const message = `Your recurring ${rec.name} expense of $${rec.amount} will exceed your $${budget.amount} budget for ${rec.category_name}. Current spending: $${currentSpending}, Budget remaining: $${budgetRemaining}`;
+            
+            await createAlert('budget_warning', title, message, severity, undefined, rec.category_id, 'category');
+            alerts.push({ 
+              recurringTransaction: rec.name, 
+              category: rec.category_name, 
+              amount: rec.amount, 
+              budgetRemaining, 
+              severity 
+            });
+          }
+        }
+      }
+    }
+    
+    if (alerts.length > 0) {
+      console.log(`🔔 Generated ${alerts.length} recurring budget alerts`);
+    }
+    
+    return alerts;
+  } catch (error) {
+    console.error('❌ Error checking recurring budget alerts:', error);
+    return [];
+  }
+}
+
+// ============================================================================
 // TAGS MANAGEMENT
 // ============================================================================
 
@@ -1247,7 +2303,7 @@ async function syncFinanceData() {
     console.log('🔄 Starting finance data synchronization...');
     
     // Get counts of unsynced records
-    const tables = ['categories', 'transactions', 'savings_goals', 'savings_transactions', 'budgets', 'recurring_transactions', 'tags', 'transaction_tags', 'finance_audit_log'];
+    const tables = ['categories', 'transactions', 'savings_goals', 'savings_transactions', 'budgets', 'recurring_transactions', 'tags', 'transaction_tags', 'alerts', 'exchange_rates', 'user_preferences', 'debts', 'debt_payments', 'financial_goals', 'finance_audit_log'];
     let totalUnsynced = 0;
     
     for (const table of tables) {
@@ -1283,7 +2339,7 @@ async function syncFinanceData() {
 
 async function getSyncStatus() {
   try {
-    const tables = ['categories', 'transactions', 'savings_goals', 'savings_transactions', 'budgets', 'recurring_transactions', 'tags', 'transaction_tags', 'finance_audit_log'];
+    const tables = ['categories', 'transactions', 'savings_goals', 'savings_transactions', 'budgets', 'recurring_transactions', 'tags', 'transaction_tags', 'alerts', 'exchange_rates', 'user_preferences', 'debts', 'debt_payments', 'financial_goals', 'finance_audit_log'];
     const status: any = {};
     
     for (const table of tables) {
@@ -1555,6 +2611,33 @@ export {
   addTagsToTransaction,
   removeTagsFromTransaction,
   getTransactionTags,
+  createAlert,
+  getAlerts,
+  markAlertAsRead,
+  dismissAlert,
+  deleteAlert,
+  generateAllAlerts,
+  setDefaultCurrency,
+  getDefaultCurrency,
+  updateExchangeRate,
+  getExchangeRate,
+  convertCurrency,
+  populateDefaultExchangeRates,
+  generateFinancialForecast,
+  createDebt,
+  getDebts,
+  updateDebt,
+  deleteDebt,
+  addDebtPayment,
+  getDebtPayments,
+  getDebtSummary,
+  createFinancialGoal,
+  getFinancialGoals,
+  updateFinancialGoal,
+  deleteFinancialGoal,
+  addToFinancialGoal,
+  checkRecurringBudgetAlerts,
+  getDashboardData,
   getFinancialSummary,
   logAuditAction,
   getAuditLog,
