@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 Finance Manager - Turso Offline Sync</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React and ReactDOM CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Smooth transitions */
+        * {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        /* Custom animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Hover effects */
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        // Finance Management Application React Components
+        
+        const { useState, useEffect } = React;
+        
+        // ============================================================================
+        // TYPES AND INTERFACES
+        // ============================================================================
+        
+        // Category interface
+        const Category = {
+            id: 0,
+            name: '',
+            type: 'expense',
+            color: '#3B82F6',
+            icon: '💰',
+            created_at: '',
+            updated_at: ''
+        };
+        
+        // Transaction interface
+        const Transaction = {
+            id: 0,
+            amount: 0,
+            type: 'expense',
+            category_id: 0,
+            category_name: '',
+            category_color: '#3B82F6',
+            category_icon: '💰',
+            note: '',
+            date: '',
+            created_at: '',
+            updated_at: ''
+        };
+        
+        // Financial summary interface
+        const FinancialSummary = {
+            overall: {
+                totalIncome: 0,
+                totalExpense: 0,
+                netIncome: 0,
+                totalTransactions: 0
+            },
+            monthly: [],
+            categories: [],
+            recentTransactions: []
+        };
+        
+        // ============================================================================
+        // API SERVICE
+        // ============================================================================
+        
+        class FinanceAPI {
+            constructor() {
+                this.baseURL = 'http://localhost:3000';
+            }
+            
+            async request(endpoint, options = {}) {
+                const response = await fetch(`${this.baseURL}${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers,
+                    },
+                    ...options,
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || 'API request failed');
+                }
+                
+                return response.json();
+            }
+            
+            // Categories
+            async getCategories(type) {
+                const params = type ? `?type=${type}` : '';
+                return this.request(`/categories${params}`);
+            }
+            
+            async createCategory(data) {
+                return this.request('/categories', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
+            }
+            
+            async updateCategory(id, data) {
+                return this.request(`/categories/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
+            }
+            
+            async deleteCategory(id) {
+                return this.request(`/categories/${id}`, {
+                    method: 'DELETE',
+                });
+            }
+            
+            // Transactions
+            async getTransactions(filters = {}) {
+                const params = new URLSearchParams();
+                if (filters.startDate) params.append('startDate', filters.startDate);
+                if (filters.endDate) params.append('endDate', filters.endDate);
+                if (filters.categoryId) params.append('categoryId', filters.categoryId);
+                if (filters.type) params.append('type', filters.type);
+                if (filters.limit) params.append('limit', filters.limit);
+                
+                const queryString = params.toString();
+                return this.request(`/transactions${queryString ? `?${queryString}` : ''}`);
+            }
+            
+            async createTransaction(data) {
+                return this.request('/transactions', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
+            }
+            
+            async updateTransaction(id, data) {
+                return this.request(`/transactions/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
+            }
+            
+            async deleteTransaction(id) {
+                return this.request(`/transactions/${id}`, {
+                    method: 'DELETE',
+                });
+            }
+            
+                        // Summary
+            async getSummary(filters = {}) {
+              const params = new URLSearchParams();
+              if (filters.startDate) params.append('startDate', filters.startDate);
+              if (filters.endDate) params.append('endDate', filters.endDate);
+              
+              const queryString = params.toString();
+              return this.request(`/summary${queryString ? `?${queryString}` : ''}`);
+            }
+            
+            // Savings Goals
+            async getSavingsGoals() {
+              return this.request('/savings');
+            }
+            
+            async createSavingsGoal(name, targetAmount, deadline, description, color, icon) {
+              return this.request('/savings', {
+                method: 'POST',
+                body: JSON.stringify({ name, targetAmount, deadline, description, color, icon }),
+              });
+            }
+            
+            async updateSavingsGoal(id, data) {
+              return this.request(`/savings/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(data),
+              });
+            }
+            
+            async deleteSavingsGoal(id) {
+              return this.request(`/savings/${id}`, {
+                method: 'DELETE',
+              });
+            }
+            
+            // Savings Transactions
+            async addSavingsTransaction(goalId, amount, type, note, date) {
+              return this.request(`/savings/${goalId}/transactions`, {
+                method: 'POST',
+                body: JSON.stringify({ goalId, amount, type, note, date }),
+              });
+            }
+            
+            async getSavingsTransactions(goalId) {
+              return this.request(`/savings/${goalId}/transactions`);
+            }
+        }
+        
+        const api = new FinanceAPI();
+        
+        // ============================================================================
+        // UTILITY COMPONENTS
+        // ============================================================================
+        
+        const Card = ({ children, className = '' }) => (
+            <div className={`bg-white rounded-lg shadow-md p-6 hover-lift ${className}`}>
+                {children}
+            </div>
+        );
+        
+        const Button = ({ children, onClick, variant = 'primary', disabled = false, className = '', type = 'button' }) => {
+            const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50';
+            const variantClasses = {
+                primary: 'bg-blue-600 text-white hover:bg-blue-700',
+                secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
+                danger: 'bg-red-600 text-white hover:bg-red-700'
+            };
+            
+            return (
+                <button
+                    type={type}
+                    className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+                    onClick={onClick}
+                    disabled={disabled}
+                >
+                    {children}
+                </button>
+            );
+        };
+        
+        const Input = ({ label, value, onChange, type = 'text', placeholder, required = false, className = '' }) => (
+            <div className={`mb-4 ${className}`}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {label} {required && <span className="text-red-500">*</span>}
+                </label>
+                <input
+                    type={type}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    required={required}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+            </div>
+        );
+        
+        const Select = ({ label, value, onChange, options, required = false, className = '' }) => (
+            <div className={`mb-4 ${className}`}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {label} {required && <span className="text-red-500">*</span>}
+                </label>
+                <select
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    required={required}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                    <option value="">Select...</option>
+                    {options.map((option) => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        );
+        
+        // ============================================================================
+        // MAIN COMPONENTS
+        // ============================================================================
+        
+        const SavingsManager = () => {
+          const [savingsGoals, setSavingsGoals] = useState([]);
+          const [loading, setLoading] = useState(true);
+          const [showForm, setShowForm] = useState(false);
+          const [editingGoal, setEditingGoal] = useState(null);
+          const [showTransactionForm, setShowTransactionForm] = useState(false);
+          const [selectedGoal, setSelectedGoal] = useState(null);
+          const [formData, setFormData] = useState({
+            name: '',
+            targetAmount: '',
+            deadline: '',
+            description: '',
+            color: '#10B981',
+            icon: '🎯'
+          });
+          const [transactionData, setTransactionData] = useState({
+            amount: '',
+            type: 'deposit',
+            note: '',
+            date: new Date().toISOString().split('T')[0]
+          });
+          
+          useEffect(() => {
+            loadSavingsGoals();
+          }, []);
+          
+          const loadSavingsGoals = async () => {
+            try {
+              setLoading(true);
+              const response = await api.getSavingsGoals();
+              setSavingsGoals(response.data);
+            } catch (err) {
+              console.error('Failed to load savings goals:', err);
+            } finally {
+              setLoading(false);
+            }
+          };
+          
+          const handleSubmit = async (e) => {
+            e.preventDefault();
+            try {
+              if (editingGoal) {
+                await api.updateSavingsGoal(editingGoal.id, {
+                  ...formData,
+                  targetAmount: parseFloat(formData.targetAmount)
+                });
+              } else {
+                await api.createSavingsGoal(
+                  formData.name,
+                  parseFloat(formData.targetAmount),
+                  formData.deadline || undefined,
+                  formData.description || undefined,
+                  formData.color,
+                  formData.icon
+                );
+              }
+              
+              setShowForm(false);
+              setEditingGoal(null);
+              setFormData({ name: '', targetAmount: '', deadline: '', description: '', color: '#10B981', icon: '🎯' });
+              loadSavingsGoals();
+            } catch (err) {
+              console.error('Failed to save savings goal:', err);
+            }
+          };
+          
+          const handleTransactionSubmit = async (e) => {
+            e.preventDefault();
+            try {
+              await api.addSavingsTransaction(
+                selectedGoal.id,
+                parseFloat(transactionData.amount),
+                transactionData.type,
+                transactionData.note || undefined,
+                transactionData.date
+              );
+              
+              setShowTransactionForm(false);
+              setSelectedGoal(null);
+              setTransactionData({ amount: '', type: 'deposit', note: '', date: new Date().toISOString().split('T')[0] });
+              loadSavingsGoals();
+            } catch (err) {
+              console.error('Failed to add savings transaction:', err);
+            }
+          };
+          
+          const handleEdit = (goal) => {
+            setEditingGoal(goal);
+            setFormData({
+              name: goal.name,
+              targetAmount: goal.target_amount.toString(),
+              deadline: goal.deadline || '',
+              description: goal.description || '',
+              color: goal.color,
+              icon: goal.icon
+            });
+            setShowForm(true);
+          };
+          
+          const handleDelete = async (id) => {
+            if (window.confirm('Are you sure you want to delete this savings goal?')) {
+              try {
+                await api.deleteSavingsGoal(id);
+                loadSavingsGoals();
+              } catch (err) {
+                console.error('Failed to delete savings goal:', err);
+              }
+            }
+          };
+          
+          const handleAddTransaction = (goal) => {
+            setSelectedGoal(goal);
+            setShowTransactionForm(true);
+          };
+          
+          if (loading) {
+            return <div className="text-center py-8">Loading savings goals...</div>;
+          }
+          
+          return (
+            <Card>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold">Savings Goals</h2>
+                <Button onClick={() => setShowForm(true)}>Add Savings Goal</Button>
+              </div>
+              
+              {showForm && (
+                <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      label="Goal Name"
+                      value={formData.name}
+                      onChange={(value) => setFormData({ ...formData, name: value })}
+                      required
+                    />
+                    <Input
+                      label="Target Amount"
+                      value={formData.targetAmount}
+                      onChange={(value) => setFormData({ ...formData, targetAmount: value })}
+                      type="number"
+                      step="0.01"
+                      required
+                    />
+                    <Input
+                      label="Deadline"
+                      value={formData.deadline}
+                      onChange={(value) => setFormData({ ...formData, deadline: value })}
+                      type="date"
+                    />
+                    <Input
+                      label="Description"
+                      value={formData.description}
+                      onChange={(value) => setFormData({ ...formData, description: value })}
+                      placeholder="Optional description"
+                    />
+                    <Input
+                      label="Color"
+                      value={formData.color}
+                      onChange={(value) => setFormData({ ...formData, color: value })}
+                      type="color"
+                    />
+                    <Input
+                      label="Icon"
+                      value={formData.icon}
+                      onChange={(value) => setFormData({ ...formData, icon: value })}
+                      placeholder="🎯"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="submit">
+                      {editingGoal ? 'Update' : 'Create'} Savings Goal
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setShowForm(false);
+                        setEditingGoal(null);
+                        setFormData({ name: '', targetAmount: '', deadline: '', description: '', color: '#10B981', icon: '🎯' });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              )}
+              
+              {showTransactionForm && selectedGoal && (
+                <form onSubmit={handleTransactionSubmit} className="mb-6 p-4 bg-blue-50 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4">Add Transaction for: {selectedGoal.name}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      label="Amount"
+                      value={transactionData.amount}
+                      onChange={(value) => setTransactionData({ ...transactionData, amount: value })}
+                      type="number"
+                      step="0.01"
+                      required
+                    />
+                    <Select
+                      label="Type"
+                      value={transactionData.type}
+                      onChange={(value) => setTransactionData({ ...transactionData, type: value })}
+                      options={[
+                        { value: 'deposit', label: 'Deposit' },
+                        { value: 'withdrawal', label: 'Withdrawal' }
+                      ]}
+                      required
+                    />
+                    <Input
+                      label="Date"
+                      value={transactionData.date}
+                      onChange={(value) => setTransactionData({ ...transactionData, date: value })}
+                      type="date"
+                      required
+                    />
+                    <Input
+                      label="Note"
+                      value={transactionData.note}
+                      onChange={(value) => setTransactionData({ ...transactionData, note: value })}
+                      placeholder="Optional note"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="submit">Add Transaction</Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setShowTransactionForm(false);
+                        setSelectedGoal(null);
+                        setTransactionData({ amount: '', type: 'deposit', note: '', date: new Date().toISOString().split('T')[0] });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {savingsGoals.map((goal) => (
+                  <div
+                    key={goal.id}
+                    className="p-6 border rounded-lg hover:shadow-md transition-shadow"
+                    style={{ borderLeftColor: goal.color, borderLeftWidth: '4px' }}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-3xl">{goal.icon}</span>
+                        <div>
+                          <div className="font-semibold text-lg">{goal.name}</div>
+                          <div className="text-sm text-gray-600">{goal.description || 'No description'}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-gray-500">Target</div>
+                        <div className="font-semibold">${goal.target_amount.toFixed(2)}</div>
+                      </div>
+                    </div>
+                    
+                    {/* Progress Bar */}
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Progress</span>
+                        <span>{goal.progress.toFixed(1)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="h-2 rounded-full transition-all duration-300"
+                          style={{ 
+                            width: `${goal.progress}%`,
+                            backgroundColor: goal.color
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    {/* Financial Summary */}
+                    <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                      <div>
+                        <div className="text-gray-500">Current</div>
+                        <div className="font-semibold text-green-600">${goal.net_contribution.toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-500">Remaining</div>
+                        <div className="font-semibold text-blue-600">${goal.remaining.toFixed(2)}</div>
+                      </div>
+                    </div>
+                    
+                    {/* Deadline */}
+                    {goal.deadline && (
+                      <div className="mb-4 text-sm">
+                        <div className="text-gray-500">Deadline</div>
+                        <div className="font-medium">{goal.deadline}</div>
+                      </div>
+                    )}
+                    
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleAddTransaction(goal)}
+                        className="flex-1 text-sm"
+                      >
+                        Add Transaction
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleEdit(goal)}
+                        className="px-3 py-1 text-sm"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        onClick={() => handleDelete(goal.id)}
+                        className="px-3 py-1 text-sm"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          );
+        };
+        
+        const Dashboard = () => {
+            const [summary, setSummary] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            
+            useEffect(() => {
+                loadSummary();
+            }, []);
+            
+            const loadSummary = async () => {
+                try {
+                    setLoading(true);
+                    const response = await api.getSummary();
+                    setSummary(response.data);
+                    setError(null);
+                } catch (err) {
+                    setError(err.message || 'Failed to load summary');
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            if (loading) {
+                return (
+                    <div className="flex items-center justify-center h-64">
+                        <div className="text-lg text-gray-600">Loading dashboard...</div>
+                    </div>
+                );
+            }
+            
+            if (error) {
+                return (
+                    <div className="text-center py-8">
+                        <div className="text-red-600 mb-4">{error}</div>
+                        <Button onClick={loadSummary}>Retry</Button>
+                    </div>
+                );
+            }
+            
+            if (!summary) return null;
+            
+            return (
+                <div className="fade-in">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <Card>
+                            <div className="text-center">
+                                <div className="text-2xl font-bold text-green-600">${summary.overall.totalIncome.toFixed(2)}</div>
+                                <div className="text-sm text-gray-600">Total Income</div>
+                            </div>
+                        </Card>
+                        
+                        <Card>
+                            <div className="text-center">
+                                <div className="text-2xl font-bold text-red-600">${summary.overall.totalExpense.toFixed(2)}</div>
+                                <div className="text-sm text-gray-600">Total Expenses</div>
+                            </div>
+                        </Card>
+                        
+                        <Card>
+                            <div className="text-center">
+                                <div className={`text-2xl font-bold ${summary.overall.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    ${summary.overall.netIncome.toFixed(2)}
+                                </div>
+                                <div className="text-sm text-gray-600">Net Income</div>
+                            </div>
+                        </Card>
+                        
+                        <Card>
+                            <div className="text-center">
+                                <div className="text-2xl font-bold text-blue-600">{summary.overall.totalTransactions}</div>
+                                <div className="text-sm text-gray-600">Total Transactions</div>
+                            </div>
+                        </Card>
+                        
+                        <Card>
+                            <div className="text-center">
+                                <div className="text-2xl font-bold text-purple-600">${summary.overall.totalSavingsProgress?.toFixed(2) || '0.00'}</div>
+                                <div className="text-sm text-gray-600">Savings Progress</div>
+                            </div>
+                        </Card>
+                    </div>
+                    
+                                            <Card>
+                            <h3 className="text-lg font-semibold mb-4">Top Categories</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {summary.categories.slice(0, 6).map((category) => (
+                                    <div
+                                        key={category.id}
+                                        className="p-4 border rounded-lg hover:shadow-md transition-shadow"
+                                        style={{ borderLeftColor: category.color, borderLeftWidth: '4px' }}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-2xl">{category.icon}</span>
+                                            <div>
+                                                <div className="font-medium">{category.name}</div>
+                                                <div className="text-sm text-gray-600">
+                                                    ${(category.total_amount || 0).toFixed(2)} ({category.transaction_count} transactions)
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </Card>
+                        
+                        {summary.savings && summary.savings.goals.length > 0 && (
+                            <Card>
+                                <h3 className="text-lg font-semibold mb-4">Savings Goals Overview</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {summary.savings.goals.slice(0, 6).map((goal) => (
+                                        <div
+                                            key={goal.id}
+                                            className="p-4 border rounded-lg hover:shadow-md transition-shadow"
+                                            style={{ borderLeftColor: goal.color, borderLeftWidth: '4px' }}
+                                        >
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-2xl">{goal.icon}</span>
+                                                <div>
+                                                    <div className="font-medium">{goal.name}</div>
+                                                    <div className="text-sm text-gray-600">
+                                                        ${goal.target_amount.toFixed(2)} target
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="mb-2">
+                                                <div className="flex justify-between text-sm text-gray-600 mb-1">
+                                                    <span>Progress</span>
+                                                    <span>{goal.progress.toFixed(1)}%</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div 
+                                                        className="h-2 rounded-full transition-all duration-300"
+                                                        style={{ 
+                                                            width: `${goal.progress}%`,
+                                                            backgroundColor: goal.color
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                            <div className="text-sm">
+                                                <div className="text-green-600 font-medium">
+                                                    ${goal.net_contribution.toFixed(2)} saved
+                                                </div>
+                                                <div className="text-blue-600">
+                                                    ${goal.remaining.toFixed(2)} remaining
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+                        )}
+                </div>
+            );
+        };
+        
+        const CategoryManager = () => {
+            const [categories, setCategories] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [showForm, setShowForm] = useState(false);
+            const [editingCategory, setEditingCategory] = useState(null);
+            const [formData, setFormData] = useState({
+                name: '',
+                type: 'expense',
+                color: '#3B82F6',
+                icon: '💰'
+            });
+            
+            useEffect(() => {
+                loadCategories();
+            }, []);
+            
+            const loadCategories = async () => {
+                try {
+                    setLoading(true);
+                    const response = await api.getCategories();
+                    setCategories(response.data);
+                } catch (err) {
+                    console.error('Failed to load categories:', err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                try {
+                    if (editingCategory) {
+                        await api.updateCategory(editingCategory.id, formData);
+                    } else {
+                        await api.createCategory(formData);
+                    }
+                    
+                    setShowForm(false);
+                    setEditingCategory(null);
+                    setFormData({ name: '', type: 'expense', color: '#3B82F6', icon: '💰' });
+                    loadCategories();
+                } catch (err) {
+                    console.error('Failed to save category:', err);
+                }
+            };
+            
+            const handleEdit = (category) => {
+                setEditingCategory(category);
+                setFormData({
+                    name: category.name,
+                    type: category.type,
+                    color: category.color,
+                    icon: category.icon
+                });
+                setShowForm(true);
+            };
+            
+            const handleDelete = async (id) => {
+                if (window.confirm('Are you sure you want to delete this category?')) {
+                    try {
+                        await api.deleteCategory(id);
+                        loadCategories();
+                    } catch (err) {
+                        console.error('Failed to delete category:', err);
+                    }
+                }
+            };
+            
+            if (loading) {
+                return <div className="text-center py-8">Loading categories...</div>;
+            }
+            
+            return (
+                <Card>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-semibold">Categories</h2>
+                        <Button onClick={() => setShowForm(true)}>Add Category</Button>
+                    </div>
+                    
+                    {showForm && (
+                        <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Input
+                                    label="Name"
+                                    value={formData.name}
+                                    onChange={(value) => setFormData({ ...formData, name: value })}
+                                    required
+                                />
+                                <Select
+                                    label="Type"
+                                    value={formData.type}
+                                    onChange={(value) => setFormData({ ...formData, type: value })}
+                                    options={[
+                                        { value: 'income', label: 'Income' },
+                                        { value: 'expense', label: 'Expense' }
+                                    ]}
+                                    required
+                                />
+                                <Input
+                                    label="Color"
+                                    value={formData.color}
+                                    onChange={(value) => setFormData({ ...formData, color: value })}
+                                    type="color"
+                                />
+                                <Input
+                                    label="Icon"
+                                    value={formData.icon}
+                                    onChange={(value) => setFormData({ ...formData, icon: value })}
+                                    placeholder="💰"
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                <Button type="submit">
+                                    {editingCategory ? 'Update' : 'Create'} Category
+                                </Button>
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => {
+                                        setShowForm(false);
+                                        setEditingCategory(null);
+                                        setFormData({ name: '', type: 'expense', color: '#3B82F6', icon: '💰' });
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </form>
+                    )}
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {categories.map((category) => (
+                            <div
+                                key={category.id}
+                                className="p-4 border rounded-lg hover:shadow-md transition-shadow"
+                                style={{ borderLeftColor: category.color, borderLeftWidth: '4px' }}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-2xl">{category.icon}</span>
+                                        <div>
+                                            <div className="font-medium">{category.name}</div>
+                                            <div className="text-sm text-gray-600 capitalize">{category.type}</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <Button
+                                            variant="secondary"
+                                            onClick={() => handleEdit(category)}
+                                            className="px-2 py-1 text-sm"
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            variant="danger"
+                                            onClick={() => handleDelete(category.id)}
+                                            className="px-2 py-1 text-sm"
+                                        >
+                                            Delete
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+            );
+        };
+        
+        const TransactionManager = () => {
+            const [transactions, setTransactions] = useState([]);
+            const [categories, setCategories] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [showForm, setShowForm] = useState(false);
+            const [editingTransaction, setEditingTransaction] = useState(null);
+            const [formData, setFormData] = useState({
+                amount: '',
+                type: 'expense',
+                categoryId: '',
+                note: '',
+                date: new Date().toISOString().split('T')[0]
+            });
+            
+            useEffect(() => {
+                loadData();
+            }, []);
+            
+            const loadData = async () => {
+                try {
+                    setLoading(true);
+                    const [transactionsRes, categoriesRes] = await Promise.all([
+                        api.getTransactions(),
+                        api.getCategories()
+                    ]);
+                    setTransactions(transactionsRes.data);
+                    setCategories(categoriesRes.data);
+                } catch (err) {
+                    console.error('Failed to load data:', err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                try {
+                    if (editingTransaction) {
+                        await api.updateTransaction(editingTransaction.id, {
+                            ...formData,
+                            amount: parseFloat(formData.amount),
+                            categoryId: parseInt(formData.categoryId)
+                        });
+                    } else {
+                        await api.createTransaction({
+                            ...formData,
+                            amount: parseFloat(formData.amount),
+                            categoryId: parseInt(formData.categoryId)
+                        });
+                    }
+                    
+                    setShowForm(false);
+                    setEditingTransaction(null);
+                    setFormData({ amount: '', type: 'expense', categoryId: '', note: '', date: new Date().toISOString().split('T')[0] });
+                    loadData();
+                } catch (err) {
+                    console.error('Failed to save transaction:', err);
+                }
+            };
+            
+            const handleEdit = (transaction) => {
+                setEditingTransaction(transaction);
+                setFormData({
+                    amount: transaction.amount.toString(),
+                    type: transaction.type,
+                    categoryId: transaction.category_id.toString(),
+                    note: transaction.note,
+                    date: transaction.date
+                });
+                setShowForm(true);
+            };
+            
+            const handleDelete = async (id) => {
+                if (window.confirm('Are you sure you want to delete this transaction?')) {
+                    try {
+                        await api.deleteTransaction(id);
+                        loadData();
+                    } catch (err) {
+                        console.error('Failed to delete transaction:', err);
+                    }
+                }
+            };
+            
+            if (loading) {
+                return <div className="text-center py-8">Loading transactions...</div>;
+            }
+            
+            return (
+                <Card>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-semibold">Transactions</h2>
+                        <Button onClick={() => setShowForm(true)}>Add Transaction</Button>
+                    </div>
+                    
+                    {showForm && (
+                        <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Input
+                                    label="Amount"
+                                    value={formData.amount}
+                                    onChange={(value) => setFormData({ ...formData, amount: value })}
+                                    type="number"
+                                    step="0.01"
+                                    required
+                                />
+                                <Select
+                                    label="Type"
+                                    value={formData.type}
+                                    onChange={(value) => setFormData({ ...formData, type: value })}
+                                    options={[
+                                        { value: 'income', label: 'Income' },
+                                        { value: 'expense', label: 'Expense' }
+                                    ]}
+                                    required
+                                />
+                                <Select
+                                    label="Category"
+                                    value={formData.categoryId}
+                                    onChange={(value) => setFormData({ ...formData, categoryId: value })}
+                                    options={categories
+                                        .filter(c => c.type === formData.type)
+                                        .map(c => ({ value: c.id.toString(), label: c.name }))}
+                                    required
+                                />
+                                <Input
+                                    label="Date"
+                                    value={formData.date}
+                                    onChange={(value) => setFormData({ ...formData, date: value })}
+                                    type="date"
+                                    required
+                                />
+                                <Input
+                                    label="Note"
+                                    value={formData.note}
+                                    onChange={(value) => setFormData({ ...formData, note: value })}
+                                    placeholder="Optional note"
+                                    className="md:col-span-2"
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                <Button type="submit">
+                                    {editingTransaction ? 'Update' : 'Create'} Transaction
+                                </Button>
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => {
+                                        setShowForm(false);
+                                        setEditingTransaction(null);
+                                        setFormData({ amount: '', type: 'expense', categoryId: '', note: '', date: new Date().toISOString().split('T')[0] });
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </form>
+                    )}
+                    
+                    <div className="space-y-3">
+                        {transactions.map((transaction) => (
+                            <div
+                                key={transaction.id}
+                                className="flex items-center justify-between p-4 border rounded-lg hover:shadow-sm transition-shadow"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="text-2xl">{transaction.category_icon}</span>
+                                    <div>
+                                        <div className="font-medium">{transaction.category_name}</div>
+                                        <div className="text-sm text-gray-600">{transaction.note || 'No note'}</div>
+                                        <div className="text-xs text-gray-500">{transaction.date}</div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className={`text-lg font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                                        {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <Button
+                                            variant="secondary"
+                                            onClick={() => handleEdit(transaction)}
+                                            className="px-2 py-1 text-sm"
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            variant="danger"
+                                            onClick={() => handleDelete(transaction.id)}
+                                            className="px-2 py-1 text-sm"
+                                        >
+                                            Delete
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+            );
+        };
+        
+        // ============================================================================
+        // MAIN APP COMPONENT
+        // ============================================================================
+        
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('dashboard');
+            
+                    const tabs = [
+            { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+            { id: 'categories', label: 'Categories', icon: '📂' },
+            { id: 'transactions', label: 'Transactions', icon: '💸' },
+            { id: 'savings', label: 'Savings', icon: '🎯' }
+          ];
+            
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    {/* Header */}
+                    <header className="bg-white shadow-sm border-b">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex justify-between items-center h-16">
+                                <div className="flex items-center">
+                                    <h1 className="text-2xl font-bold text-gray-900">💰 Finance Manager</h1>
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                    Powered by Turso Offline Sync
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+                    
+                    {/* Navigation */}
+                    <nav className="bg-white border-b">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex space-x-8">
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                                            activeTab === tab.id
+                                                ? 'border-blue-500 text-blue-600'
+                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        }`}
+                                    >
+                                        <span className="mr-2">{tab.icon}</span>
+                                        {tab.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </nav>
+                    
+                    {/* Main Content */}
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        {activeTab === 'dashboard' && <Dashboard />}
+                        {activeTab === 'categories' && <CategoryManager />}
+                        {activeTab === 'transactions' && <TransactionManager />}
+                        {activeTab === 'savings' && <SavingsManager />}
+                    </main>
+                </div>
+            );
+        };
+        
+        // ============================================================================
+        // RENDER APP
+        // ============================================================================
+        
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
