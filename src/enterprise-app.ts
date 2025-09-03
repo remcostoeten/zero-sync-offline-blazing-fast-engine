@@ -1,5 +1,6 @@
 import { createClient } from '@libsql/client';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
 
 // Load environment variables
 dotenv.config();
@@ -665,7 +666,7 @@ async function populateDemoData() {
     // Create demo projects
     await createProject('E-commerce Platform Redesign', 'Modernize our online store with new UI/UX', 'active', 'high', Number(manager1?.id) || 1, 50000, '2025-01-01', '2025-06-30');
     await createProject('Mobile App Development', 'Create iOS and Android apps for our service', 'planning', 'medium', Number(manager2?.id) || 1, 75000, '2025-03-01', '2025-12-31');
-    await createProject('Data Analytics Dashboard', 'Build comprehensive reporting system', 'active', 'critical', Number(manager1?.id) || 1, 30000, '2025-02-01', '2025-05-31');
+    await createProject('Data Analytics Dashboard', 'Build comprehensive reporting system', 'active', 'critical', Number(manager1?.id) || 1, 40000, '2025-02-01', '2025-05-31');
     
     // Get project IDs
     const projects = await getProjects();
@@ -792,7 +793,7 @@ async function main() {
 }
 
 // Run the application if this file is executed directly
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main().catch(console.error);
 }
 

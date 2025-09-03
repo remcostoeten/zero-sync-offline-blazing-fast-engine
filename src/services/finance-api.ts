@@ -19,7 +19,7 @@ class FinanceAPI {
   private baseURL: string;
 
   constructor() {
-    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
   }
 
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {

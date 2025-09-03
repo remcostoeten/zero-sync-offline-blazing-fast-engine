@@ -73,7 +73,7 @@ import {
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 // ============================================================================
 // MIDDLEWARE SETUP
@@ -82,7 +82,7 @@ const PORT = process.env.PORT || 3000;
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:3001', 'null', 'file://'],
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:4000', 'http://localhost:3001', 'null', 'file://'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

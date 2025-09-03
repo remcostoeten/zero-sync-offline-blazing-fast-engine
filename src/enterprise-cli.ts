@@ -1,4 +1,5 @@
 import { createClient } from '@libsql/client';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import * as readline from 'readline';
 import {
@@ -652,6 +653,6 @@ async function mainCLI() {
 }
 
 // Run the CLI if this file is executed directly
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   mainCLI().catch(console.error);
 }

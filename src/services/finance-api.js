@@ -1,7 +1,7 @@
 class FinanceAPI {
     baseURL;
     constructor() {
-        this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+        this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
     }
     async request(endpoint, options) {
         const response = await fetch(`${this.baseURL}${endpoint}`, {

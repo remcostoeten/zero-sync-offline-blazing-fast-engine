@@ -29,7 +29,7 @@ const AlertsView: React.FC = () => {
   useEffect(() => {
     loadAlertStats();
     // Check for new critical alerts periodically
-    const interval = setInterval(checkForNewAlerts, 30000); // Every 30 seconds
+    const interval = setInterval(checkForNewAlerts, 40000); // Every 30 seconds
     return () => clearInterval(interval);
   }, []);
 

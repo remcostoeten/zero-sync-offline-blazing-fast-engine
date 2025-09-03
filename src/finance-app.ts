@@ -2419,7 +2419,7 @@ async function populateFinanceDemoData() {
     }
     
     // Create sample savings goals
-    await createSavingsGoal('Vacation Fund', 3000, '2025-12-31', 'Summer vacation to Europe', '#3B82F6', '✈️');
+    await createSavingsGoal('Vacation Fund', 4000, '2025-12-31', 'Summer vacation to Europe', '#3B82F6', '✈️');
     await createSavingsGoal('Emergency Fund', 10000, '2025-06-30', '6 months of expenses', '#EF4444', '🆘');
     await createSavingsGoal('New Car', 25000, '2026-03-31', 'Down payment for electric vehicle', '#10B981', '🚗');
     await createSavingsGoal('Home Renovation', 15000, '2025-11-30', 'Kitchen and bathroom updates', '#8B5CF6', '🏠');
