@@ -3,12 +3,13 @@ import { categoriesSchema, TCategoryInsert, TCategorySelect } from '../../../../
 
 const categoryCrud = createCrudFactory<typeof categoriesSchema, TCategoryInsert, TCategorySelect>(categoriesSchema)();
 
-async function createCategory(data: TCategoryInsert) {
-  const categoryData = {
+async function createCategory(data: Omit<TCategoryInsert, 'synced' | 'isDemo'>) {
+  const categoryData: TCategoryInsert = {
     ...data,
     color: data.color || '#3B82F6',
     icon: data.icon || '💰',
-    synced: false
+    synced: false,
+    isDemo: false
   };
 
   return categoryCrud.create(categoryData);

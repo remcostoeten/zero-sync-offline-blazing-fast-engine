@@ -1,5 +1,6 @@
 import { createClient } from '@libsql/client';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
 // Load environment variables
 dotenv.config();
 // Create the Turso client with offline sync enabled
@@ -692,7 +693,7 @@ async function main() {
     }
 }
 // Run the application if this file is executed directly
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
     main().catch(console.error);
 }
 export { setupEnterpriseDatabase, createUser, getUsers, createProject, getProjects, updateProjectStatus, createTask, getTasks, updateTaskStatus, logTimeEntry, getTimeEntries, addComment, getComments, logAuditAction, getAuditLog, syncAllData, getSyncStatus, generateProjectReport, generateUserWorkloadReport, populateDemoData };

@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import * as readline from 'readline';
 import { setupEnterpriseDatabase, createUser, getUsers, createProject, getProjects, updateProjectStatus, createTask, getTasks, updateTaskStatus, logTimeEntry, getTimeEntries, addComment, getComments, getAuditLog, syncAllData, getSyncStatus, generateProjectReport, generateUserWorkloadReport, populateDemoData } from './enterprise-app';
@@ -583,7 +584,7 @@ async function mainCLI() {
     }
 }
 // Run the CLI if this file is executed directly
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
     mainCLI().catch(console.error);
 }
 //# sourceMappingURL=enterprise-cli.js.map

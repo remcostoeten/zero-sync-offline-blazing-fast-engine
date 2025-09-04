@@ -4,22 +4,15 @@ import {
   getRecentTransactions,
   getBudgetProgress,
   getSavingsProgress,
-  getFinancialInsights
+  getFinancialInsights,
+  getSpendingTrends
 } from './actions';
-import { OverviewWidget } from './components/OverviewWidget';
-import { RecentTransactionsWidget } from './components/RecentTransactionsWidget';
-import { BudgetProgressWidget } from './components/BudgetProgressWidget';
-import { SavingsGoalsWidget } from './components/SavingsGoalsWidget';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  Lightbulb,
-  RefreshCw
-} from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { getTransactions } from '../transactions/actions';
+import { getCategories } from '../categories/actions';
+import { getRecurringTransactions } from '../recurring-transactions/actions';
+import { EnhancedDashboard } from './components/EnhancedDashboard';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { AlertTriangle } from 'lucide-react';
 
 async function DashboardData() {
   try {
@@ -28,104 +21,57 @@ async function DashboardData() {
       recentTransactions,
       budgetProgress,
       savingsProgress,
-      insights
+      insights,
+      trends,
+      // History data
+      allTransactions,
+      categories,
+      // Recurring data
+      recurringTransactions
     ] = await Promise.all([
       getDashboardOverview(),
       getRecentTransactions(8),
       getBudgetProgress(),
       getSavingsProgress(),
-      getFinancialInsights()
+      getFinancialInsights(),
+      getSpendingTrends(30),
+      // History data
+      getTransactions({ limit: 50 }),
+      getCategories(),
+      // Recurring data
+      getRecurringTransactions()
     ]);
 
+    // Calculate notification counts
+    const notificationCount = insights.budgetAlerts || 0;
+    const upcomingRecurringCount = 0; // TODO: Calculate from recurring transactions
+    
+    // Mock upcoming transactions for now
+    const upcomingTransactions = [];
+
     return (
-      <div className="space-y-8">
-        {/* Financial Overview */}
-        <OverviewWidget data={overview} />
-
-        {/* Quick Insights */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lightbulb className="w-5 h-5 text-yellow-500" />
-              Financial Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Top Spending Category</p>
-                <p className="font-semibold">{insights.topSpendingCategory}</p>
-              </div>
-              
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Average Daily Spending</p>
-                <p className="font-semibold">{formatCurrency(insights.averageDailySpending)}</p>
-              </div>
-              
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Savings Rate</p>
-                <div className="flex items-center gap-2">
-                  <p className={`font-semibold ${
-                    insights.savingsRate >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {insights.savingsRate.toFixed(1)}%
-                  </p>
-                  {insights.savingsRate >= 0 ? (
-                    <TrendingUp className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <TrendingDown className="w-4 h-4 text-red-500" />
-                  )}
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Budget Alerts</p>
-                <div className="flex items-center gap-2">
-                  <p className={`font-semibold ${
-                    insights.budgetAlerts > 0 ? 'text-orange-600' : 'text-green-600'
-                  }`}>
-                    {insights.budgetAlerts}
-                  </p>
-                  {insights.budgetAlerts > 0 && (
-                    <AlertTriangle className="w-4 h-4 text-orange-500" />
-                  )}
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Monthly Recurring</p>
-                <p className="font-semibold">
-                  {formatCurrency(insights.recurringTransactionsValue)}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Last Updated</p>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <RefreshCw className="w-3 h-3" />
-                  <span>Just now</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Recent Transactions */}
-          <div className="lg:col-span-2 space-y-8">
-            <RecentTransactionsWidget transactions={recentTransactions} />
-          </div>
-
-          {/* Right Column - Progress Widgets */}
-          <div className="space-y-8">
-            <BudgetProgressWidget budgets={budgetProgress} />
-            <SavingsGoalsWidget goals={savingsProgress} />
-          </div>
-        </div>
-      </div>
+      <EnhancedDashboard
+        // Overview data
+        overview={overview}
+        recentTransactions={recentTransactions}
+        budgetProgress={budgetProgress}
+        savingsProgress={savingsProgress}
+        insights={insights}
+        trends={trends}
+        // History data
+        allTransactions={allTransactions.transactions || []}
+        categories={categories}
+        totalTransactionCount={allTransactions.totalCount || 0}
+        // Recurring data
+        recurringTransactions={recurringTransactions || []}
+        upcomingTransactions={upcomingTransactions}
+        // Notification counts
+        notificationCount={notificationCount}
+        upcomingRecurringCount={upcomingRecurringCount}
+      />
     );
   } catch (error) {
+    console.error('Dashboard error:', error);
     return (
       <div className="space-y-6">
         <Card>
@@ -240,21 +186,8 @@ function DashboardSkeleton() {
 
 export default function DashboardPage() {
   return (
-    <div className="container mx-auto py-8">
-      <div className="space-y-6">
-        {/* Page Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Your financial overview and key insights
-          </p>
-        </div>
-
-        {/* Dashboard Content */}
-        <Suspense fallback={<DashboardSkeleton />}>
-          <DashboardData />
-        </Suspense>
-      </div>
-    </div>
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardData />
+    </Suspense>
   );
 }

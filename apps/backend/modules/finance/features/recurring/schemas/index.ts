@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-// Core recurring transaction schemas
-export const RecurringTransactionInsertSchema = z.object({
+// Base recurring transaction schema without refinement
+const RecurringTransactionBaseSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   description: z.string().optional(),
   categoryId: z.number().int().positive('Category ID must be positive'),
@@ -29,7 +29,10 @@ export const RecurringTransactionInsertSchema = z.object({
   payee: z.string().optional(),
   reference: z.string().optional(),
   tags: z.array(z.string()).default([])
-}).refine((data) => {
+});
+
+// Validation function for recurring pattern
+function validateRecurringPattern(data: any) {
   // Validate frequency-specific fields
   if (data.frequency === 'weekly' && data.dayOfWeek === undefined) {
     return false;
@@ -52,11 +55,14 @@ export const RecurringTransactionInsertSchema = z.object({
   }
   
   return true;
-}, {
+}
+
+// Core recurring transaction schemas with refinement
+export const RecurringTransactionInsertSchema = RecurringTransactionBaseSchema.refine(validateRecurringPattern, {
   message: "Invalid recurring pattern or missing required frequency fields"
 });
 
-export const RecurringTransactionUpdateSchema = RecurringTransactionInsertSchema.partial().extend({
+export const RecurringTransactionUpdateSchema = RecurringTransactionBaseSchema.partial().extend({
   id: z.number().int().positive().optional()
 });
 

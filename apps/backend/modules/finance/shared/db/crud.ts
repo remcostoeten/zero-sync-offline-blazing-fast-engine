@@ -14,9 +14,11 @@ type TQueryFilters = {
 type TCrudOperations<TSchema extends SQLiteTable, TInsert, TSelect> = {
   create: (data: TInsert) => Promise<TSelect>;
   read: (id: number) => Promise<TSelect | null>;
+  findById: (id: number) => Promise<TSelect | null>;
   readMany: (filters?: TQueryFilters) => Promise<TSelect[]>;
   update: (id: number, data: Partial<TInsert>) => Promise<TSelect | null>;
   destroy: (id: number) => Promise<boolean>;
+  delete: (id: number) => Promise<boolean>;
   softDelete?: (id: number) => Promise<boolean>;
   restore?: (id: number) => Promise<boolean>;
 };
@@ -137,12 +139,18 @@ function createCrudFactory<TSchema extends SQLiteTable, TInsert, TSelect>(
       return result.changes > 0;
     }
 
+    // Alias methods for compatibility
+    const findById = read;
+    const deleteRecord = destroy;
+
     const operations: TCrudOperations<TSchema, TInsert, TSelect> = {
       create,
       read,
+      findById,
       readMany,
       update,
       destroy,
+      delete: deleteRecord,
     };
 
     if ('deletedAt' in schema) {

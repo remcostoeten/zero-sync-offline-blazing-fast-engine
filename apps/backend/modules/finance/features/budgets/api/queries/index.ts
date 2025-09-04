@@ -349,7 +349,10 @@ export {
   getBudgets, 
   getBudgetById, 
   getBudgetUtilization, 
-  calculateBudgetUtilization,
+  calculateBudgetUtilization
+};
+
+export type {
   TBudgetWithUtilization,
   TBudgetAlert
 };

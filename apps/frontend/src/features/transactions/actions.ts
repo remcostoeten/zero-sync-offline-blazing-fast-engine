@@ -343,3 +343,295 @@ export async function deleteTransactions(input: { ids: string[] }): Promise<void
   revalidatePath('/dashboard');
   revalidatePath('/budgets');
 }
+
+// Natural Language Search Functions
+type TNaturalLanguageSearchResult = {
+  searchParams: {
+    startDate?: string;
+    endDate?: string;
+    minAmount?: number;
+    maxAmount?: number;
+    categories?: string[];
+    description?: string;
+    payee?: string;
+    type?: 'income' | 'expense';
+  };
+  confidence: number;
+  interpretation: string;
+  alternatives?: string[];
+};
+
+type TSmartSearchResult = {
+  transactions: (TTransaction & { category: { name: string; type: string; color?: string } })[];
+  searchSummary: {
+    totalResults: number;
+    interpretation: string;
+    confidence: number;
+    appliedFilters: string[];
+    suggestions?: string[];
+  };
+};
+
+export async function searchTransactionsNaturalLanguage(query: string): Promise<TSmartSearchResult> {
+  try {
+    // First, get available categories for better AI parsing
+    const db = getDb();
+    const categories = await db
+      .selectDistinct({ name: categoriesSchema.name })
+      .from(categoriesSchema)
+      .where(eq(categoriesSchema.isActive, true));
+    
+    const categoryNames = categories.map(c => c.name);
+    
+    // Parse the natural language query
+    const parsedQuery = await parseSearchIntent(query, categoryNames);
+    
+    // Execute the search with parsed parameters
+    const searchResult = await executeSmartSearch(parsedQuery);
+    
+    return searchResult;
+  } catch (error) {
+    console.error('Natural language search error:', error);
+    // Fallback to regular text search
+    const fallbackResults = await searchTransactions(query, 50);
+    return {
+      transactions: fallbackResults,
+      searchSummary: {
+        totalResults: fallbackResults.length,
+        interpretation: `Searching for "${query}" using text matching (AI unavailable)`,
+        confidence: 60,
+        appliedFilters: ['description', 'payee'],
+        suggestions: ['Try using specific dates like "last month"', 'Include amount ranges like "under $50"']
+      }
+    };
+  }
+}
+
+export async function parseSearchIntent(query: string, availableCategories: string[] = []): Promise<TNaturalLanguageSearchResult> {
+  try {
+    // Import gemini analyzer dynamically to avoid server-side issues
+    const { geminiAnalyzer } = await import('@/lib/gemini');
+    return await geminiAnalyzer.parseNaturalLanguageQuery(query, availableCategories);
+  } catch (error) {
+    console.error('Intent parsing error:', error);
+    // Fallback parsing using simple regex patterns
+    return parseSearchIntentFallback(query, availableCategories);
+  }
+}
+
+export async function executeSmartSearch(
+  parsedQuery: TNaturalLanguageSearchResult
+): Promise<TSmartSearchResult> {
+  const db = getDb();
+  const { searchParams } = parsedQuery;
+  
+  // Build dynamic query conditions
+  const conditions = [];
+  const appliedFilters = [];
+  
+  if (searchParams.startDate) {
+    conditions.push(gte(transactionsSchema.date, searchParams.startDate));
+    appliedFilters.push(`After ${searchParams.startDate}`);
+  }
+  
+  if (searchParams.endDate) {
+    conditions.push(lte(transactionsSchema.date, searchParams.endDate));
+    appliedFilters.push(`Before ${searchParams.endDate}`);
+  }
+  
+  if (searchParams.minAmount !== undefined) {
+    conditions.push(gte(transactionsSchema.amount, searchParams.minAmount));
+    appliedFilters.push(`Amount ≥ ${searchParams.minAmount}`);
+  }
+  
+  if (searchParams.maxAmount !== undefined) {
+    conditions.push(lte(transactionsSchema.amount, searchParams.maxAmount));
+    appliedFilters.push(`Amount ≤ ${searchParams.maxAmount}`);
+  }
+  
+  if (searchParams.type) {
+    conditions.push(eq(transactionsSchema.type, searchParams.type));
+    appliedFilters.push(`Type: ${searchParams.type}`);
+  }
+  
+  if (searchParams.categories && searchParams.categories.length > 0) {
+    conditions.push(inArray(categoriesSchema.name, searchParams.categories));
+    appliedFilters.push(`Categories: ${searchParams.categories.join(', ')}`);
+  }
+  
+  // Build text search conditions
+  const textConditions = [];
+  if (searchParams.description) {
+    textConditions.push(like(transactionsSchema.description, `%${searchParams.description}%`));
+  }
+  if (searchParams.payee) {
+    textConditions.push(like(transactionsSchema.payee, `%${searchParams.payee}%`));
+  }
+  
+  if (textConditions.length > 0) {
+    conditions.push(or(...textConditions));
+    appliedFilters.push('Text search');
+  }
+  
+  // Execute the query
+  let query = db
+    .select({
+      id: transactionsSchema.id,
+      amount: transactionsSchema.amount,
+      type: transactionsSchema.type,
+      categoryId: transactionsSchema.categoryId,
+      date: transactionsSchema.date,
+      description: transactionsSchema.description,
+      payee: transactionsSchema.payee,
+      reference: transactionsSchema.reference,
+      tags: transactionsSchema.tags,
+      createdAt: transactionsSchema.createdAt,
+      updatedAt: transactionsSchema.updatedAt,
+      synced: transactionsSchema.synced,
+      recurringTransactionId: transactionsSchema.recurringTransactionId,
+      savingsGoalId: transactionsSchema.savingsGoalId,
+      debtPaymentId: transactionsSchema.debtPaymentId,
+      category: {
+        name: categoriesSchema.name,
+        type: categoriesSchema.type,
+        color: categoriesSchema.color
+      }
+    })
+    .from(transactionsSchema)
+    .leftJoin(categoriesSchema, eq(transactionsSchema.categoryId, categoriesSchema.id))
+    .orderBy(desc(transactionsSchema.date));
+    
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions));
+  }
+  
+  const results = await query.limit(100);
+  
+  // Generate suggestions based on confidence and results
+  const suggestions = [];
+  if (parsedQuery.confidence < 70) {
+    suggestions.push('Try being more specific with dates or amounts');
+  }
+  if (results.length === 0) {
+    suggestions.push('Try expanding your date range', 'Check if category names are correct');
+  }
+  if (parsedQuery.alternatives) {
+    suggestions.push(...parsedQuery.alternatives);
+  }
+  
+  return {
+    transactions: results as any,
+    searchSummary: {
+      totalResults: results.length,
+      interpretation: parsedQuery.interpretation,
+      confidence: parsedQuery.confidence,
+      appliedFilters,
+      suggestions: suggestions.length > 0 ? suggestions : undefined
+    }
+  };
+}
+
+// Fallback parsing when AI is unavailable
+function parseSearchIntentFallback(
+  query: string,
+  availableCategories: string[]
+): TNaturalLanguageSearchResult {
+  const searchParams: any = {};
+  const lowerQuery = query.toLowerCase();
+  let confidence = 40;
+  const alternatives = [];
+  
+  // Simple amount parsing
+  const amountRegex = /(\d+(?:\.\d{2})?)/g;
+  const amounts = query.match(amountRegex);
+  if (amounts) {
+    const numericAmounts = amounts.map(a => parseFloat(a));
+    if (lowerQuery.includes('around') || lowerQuery.includes('roughly')) {
+      const amount = numericAmounts[0];
+      searchParams.minAmount = amount * 0.8;
+      searchParams.maxAmount = amount * 1.2;
+      confidence += 15;
+    } else if (lowerQuery.includes('under') || lowerQuery.includes('less')) {
+      searchParams.maxAmount = numericAmounts[0];
+      confidence += 15;
+    } else if (lowerQuery.includes('over') || lowerQuery.includes('more')) {
+      searchParams.minAmount = numericAmounts[0];
+      confidence += 15;
+    }
+  }
+  
+  // Simple date parsing
+  const now = new Date();
+  if (lowerQuery.includes('last month')) {
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+    searchParams.startDate = lastMonth.toISOString().split('T')[0];
+    searchParams.endDate = lastMonthEnd.toISOString().split('T')[0];
+    confidence += 20;
+  } else if (lowerQuery.includes('this month')) {
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    searchParams.startDate = thisMonth.toISOString().split('T')[0];
+    searchParams.endDate = now.toISOString().split('T')[0];
+    confidence += 20;
+  } else if (lowerQuery.includes('months ago')) {
+    const monthsMatch = query.match(/(\d+)\s+months?\s+ago/);
+    if (monthsMatch) {
+      const monthsAgo = parseInt(monthsMatch[1]);
+      const startDate = new Date(now.getFullYear(), now.getMonth() - monthsAgo, now.getDate());
+      searchParams.startDate = startDate.toISOString().split('T')[0];
+      confidence += 20;
+    }
+  }
+  
+  // Category matching
+  const matchedCategories = availableCategories.filter(category => 
+    lowerQuery.includes(category.toLowerCase())
+  );
+  if (matchedCategories.length > 0) {
+    searchParams.categories = matchedCategories;
+    confidence += 20;
+  }
+  
+  // Transaction type inference
+  if (lowerQuery.includes('salary') || lowerQuery.includes('income') || lowerQuery.includes('payment received')) {
+    searchParams.type = 'income';
+    confidence += 15;
+  } else if (lowerQuery.includes('bought') || lowerQuery.includes('spent') || lowerQuery.includes('paid for')) {
+    searchParams.type = 'expense';
+    confidence += 15;
+  }
+  
+  // Extract description keywords
+  const stopWords = ['i', 'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'ago', 'around', 'roughly', 'about'];
+  const words = query.toLowerCase().split(/\s+/).filter(word => 
+    word.length > 2 && !stopWords.includes(word) && !amountRegex.test(word)
+  );
+  
+  if (words.length > 0) {
+    searchParams.description = words[0]; // Use first meaningful word
+    confidence += 10;
+  }
+  
+  let interpretation = 'Searching for transactions';
+  if (searchParams.description) interpretation += ` containing "${searchParams.description}"`;
+  if (searchParams.minAmount || searchParams.maxAmount) {
+    interpretation += ` with amount ${searchParams.minAmount ? `≥${searchParams.minAmount}` : ''}${searchParams.minAmount && searchParams.maxAmount ? ' and ' : ''}${searchParams.maxAmount ? `≤${searchParams.maxAmount}` : ''}`;
+  }
+  if (searchParams.startDate) interpretation += ` from ${searchParams.startDate}`;
+  if (searchParams.categories) interpretation += ` in ${searchParams.categories.join(', ')} categories`;
+  
+  if (confidence < 60) {
+    alternatives.push(
+      'Try using specific dates like "last month"',
+      'Include amount ranges like "around $50"',
+      'Mention specific categories or merchants'
+    );
+  }
+  
+  return {
+    searchParams,
+    confidence,
+    interpretation,
+    alternatives: alternatives.length > 0 ? alternatives : undefined
+  };
+}

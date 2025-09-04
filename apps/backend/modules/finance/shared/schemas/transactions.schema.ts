@@ -11,6 +11,11 @@ export const transactionsSchema = sqliteTable('transactions', {
   categoryId: integer('category_id').notNull().references(() => categoriesSchema.id),
   note: text('note'),
   date: text('date').notNull(),
+  description: text('description'),
+  payee: text('payee'),
+  reference: text('reference'),
+  recurringTransactionId: integer('recurring_transaction_id'),
+  isDemo: integer('is_demo', { mode: 'boolean' }).default(false).notNull(),
 });
 
 export const transactionsRelations = relations(transactionsSchema, ({ one }) => ({
@@ -26,6 +31,11 @@ type TTransaction = TBaseEntity & {
   categoryId: number;
   note: string | null;
   date: string;
+  description?: string;
+  payee?: string;
+  reference?: string;
+  recurringTransactionId?: number;
+  isDemo: boolean;
   synced: boolean;
 };
 

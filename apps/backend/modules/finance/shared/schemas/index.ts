@@ -9,3 +9,5 @@ export * from './alerts.schema';
 export * from './currency.schema';
 export * from './goals.schema';
 export * from './audit.schema';
+export * from './demo-settings.schema';
+export * from './users.schema';

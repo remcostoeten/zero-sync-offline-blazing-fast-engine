@@ -17747,7 +17747,7 @@ async function bulkDeleteRecurringTransactions(ids, deleteGeneratedTransactions 
   return { deleted, failed };
 }
 // modules/finance/features/recurring/schemas/index.ts
-var RecurringTransactionInsertSchema = exports_external.object({
+var RecurringTransactionBaseSchema = exports_external.object({
   name: exports_external.string().min(1, "Name is required").max(100, "Name too long"),
   description: exports_external.string().optional(),
   categoryId: exports_external.number().int().positive("Category ID must be positive"),
@@ -17767,7 +17767,8 @@ var RecurringTransactionInsertSchema = exports_external.object({
   payee: exports_external.string().optional(),
   reference: exports_external.string().optional(),
   tags: exports_external.array(exports_external.string()).default([])
-}).refine((data) => {
+});
+function validateRecurringPattern(data) {
   if (data.frequency === "weekly" && data.dayOfWeek === undefined) {
     return false;
   }
@@ -17784,10 +17785,11 @@ var RecurringTransactionInsertSchema = exports_external.object({
     return false;
   }
   return true;
-}, {
+}
+var RecurringTransactionInsertSchema = RecurringTransactionBaseSchema.refine(validateRecurringPattern, {
   message: "Invalid recurring pattern or missing required frequency fields"
 });
-var RecurringTransactionUpdateSchema = RecurringTransactionInsertSchema.partial().extend({
+var RecurringTransactionUpdateSchema = RecurringTransactionBaseSchema.partial().extend({
   id: exports_external.number().int().positive().optional()
 });
 var RecurringTransactionFiltersSchema = exports_external.object({

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { DemoToggle } from '@/components/demo-toggle';
 import { 
   Settings as SettingsIcon,
   User,
@@ -16,12 +17,13 @@ import {
   Shield,
   Database,
   Info,
-  ExternalLink
+  ExternalLink,
+  PlayCircle
 } from 'lucide-react';
 
 export default function SettingsPage() {
   const [appInfo, setAppInfo] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('preferences');
+  const [activeTab, setActiveTab] = useState('demo');
 
   useEffect(() => {
     loadAppInfo();
@@ -36,7 +38,41 @@ export default function SettingsPage() {
     }
   };
 
+  function DemoModeSection() {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <PlayCircle className="w-5 h-5" />
+            Demo Mode
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Switch between your real financial data and sample demo data to explore the application safely.
+            </p>
+            <DemoToggle 
+              className="w-full" 
+              showStats={true}
+              onToggle={(isDemoMode) => {
+                console.log('Demo mode toggled:', isDemoMode);
+              }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const settingsTabs = [
+    {
+      id: 'demo',
+      label: 'Demo Mode',
+      description: 'Switch between real and sample data',
+      icon: PlayCircle,
+      component: DemoModeSection
+    },
     {
       id: 'preferences',
       label: 'Preferences',
@@ -73,7 +109,7 @@ export default function SettingsPage() {
 
         {/* Settings Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
             {settingsTabs.map((tab) => {
               const Icon = tab.icon;
               return (

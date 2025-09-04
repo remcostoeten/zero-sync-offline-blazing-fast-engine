@@ -6,12 +6,17 @@ import { createSyncableEntity } from '../db/schema-helpers';
 export const savingsGoalsSchema = sqliteTable('savings_goals', {
   ...createSyncableEntity(),
   name: text('name').notNull(),
-  targetAmount: real('target_amount').notNull(),
-  currentAmount: real('current_amount').default(0),
-  deadline: text('deadline'),
   description: text('description'),
-  color: text('color').default('#10B981'),
+  targetAmount: real('target_amount').notNull(),
+  currentAmount: real('current_amount').default(0).notNull(),
+  targetDate: text('target_date'),
+  isCompleted: integer('is_completed', { mode: 'boolean' }).default(false).notNull(),
+  priority: text('priority', { enum: ['low', 'medium', 'high'] }).default('medium').notNull(),
+  color: text('color').default('#3B82F6'),
   icon: text('icon').default('🎯'),
+  isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+  monthlyTarget: real('monthly_target'),
+  category: text('category'),
 });
 
 export const savingsTransactionsSchema = sqliteTable('savings_transactions', {
@@ -36,12 +41,17 @@ export const savingsTransactionsRelations = relations(savingsTransactionsSchema,
 
 type TSavingsGoal = TBaseEntity & {
   name: string;
+  description: string | null;
   targetAmount: number;
   currentAmount: number;
-  deadline: string | null;
-  description: string | null;
+  targetDate: string | null;
+  isCompleted: boolean;
+  priority: 'low' | 'medium' | 'high';
   color: string;
   icon: string;
+  isActive: boolean;
+  monthlyTarget: number | null;
+  category: string | null;
   synced: boolean;
 };
 

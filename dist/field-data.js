@@ -1,4 +1,5 @@
 import { createClient } from '@libsql/client';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
@@ -144,7 +145,7 @@ async function main() {
     }
 }
 // Run the demo if this file is executed directly
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
     main().catch(console.error);
 }
 export { setupFieldDataDB, recordFieldData, getFieldData, getUnsyncedData, forceSync, displayFieldData };

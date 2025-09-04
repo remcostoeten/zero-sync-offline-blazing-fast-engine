@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SavingsGoalWithProgress } from '../actions';
-import { formatCurrency } from '@/lib/utils/currency';
+import { formatCurrency } from '@/lib/utils';
 import { formatDate } from '@/lib/utils/date';
 
 interface SavingsGoalCardProps {

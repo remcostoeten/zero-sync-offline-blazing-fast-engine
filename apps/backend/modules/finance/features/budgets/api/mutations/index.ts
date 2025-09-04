@@ -61,7 +61,10 @@ async function createBudget(data: TBudgetCreateData): Promise<TBudget> {
     budgetData.endDate = endDate.toISOString().split('T')[0];
   }
   
-  return await budgetCrud.create(budgetData);
+  return await budgetCrud.create({
+    ...budgetData,
+    synced: false
+  });
 }
 
 async function updateBudget(data: TBudgetUpdateData): Promise<TBudget> {

@@ -26,12 +26,12 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="p-2 rounded-lg bg-gray-100">
-              <IconComponent className="h-4 w-4 text-gray-600" />
+            <div className="p-2 rounded-lg bg-muted">
+              <IconComponent className="h-4 w-4 text-muted-foreground" />
             </div>
             <div>
               <h3 className="font-semibold text-sm">{category.name}</h3>
-              <p className="text-xs text-gray-500 capitalize">{category.type}</p>
+              <p className="text-xs text-muted-foreground capitalize">{category.type}</p>
             </div>
           </div>
           <div className="flex space-x-1">
@@ -61,7 +61,7 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
       
       {category.description && (
         <CardContent className="pt-0">
-          <p className="text-xs text-gray-600">{category.description}</p>
+          <p className="text-xs text-muted-foreground">{category.description}</p>
         </CardContent>
       )}
       
@@ -71,7 +71,7 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
             {category.isActive ? 'Active' : 'Inactive'}
           </Badge>
           {category.monthlyBudgetLimit && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               Budget: ${category.monthlyBudgetLimit}
             </span>
           )}

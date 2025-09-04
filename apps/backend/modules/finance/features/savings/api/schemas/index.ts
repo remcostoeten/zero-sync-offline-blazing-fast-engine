@@ -4,11 +4,17 @@ const savingsTransactionTypeSchema = z.enum(['deposit', 'withdrawal']);
 
 const createSavingsGoalSchema = z.object({
   name: z.string().min(1, 'Goal name is required').max(100, 'Goal name too long'),
-  targetAmount: z.number().positive('Target amount must be positive'),
-  deadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Deadline must be in YYYY-MM-DD format').optional(),
   description: z.string().max(500, 'Description too long').optional(),
+  targetAmount: z.number().positive('Target amount must be positive'),
+  currentAmount: z.number().min(0, 'Current amount cannot be negative').optional(),
+  targetDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Target date must be in YYYY-MM-DD format').optional(),
+  isCompleted: z.boolean().optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
   color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Color must be a valid hex color').optional(),
-  icon: z.string().max(10, 'Icon too long').optional()
+  icon: z.string().max(10, 'Icon too long').optional(),
+  isActive: z.boolean().optional(),
+  monthlyTarget: z.number().positive('Monthly target must be positive').optional(),
+  category: z.string().max(50, 'Category too long').optional()
 });
 
 const updateSavingsGoalSchema = createSavingsGoalSchema.partial();

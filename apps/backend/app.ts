@@ -6,6 +6,8 @@ import { transactionsRoutes } from './modules/finance/features/transactions/rout
 import { savingsRoutes } from './modules/finance/features/savings/routes';
 import { budgetsRouter } from './modules/finance/features/budgets';
 import { recurringRouter } from './modules/finance/features/recurring';
+import { demoToggleRoutes } from './modules/finance/features/demo-toggle/routes';
+import { authRoutes } from './modules/finance/features/auth/routes';
 
 const app = new Hono();
 
@@ -32,6 +34,8 @@ app.route('/api/finance/transactions', transactionsRoutes);
 app.route('/api/finance/savings', savingsRoutes);
 app.route('/api/finance/budgets', budgetsRouter);
 app.route('/api/finance/recurring', recurringRouter);
+app.route('/api/finance/demo-toggle', demoToggleRoutes);
+app.route('/api/auth', authRoutes);
 
 app.get('/api/finance', (c) => {
   return c.json({
@@ -128,8 +132,26 @@ app.get('/api/finance', (c) => {
       
       debt: {
         base: '/api/finance/debt',
-        status: '🚧 Coming Soon',
-        planned: ['Debt tracking', 'Payment schedules', 'Interest calculations']
+        methods: {
+          'GET /': 'List all debts with filters',
+          'GET /:id': 'Get a single debt by ID',
+          'POST /': 'Create a new debt',
+          'PUT /:id': 'Update an existing debt',
+          'DELETE /:id': 'Delete a debt',
+          'POST /bulk': 'Bulk create debts',
+          'PUT /bulk': 'Bulk update debts',
+          'DELETE /bulk': 'Bulk delete debts',
+          'GET /payments': 'List all payments with filters',
+          'POST /:id/payments': 'Process a payment for a debt',
+          'PUT /payments/:paymentId': 'Update a payment',
+          'DELETE /payments/:paymentId': 'Delete a payment',
+          'POST /payments/bulk': 'Bulk process payments',
+          'GET /statistics': 'Get debt statistics',
+          'POST /amortization': 'Generate an amortization schedule for a debt',
+          'POST /strategies': 'Generate payment strategies',
+          'POST /consolidate': 'Consolidate debts',
+          'POST /calculate-interest': 'Calculate accrued interest'
+        }
       },
       
       tags: {

@@ -112,7 +112,7 @@
 - Credit utilization tracking
 - Strategic debt management tools
 
-## 🚧 Remaining Modules (6/11)
+## 🚧 Remaining Modules (5/11)
 
 ### 7. Tags Module
 **Purpose**: Transaction tagging and filtering system  

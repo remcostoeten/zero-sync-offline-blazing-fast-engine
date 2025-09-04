@@ -1,4 +1,4 @@
-import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { TBaseEntity } from '../types';
 import { createSyncableEntity } from '../db/schema-helpers';
 
@@ -8,6 +8,7 @@ export const categoriesSchema = sqliteTable('categories', {
   type: text('type', { enum: ['income', 'expense'] }).notNull(),
   color: text('color').default('#3B82F6'),
   icon: text('icon').default('💰'),
+  isDemo: integer('is_demo', { mode: 'boolean' }).default(false).notNull(),
 });
 
 type TCategory = TBaseEntity & {
@@ -15,6 +16,7 @@ type TCategory = TBaseEntity & {
   type: 'income' | 'expense';
   color: string;
   icon: string;
+  isDemo: boolean;
   synced: boolean;
 };
 

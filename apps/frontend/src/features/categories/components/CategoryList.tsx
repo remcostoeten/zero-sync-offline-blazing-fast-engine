@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryCard } from './CategoryCard';
 import { CategoryForm } from './CategoryForm';
-import { deleteCategory } from '../actions';
+import { deleteCategoryLocal } from '../local-actions';
 import { Plus, Search, Filter } from 'lucide-react';
 import type { Category } from '@/lib/database/schemas';
 
@@ -50,7 +50,7 @@ export function CategoryList({ initialCategories }: CategoryListProps) {
   const handleDelete = async (categoryId: number) => {
     if (confirm('Are you sure you want to delete this category?')) {
       try {
-        await deleteCategory({ id: categoryId.toString() });
+        await deleteCategoryLocal({ id: categoryId.toString() });
         setCategories(categories.filter(cat => cat.id !== categoryId));
       } catch (error) {
         console.error('Delete error:', error);

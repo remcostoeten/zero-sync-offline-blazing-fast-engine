@@ -1,165 +1,193 @@
-# Finance App Frontend
+# Universal Productivity Suite
 
-A Next.js 15 application with TypeScript, Tailwind CSS, and SQLite database for personal finance management.
+A modern, modular productivity application built with Next.js 15, featuring finance management, with upcoming notes, todos, project management, and database viewing capabilities.
 
-## Features
+## 🎯 Features
 
-### Categories Module (Complete)
-- ✅ Create, read, update, delete categories
-- ✅ Five category types: income, expense, debt, investment, savings
-- ✅ Interactive UI with search and filtering
-- ✅ Form validation with Zod schemas
-- ✅ Modal forms for adding/editing
-- ✅ Responsive card grid layout
-- ✅ Monthly budget limits per category
+### ✅ Currently Available
 
-## Tech Stack
+**Finance Management** (Fully Implemented)
+- 📊 Dashboard with financial overview
+- 💰 Transaction management and categorization  
+- 🎯 Budget tracking and alerts
+- 🏦 Savings goals with progress tracking
+- 🔄 Recurring transactions and automation
+- 📈 Financial reports and analytics
+- ⚙️ Settings with demo data toggle
+- 🎭 Demo mode with realistic sample data
 
-- **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Database**: SQLite with Turso
-- **ORM**: Drizzle ORM
-- **Forms**: React Hook Form + Zod validation
-- **Icons**: Lucide React
-- **UI Components**: Custom components with Tailwind variants
+### 🚧 Coming Soon
 
-## Project Structure
+**Notes** - Rich text note-taking with organization and search
+**To-dos** - Task management with projects and collaboration  
+**Projects** - Project management with teams and milestones
+**Database Viewer** - Browse and manage database tables
+
+## 🏗️ Architecture
+
+### Modular Feature-Based Structure
 
 ```
 src/
-├── app/                    # Next.js app router
-│   ├── categories/         # Categories page
-│   ├── globals.css         # Global styles
-│   ├── layout.tsx          # Root layout with navigation
-│   └── page.tsx           # Dashboard home page
-├── components/
-│   ├── ui/                # Reusable UI components
-│   │   ├── badge.tsx      # Badge component
-│   │   ├── button.tsx     # Button with variants
-│   │   ├── card.tsx       # Card component
-│   │   └── input.tsx      # Input component
-│   └── Navigation.tsx     # Main navigation
+├── config/
+│   └── features.ts              # Feature registry and configuration
+├── shared/
+│   ├── components/
+│   │   ├── layouts/
+│   │   │   └── app-layout.tsx   # Main app layout with sidebar
+│   │   ├── sidebar.tsx          # Modern collapsible sidebar
+│   │   └── breadcrumbs.tsx      # Dynamic breadcrumb navigation
+│   ├── utils/                   # Shared utilities
+│   ├── types/                   # Shared TypeScript types  
+│   └── hooks/                   # Shared React hooks
 ├── features/
-│   └── categories/        # Category feature module
-│       ├── actions.ts     # Server actions
-│       └── components/    # Category-specific components
-│           ├── CategoryCard.tsx   # Individual category display
-│           ├── CategoryForm.tsx   # Add/edit form
-│           ├── CategoryList.tsx   # Main list component
-│           └── index.ts   # Barrel exports
-├── lib/
-│   ├── crud/
-│   │   └── factory.ts     # CRUD operations factory
-│   ├── database/
-│   │   ├── connection.ts  # Database connection
-│   │   └── schemas.ts     # Drizzle schemas
-│   ├── validation/
-│   │   └── schemas.ts     # Zod validation schemas
-│   └── utils.ts           # Utility functions
-└── scripts/
-    └── init-db.ts         # Database initialization
+│   ├── finance/                 # Finance feature module
+│   ├── notes/                   # Notes feature (future)
+│   ├── todos/                   # Todos feature (future)
+│   ├── projects/                # Projects feature (future)
+│   └── database-viewer/         # Database viewer feature (future)
+└── app/                         # Next.js 15 App Router
+    ├── finance/                 # Finance routes (/finance/*)
+    │   ├── categories/
+    │   ├── transactions/
+    │   ├── budgets/
+    │   ├── savings/
+    │   ├── recurring/
+    │   ├── reports/
+    │   └── settings/
+    ├── notes/                   # Notes routes (placeholder)
+    ├── todos/                   # Todos routes (placeholder)
+    ├── projects/                # Projects routes (placeholder)  
+    └── database/                # Database routes (placeholder)
 ```
 
-## Getting Started
+## 🎨 Key Components
 
-### 1. Environment Setup
+### Modern Sidebar Navigation
+- 🎯 **Feature-grouped navigation** with collapsible sections
+- 🔍 **Real-time search** across all features and pages
+- 📱 **Mobile responsive** with drawer functionality
+- 🎨 **Theme-aware colors** for different feature sections
+- ⌨️ **Keyboard navigation** support
 
-Create `.env.local`:
+### Intelligent Layout System  
+- 📐 **Flexible layouts** that adapt to different features
+- 🍞 **Dynamic breadcrumbs** based on current location
+- 🎯 **Feature context headers** showing current section
+- 📱 **Responsive design** for all screen sizes
 
+### Feature Management
+- ⚙️ **Centralized configuration** in `features.ts`
+- 🔒 **Permission-based access** control
+- 🎚️ **Feature flags** for development and rollout
+- 📊 **Metadata tracking** (version, author, tags)
+
+## 🛠️ Development
+
+### Prerequisites
+- Node.js 18+
+- Bun (package manager)
+
+### Setup
 ```bash
-TURSO_DATABASE_URL="file:./dev.db"  # For local SQLite
-TURSO_AUTH_TOKEN=""                 # Leave empty for local
+cd apps/frontend
+bun install
+bun dev
 ```
 
-### 2. Install Dependencies
+### Adding New Features
 
-```bash
-npm install
+See the comprehensive [Feature Development Guide](./FEATURE_DEVELOPMENT.md) for detailed instructions on adding new features to the application.
+
+Quick steps:
+1. Add feature config to `src/config/features.ts`
+2. Create feature directory structure
+3. Build feature components and pages
+4. Add app routes
+5. Enable the feature in config
+
+### Code Standards
+
+**TypeScript Rules:**
+- ✅ Use `type` declarations (not `interface`)
+- ✅ Prefix all types with `T` (e.g., `TProps`, `TUser`)
+- ✅ Single non-exported type per file should be `TProps`
+
+**React Components:**
+- ✅ Use `function` declarations (no arrow functions)
+- ✅ Named exports only (except pages/views)
+- ✅ Props type must be called `TProps`
+
+**Functional Programming:**
+- ✅ Pure functions without side effects
+- ✅ No classes, `extends`, `new`, or `this`
+- ✅ Immutable data patterns
+- ✅ Composition over inheritance
+
+## 🎯 Navigation Features
+
+### Smart Sidebar
+- **Collapsible design** - Expands/collapses with persistent state
+- **Feature sections** - Organized by product areas (Finance, Notes, etc.)
+- **Active state** - Clear indication of current page
+- **Search functionality** - Find any feature or page instantly
+- **Mobile responsive** - Drawer pattern on small screens
+
+### Dynamic Breadcrumbs  
+- **Context aware** - Shows current feature and page
+- **Clickable navigation** - Jump to any parent level
+- **Home integration** - Always accessible home link
+
+### Feature Context
+- **Current feature indicator** - Shows active feature with icon and description
+- **Theme colors** - Each feature has its own color scheme
+- **Responsive design** - Adapts to screen size
+
+## 🚀 Future Roadmap
+
+1. **Notes Feature** - Rich text editing, organization, search
+2. **Todos Feature** - Task management, projects, collaboration  
+3. **Projects Feature** - Team management, milestones, tracking
+4. **Database Viewer** - Table browsing, query builder, admin tools
+5. **Advanced Search** - Global search across all features
+6. **User Management** - Authentication, permissions, profiles
+7. **Integrations** - Third-party service connections
+
+## 📁 Current Structure
+
+```
+apps/frontend/
+├── src/
+│   ├── app/                    # Next.js 15 App Router
+│   │   ├── finance/           # ✅ Finance routes (implemented)
+│   │   ├── notes/             # 🚧 Notes routes (placeholder)
+│   │   ├── todos/             # 🚧 Todos routes (placeholder)
+│   │   ├── projects/          # 🚧 Projects routes (placeholder)
+│   │   ├── database/          # 🚧 Database routes (placeholder)
+│   │   ├── layout.tsx         # Root layout with AppLayout
+│   │   └── page.tsx           # Redirects to /finance
+│   ├── shared/
+│   │   └── components/
+│   │       ├── layouts/
+│   │       │   └── app-layout.tsx
+│   │       ├── sidebar.tsx
+│   │       ├── breadcrumbs.tsx
+│   │       └── demo-toggle.tsx
+│   ├── config/
+│   │   └── features.ts        # Feature registry
+│   └── features/              # Feature modules
+├── FEATURE_DEVELOPMENT.md     # Development guide
+└── README.md                  # This file
 ```
 
-### 3. Initialize Database (Optional)
+## 🎭 Demo Mode
 
-```bash
-npm run init-db
-```
+The finance feature includes a comprehensive demo mode:
+- **Toggle in settings** - Switch between real and sample data
+- **Rich sample data** - Realistic transactions, budgets, and categories
+- **Safe exploration** - Explore features without affecting real data
+- **Data preservation** - Your real data is preserved when switching modes
 
-This creates sample categories to demonstrate the functionality.
+---
 
-### 4. Run Development Server
-
-```bash
-npm run dev
-```
-
-Visit [http://localhost:3001](http://localhost:3001)
-
-## Usage
-
-### Categories Management
-
-1. **View Categories**: Navigate to `/categories` to see all categories
-2. **Create Category**: Click "New Category" button to open the form modal
-3. **Edit Category**: Click the pencil icon on any category card
-4. **Delete Category**: Click the trash icon (with confirmation)
-5. **Filter Categories**: Use the search bar and filter dropdowns
-6. **Budget Limits**: Set optional monthly budget limits for expense categories
-
-### Form Validation
-
-- Name: Required, 1-50 characters
-- Type: Required, one of: income, expense, debt, investment, savings
-- Description: Optional
-- Monthly Budget Limit: Optional positive number
-- Status: Active/Inactive toggle
-
-## Architecture Decisions
-
-### Server Actions
-- Direct server actions instead of API routes
-- Better type safety and performance
-- Automatic revalidation with `revalidatePath`
-
-### Component Structure
-- Feature-based organization
-- Reusable UI components
-- Client-side state management for UI interactions
-- Server-side data fetching and mutations
-
-### Form Handling
-- React Hook Form for performance
-- Zod for runtime type validation
-- Proper error handling and display
-
-### Database Design
-- SQLite for simplicity and local development
-- Drizzle ORM for type-safe queries
-- Incremental ID primary keys
-- Created/updated timestamps
-- Sync support (for future multi-device sync)
-
-## Next Steps
-
-The categories module is complete and provides a solid foundation for:
-
-1. **Transactions Module**: Create transactions linked to categories
-2. **Budgets Module**: Set budget limits per category
-3. **Savings Goals Module**: Track progress toward financial goals
-4. **Dashboard Analytics**: Visual charts and statistics
-5. **Debt Management**: Track and plan debt payments
-
-The established patterns can be replicated for other modules:
-- Database schema definition
-- Zod validation schemas
-- Server actions for CRUD operations
-- Reusable UI components
-- Feature-based organization
-
-## Development Notes
-
-- Uses Next.js 15 with Turbopack for fast development
-- All components use TypeScript for type safety
-- Tailwind CSS for consistent styling
-- Form validation prevents invalid data submission
-- Responsive design works on all device sizes
-- Accessibility considerations in form labels and navigation
+**Built with ❤️ using Next.js 15, TypeScript, and modern web technologies**

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BudgetWithProgress } from '../actions';
-import { formatCurrency } from '@/lib/utils/currency';
+import { formatCurrency } from '@/lib/utils';
 import { formatDate } from '@/lib/utils/date';
 
 interface BudgetCardProps {
@@ -116,8 +116,8 @@ export function BudgetCard({
     <Card className={cn(
       'relative transition-all duration-200 hover:shadow-md',
       !budget.isActive && 'opacity-60',
-      budget.progress.isOverBudget && 'border-red-200 bg-red-50/30',
-      budget.progress.healthStatus === 'warning' && 'border-yellow-200 bg-yellow-50/30',
+      budget.progress.isOverBudget && 'border-red-500/50 bg-destructive/5',
+      budget.progress.healthStatus === 'warning' && 'border-yellow-500/50 bg-yellow-500/5',
       className
     )}>
       {/* Priority indicator */}
@@ -140,10 +140,10 @@ export function BudgetCard({
             <div>
               <h3 className="font-semibold text-lg">{budget.name}</h3>
               {budget.description && (
-                <p className="text-sm text-gray-600 mt-1">{budget.description}</p>
+                <p className="text-sm text-muted-foreground mt-1">{budget.description}</p>
               )}
               <div className="flex items-center space-x-2 mt-1">
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-foreground">
                   {budget.category.name}
                 </span>
                 <Badge variant="outline" className="text-xs">
@@ -201,7 +201,7 @@ export function BudgetCard({
             } as React.CSSProperties}
           />
           
-          <div className="flex justify-between text-xs text-gray-500">
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>{formatCurrency(budget.progress.remaining)} remaining</span>
             {budget.progress.daysLeft && (
               <span>{budget.progress.daysLeft} days left</span>

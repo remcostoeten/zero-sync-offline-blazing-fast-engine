@@ -126,7 +126,10 @@ async function createDebt(data: TDebtCreateData): Promise<TDebt> {
     throw new Error('Current balance cannot exceed credit limit');
   }
   
-  return await debtCrud.create(data);
+  return await debtCrud.create({
+    ...data,
+    synced: false
+  });
 }
 
 async function updateDebt(data: TDebtUpdateData): Promise<TDebt> {
@@ -212,7 +215,10 @@ async function processPayment(
     ...paymentData,
     principalAmount: allocation.principalAmount,
     interestAmount: allocation.interestAmount,
-    feesAmount: allocation.feesAmount
+    feesAmount: allocation.feesAmount,
+    synced: false,
+    notes: paymentData.description || '',
+    isExtraPayment: paymentData.paymentType === 'extra'
   };
   
   const payment = await paymentCrud.create(paymentCreateData);
@@ -245,7 +251,9 @@ async function processPayment(
       description: `Payment for ${debt.name} to ${debt.creditor}`,
       payee: debt.creditor,
       reference: paymentData.reference,
-      debtPaymentId: payment.id
+      note: `Debt payment for ${debt.name}`,
+      isDemo: false,
+      synced: false
     };
     
     try {
@@ -353,7 +361,8 @@ async function consolidateDebts(
     ...newDebtData,
     principal: totalConsolidatedAmount,
     currentBalance: totalConsolidatedAmount,
-    originationDate: consolidationDate
+    originationDate: consolidationDate,
+    synced: false
   };
   
   const newDebt = await debtCrud.create(consolidatedDebtData);
@@ -368,7 +377,10 @@ async function consolidateDebts(
     interestAmount: 0,
     feesAmount: consolidationFees,
     description: `Debt consolidation from ${validDebts.length} debts`,
-    isVerified: true
+    isVerified: true,
+    synced: false,
+    notes: `Debt consolidation from ${validDebts.length} debts`,
+    isExtraPayment: false
   };
   
   const consolidationPayment = await paymentCrud.create(consolidationPaymentData);
@@ -387,7 +399,10 @@ async function consolidateDebts(
       interestAmount: 0,
       feesAmount: 0,
       description: 'Paid off through debt consolidation',
-      isVerified: true
+      isVerified: true,
+      synced: false,
+      notes: 'Paid off through debt consolidation',
+      isExtraPayment: false
     };
     
     await paymentCrud.create(payoffPaymentData);
@@ -525,7 +540,10 @@ export {
   bulkProcessPayments,
   bulkDeleteDebts,
   calculateAccruedInterest,
-  calculatePaymentAllocation,
+  calculatePaymentAllocation
+};
+
+export type {
   TPaymentResult,
   TConsolidationResult,
   TPaymentAllocation

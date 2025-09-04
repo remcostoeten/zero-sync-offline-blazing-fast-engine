@@ -26,7 +26,8 @@ export const categoriesSchema = sqliteTable('categories', {
   color: text('color').default('#3B82F6'),
   icon: text('icon').default('📁'),
   isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
-  monthlyBudgetLimit: real('monthly_budget_limit')
+  monthlyBudgetLimit: real('monthly_budget_limit'),
+  isDemo: integer('is_demo', { mode: 'boolean' }).default(false).notNull()
 });
 
 // Transactions Schema
@@ -42,7 +43,8 @@ export const transactionsSchema = sqliteTable('transactions', {
   tags: text('tags', { mode: 'json' }).$type<string[]>().default([]),
   recurringTransactionId: integer('recurring_transaction_id'),
   savingsGoalId: integer('savings_goal_id'),
-  debtPaymentId: integer('debt_payment_id')
+  debtPaymentId: integer('debt_payment_id'),
+  isDemo: integer('is_demo', { mode: 'boolean' }).default(false).notNull()
 });
 
 // Savings Goals Schema

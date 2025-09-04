@@ -53,6 +53,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { DemoToggle } from '@/components/demo-toggle';
 
 export function DataSecuritySettings() {
   const [securitySettings, setSecuritySettings] = useState<SecuritySettingsType | null>(null);
@@ -227,6 +228,18 @@ export function DataSecuritySettings() {
 
   return (
     <div className="space-y-6">
+      {/* Demo Mode Toggle */}
+      <DemoToggle 
+        className="mb-6"
+        onToggle={(isDemoMode) => {
+          if (isDemoMode) {
+            toast.success('Demo mode enabled! Sample data loaded.');
+          } else {
+            toast.success('Demo mode disabled! Real data restored.');
+          }
+        }}
+      />
+
       {/* Security Settings */}
       <Card>
         <CardHeader>

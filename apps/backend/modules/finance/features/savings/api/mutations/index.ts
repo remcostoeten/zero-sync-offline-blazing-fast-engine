@@ -89,7 +89,8 @@ async function withdrawFromSavings(goalId: number, amount: number, note?: string
     amount,
     type: 'withdrawal',
     note: note || `Withdrawal from ${goal.name}`,
-    date: date || new Date().toISOString().split('T')[0]
+    date: date || new Date().toISOString().split('T')[0],
+    synced: false
   });
 }
 

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // Core debt schemas
-export const DebtInsertSchema = z.object({
+const DebtInsertBaseSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   description: z.string().optional(),
   creditor: z.string().min(1, 'Creditor is required').max(100, 'Creditor name too long'),
@@ -33,7 +33,9 @@ export const DebtInsertSchema = z.object({
   // Metadata
   tags: z.array(z.string()).default([]),
   notes: z.string().optional()
-}).refine((data) => {
+});
+
+export const DebtInsertSchema = DebtInsertBaseSchema.refine((data) => {
   // Current balance cannot exceed principal for most debt types
   if (['personal_loan', 'mortgage', 'auto_loan', 'student_loan'].includes(data.debtType) && 
       data.currentBalance > data.principal) {
@@ -55,7 +57,7 @@ export const DebtInsertSchema = z.object({
   message: "Invalid debt configuration"
 });
 
-export const DebtUpdateSchema = DebtInsertSchema.partial().extend({
+export const DebtUpdateSchema = DebtInsertBaseSchema.partial().extend({
   id: z.number().int().positive().optional()
 });
 
@@ -91,7 +93,28 @@ export const DebtPaymentInsertSchema = z.object({
   message: "Payment allocation exceeds total payment amount"
 });
 
-export const DebtPaymentUpdateSchema = DebtPaymentInsertSchema.partial().extend({
+// Create base schema without refine for partial operations
+const DebtPaymentInsertBaseSchema = z.object({
+  debtId: z.number().int().positive('Debt ID must be positive'),
+  amount: z.number().positive('Payment amount must be positive'),
+  paymentDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
+  paymentType: z.enum(['regular', 'extra', 'minimum', 'interest_only']).default('regular'),
+  
+  // Payment allocation
+  principalAmount: z.number().min(0, 'Principal amount cannot be negative').optional(),
+  interestAmount: z.number().min(0, 'Interest amount cannot be negative').optional(),
+  feesAmount: z.number().min(0, 'Fees amount cannot be negative').default(0),
+  
+  // Payment method and reference
+  paymentMethod: z.enum(['bank_transfer', 'check', 'cash', 'auto_pay', 'credit_card', 'other']).optional(),
+  reference: z.string().optional(),
+  description: z.string().optional(),
+  
+  // Verification
+  isVerified: z.boolean().default(false)
+});
+
+export const DebtPaymentUpdateSchema = DebtPaymentInsertBaseSchema.partial().extend({
   id: z.number().int().positive().optional()
 });
 
@@ -165,7 +188,7 @@ export const PaymentScheduleGenerationSchema = z.object({
 // Debt consolidation schema
 export const DebtConsolidationSchema = z.object({
   sourceDebtIds: z.array(z.number().int().positive()).min(2).max(10),
-  newDebtData: DebtInsertSchema.omit({ principal: true, currentBalance: true }),
+  newDebtData: DebtInsertBaseSchema.omit({ principal: true, currentBalance: true }),
   consolidationDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   consolidationFees: z.number().min(0).default(0)
 });

@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { setupEnterpriseDatabase, createUser, getUsers, createProject, getProjects, updateProjectStatus, createTask, getTasks, updateTaskStatus, logTimeEntry, getTimeEntries, addComment, getComments, getAuditLog, syncAllData, getSyncStatus, generateProjectReport, generateUserWorkloadReport } from './enterprise-app';
 // Load environment variables
@@ -353,7 +354,7 @@ async function runCompleteDemo() {
     }
 }
 // Run the demo if this file is executed directly
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
     runCompleteDemo().catch(console.error);
 }
 export { runCompleteDemo };

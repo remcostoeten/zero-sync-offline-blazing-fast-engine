@@ -38,7 +38,7 @@ import { cn } from '@/lib/utils';
 import { SavingsGoalWithProgress } from '../actions';
 import { SavingsGoalCard } from './SavingsGoalCard';
 import { SavingsGoalForm } from './SavingsGoalForm';
-import { formatCurrency } from '@/lib/utils/currency';
+import { formatCurrency } from '@/lib/utils';
 
 interface SavingsGoalListProps {
   goals: SavingsGoalWithProgress[];

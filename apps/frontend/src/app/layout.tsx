@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Navigation } from "@/components/Navigation";
+import { AppLayout } from "@/shared/components/layouts/app-layout";
+import { ThemeProvider } from "@/lib/providers/theme-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Finance App",
-  description: "Personal finance management application",
+  title: "Universal Productivity Suite",
+  description: "All-in-one productivity application with finance, notes, todos, and more",
 };
 
 export default function RootLayout({
@@ -28,10 +29,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navigation />
-        <main>
-          {children}
-        </main>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AppLayout>
+            {children}
+          </AppLayout>
+        </ThemeProvider>
       </body>
     </html>
   );
