@@ -6,13 +6,20 @@ import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { BudgetCard } from './BudgetCard';
 import { BudgetForm } from './BudgetForm';
-import { deleteBudget, getBudgets, getBudgetsSummary, getBudgetAlerts, type BudgetWithSpending } from '../actions';
-import { getCategories } from '@/features/categories/actions';
-import { Plus, Search, Filter, Target, AlertTriangle, TrendingUp, DollarSign } from 'lucide-react';
+import { 
+  deleteBudget, 
+  getBudgets, 
+  getBudgetsSummary, 
+  getBudgetAlerts, 
+  getBudgetCategories,
+  type BudgetWithUtilization 
+} from '../api-actions';
+import { Plus, Search, Filter, Target, AlertTriangle, TrendingUp, DollarSign, Loader2 } from 'lucide-react';
 import type { Category } from '@/lib/database/schemas';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface BudgetListProps {
-  initialBudgets: BudgetWithSpending[];
+  initialBudgets: BudgetWithUtilization[];
 }
 
 export function BudgetList({ initialBudgets }: BudgetListProps) {
@@ -24,12 +31,14 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
     totalBudgetAmount: number;
   } | null>(null);
   const [alerts, setAlerts] = useState<{
-    overBudget: BudgetWithSpending[];
-    nearLimit: BudgetWithSpending[];
+    overBudget: any[];
+    nearLimit: any[];
   } | null>(null);
   
   const [showForm, setShowForm] = useState(false);
-  const [editingBudget, setEditingBudget] = useState<BudgetWithSpending | undefined>();
+  const [editingBudget, setEditingBudget] = useState<BudgetWithUtilization | undefined>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,8 +50,10 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
   useEffect(() => {
     const loadData = async () => {
       try {
+        setIsLoading(true);
+        setError(null);
         const [fetchedCategories, summaryData, alertsData] = await Promise.all([
-          getCategories(),
+          getBudgetCategories(),
           getBudgetsSummary(),
           getBudgetAlerts()
         ]);
@@ -51,6 +62,9 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
         setAlerts(alertsData);
       } catch (error) {
         console.error('Failed to load data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load budget data');
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -60,8 +74,7 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
   // Apply filters
   const filteredBudgets = budgets.filter((budget) => {
     const matchesSearch = searchTerm === '' || 
-      budget.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      budget.category.name.toLowerCase().includes(searchTerm.toLowerCase());
+      budget.categoryName.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesCategory = categoryFilter === 'all' || budget.categoryId === categoryFilter;
     const matchesPeriod = periodFilter === 'all' || budget.period === periodFilter;
@@ -70,8 +83,8 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
       statusFilter === 'all' ||
       (statusFilter === 'active' && budget.isActive) ||
       (statusFilter === 'inactive' && !budget.isActive) ||
-      (statusFilter === 'over' && budget.spending.isOverBudget) ||
-      (statusFilter === 'near' && budget.spending.isNearLimit);
+      (statusFilter === 'over' && budget.status === 'exceeded') ||
+      (statusFilter === 'near' && budget.status === 'warning');
 
     return matchesSearch && matchesCategory && matchesPeriod && matchesStatus;
   });
@@ -95,16 +108,18 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
     }
   };
 
-  const handleEdit = (budget: BudgetWithSpending) => {
+  const handleEdit = (budget: BudgetWithUtilization) => {
     setEditingBudget(budget);
     setShowForm(true);
   };
 
-  const handleDelete = async (budgetId: number) => {
+  const handleDelete = async (budgetId: string) => {
     if (confirm('Are you sure you want to delete this budget?')) {
       try {
-        await deleteBudget({ id: budgetId.toString() });
-        setBudgets(budgets.filter(b => b.id !== budgetId));
+        setIsLoading(true);
+        setError(null);
+        await deleteBudget(parseInt(budgetId));
+        setBudgets(budgets.filter(b => b.id !== parseInt(budgetId)));
         
         // Refresh summary and alerts
         const [updatedSummary, updatedAlerts] = await Promise.all([
@@ -115,6 +130,9 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
         setAlerts(updatedAlerts);
       } catch (error) {
         console.error('Delete error:', error);
+        setError(error instanceof Error ? error.message : 'Failed to delete budget');
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -133,7 +151,7 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
 
   // Calculate totals for filtered budgets
   const totalBudgeted = filteredBudgets.reduce((sum, b) => sum + b.amount, 0);
-  const totalSpent = filteredBudgets.reduce((sum, b) => sum + b.spending.total, 0);
+  const totalSpent = filteredBudgets.reduce((sum, b) => sum + b.spentAmount, 0);
   const totalRemaining = totalBudgeted - totalSpent;
 
   return (
@@ -164,7 +182,7 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
               <CardContent className="pt-0">
                 <div className="text-red-900 font-medium">{alerts.overBudget.length} budgets</div>
                 <div className="text-xs text-red-700 mt-1">
-                  {alerts.overBudget.map(b => b.name).join(', ')}
+                  {alerts.overBudget.map(b => b.categoryName).join(', ')}
                 </div>
               </CardContent>
             </Card>
@@ -181,7 +199,7 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
               <CardContent className="pt-0">
                 <div className="text-yellow-900 font-medium">{alerts.nearLimit.length} budgets</div>
                 <div className="text-xs text-yellow-700 mt-1">
-                  {alerts.nearLimit.map(b => b.name).join(', ')}
+                  {alerts.nearLimit.map(b => b.categoryName).join(', ')}
                 </div>
               </CardContent>
             </Card>
@@ -322,34 +340,71 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
         </CardContent>
       </Card>
 
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+            <div>
+              <h3 className="text-sm font-medium text-red-800">Error loading budgets</h3>
+              <p className="text-sm text-red-600 mt-1">{error}</p>
+            </div>
+          </div>
+          <Button 
+            onClick={() => window.location.reload()} 
+            variant="outline" 
+            size="sm" 
+            className="mt-3"
+          >
+            Try Again
+          </Button>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span className="text-gray-600">Loading budgets...</span>
+          </div>
+        </div>
+      )}
+
       {/* Budget List */}
-      {filteredBudgets.length > 0 ? (
-        <div className="space-y-4">
-          <div className="text-sm text-gray-600">
-            Showing {filteredBudgets.length} of {budgets.length} budgets
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {filteredBudgets.map((budget) => (
-              <BudgetCard
-                key={budget.id}
-                budget={budget}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="text-center py-12">
-          <div className="text-gray-500 mb-2">
-            {budgets.length === 0 ? 'No budgets yet' : 'No budgets match your filters'}
-          </div>
-          {budgets.length === 0 && (
-            <Button onClick={() => setShowForm(true)} variant="outline">
-              Create your first budget
-            </Button>
+      {!isLoading && !error && (
+        <>
+          {filteredBudgets.length > 0 ? (
+            <div className="space-y-4">
+              <div className="text-sm text-gray-600">
+                Showing {filteredBudgets.length} of {budgets.length} budgets
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {filteredBudgets.map((budget) => (
+                  <BudgetCard
+                    key={budget.id}
+                    budget={budget}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <EmptyState
+              title={budgets.length === 0 ? 'No budgets yet' : 'No budgets match your filters'}
+              description={budgets.length === 0 ? undefined : 'Try adjusting filters or search terms'}
+              actions={
+                budgets.length === 0 ? (
+                  <Button onClick={() => setShowForm(true)} variant="outline">
+                    Create your first budget
+                  </Button>
+                ) : null
+              }
+              size="md"
+            />
           )}
-        </div>
+        </>
       )}
 
       {/* Form Modal */}

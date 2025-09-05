@@ -1,191 +1,180 @@
-import { createClient } from '@libsql/client';
-import { Connection } from '../schemas/connections.schema';
+import { Client } from 'pg';
+import { createConnection } from 'mysql2/promise';
+import Database from 'better-sqlite3';
+import type { Connection } from '../schemas/connections.schema';
 
-export interface DatabaseInfo {
+export type DatabaseInfo = {
+  version: string;
   tables: TableInfo[];
-  size: number;
-  rowCounts: Record<string, number>;
-}
+};
 
-export interface TableInfo {
+export type TableInfo = {
   name: string;
-  schema: string;
   columns: ColumnInfo[];
-}
+  rowCount?: number;
+};
 
-export interface ColumnInfo {
+export type ColumnInfo = {
   name: string;
   type: string;
-  isPrimaryKey: boolean;
-  isForeignKey: boolean;
   nullable: boolean;
-}
+  defaultValue?: string | null;
+  isPrimaryKey?: boolean;
+};
+
+type ConnectionResult = {
+  success: boolean;
+  error?: string;
+  info?: DatabaseInfo;
+};
+
+type QueryResult = {
+  success: boolean;
+  data?: any[];
+  error?: string;
+};
+
+type RowCountResult = {
+  success: boolean;
+  data?: Record<string, number>;
+  error?: string;
+};
+
+type SizeResult = {
+  success: boolean;
+  data?: number;
+  error?: string;
+};
+
+type TableRowsResult = {
+  success: boolean;
+  data?: {
+    rows: any[];
+    total: number;
+    hasMore: boolean;
+  };
+  error?: string;
+};
 
 export class DatabaseConnectionService {
-  private connections = new Map<string, any>();
+  private activeConnections = new Map<string, any>();
 
-  async testConnection(connection: Connection): Promise<{ success: boolean; error?: string; info?: DatabaseInfo }> {
+  async testConnection(connection: Connection): Promise<ConnectionResult> {
     try {
       switch (connection.type) {
-        case 'libsql':
-          return await this.testLibSQLConnection(connection);
+        case 'postgresql':
+          return await this.testPostgreSQL(connection);
+        case 'mysql':
+          return await this.testMySQL(connection);
         case 'sqlite':
-          return await this.testSQLiteConnection(connection);
-        case 'postgres':
-          return await this.testPostgresConnection(connection);
+          return await this.testSQLite(connection);
         default:
-          return { success: false, error: `Unsupported database type: ${connection.type}` };
+          return {
+            success: false,
+            error: `Unsupported database type: ${connection.type}`
+          };
       }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown connection error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
-  }
-
-  async getConnection(connectionId: string): Promise<any> {
-    return this.connections.get(connectionId);
   }
 
   async closeConnection(connectionId: string): Promise<void> {
-    const connection = this.connections.get(connectionId);
-    if (connection) {
-      // For LibSQL, we don't need to explicitly close
-      // For PostgreSQL, we would close the pool
-      this.connections.delete(connectionId);
-    }
-  }
-
-  private async testLibSQLConnection(connection: Connection): Promise<{ success: boolean; error?: string; info?: DatabaseInfo }> {
-    try {
-      if (!connection.url || !connection.token) {
-        return { success: false, error: 'LibSQL requires both URL and token' };
-      }
-
-      const client = createClient({
-        url: connection.url,
-        authToken: connection.token
-      });
-
-      // Test the connection by getting table list
-      const tables = await client.execute('SELECT name FROM sqlite_master WHERE type="table"');
-      
-      const tableInfos: TableInfo[] = [];
-      for (const table of tables.rows) {
-        const tableName = table.name as string;
-        const schema = await client.execute(`PRAGMA table_info(${tableName})`);
-        
-        const columns: ColumnInfo[] = schema.rows.map((col: any) => ({
-          name: col.name,
-          type: col.type,
-          isPrimaryKey: col.pk === 1,
-          isForeignKey: false, // LibSQL doesn't expose FK info in table_info
-          nullable: col.notnull === 0
-        }));
-
-        tableInfos.push({
-          name: tableName,
-          schema: JSON.stringify(schema.rows),
-          columns
-        });
-      }
-
-      // Store the connection for later use
-      this.connections.set(connection.id!, client);
-
-      return {
-        success: true,
-        info: {
-          tables: tableInfos,
-          size: 0, // LibSQL doesn't expose size info
-          rowCounts: {} // Would need to query each table
+    const conn = this.activeConnections.get(connectionId);
+    if (conn) {
+      try {
+        if (conn.end) {
+          await conn.end();
+        } else if (conn.close) {
+          conn.close();
         }
-      };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'LibSQL connection failed' 
-      };
+      } catch (error) {
+        console.error('Error closing connection:', error);
+      }
+      this.activeConnections.delete(connectionId);
     }
   }
 
-  private async testSQLiteConnection(connection: Connection): Promise<{ success: boolean; error?: string; info?: DatabaseInfo }> {
+  async getTableRows(
+    connectionId: string,
+    tableName: string,
+    limit: number,
+    offset: number,
+    search?: string,
+    sortBy?: string,
+    sortOrder: 'asc' | 'desc' = 'asc'
+  ): Promise<TableRowsResult> {
     try {
-      if (!connection.filePath) {
-        return { success: false, error: 'SQLite requires a file path' };
+      const conn = this.activeConnections.get(connectionId);
+      if (!conn) {
+        return {
+          success: false,
+          error: 'No active connection found'
+        };
       }
 
-      // For now, we'll use LibSQL client to connect to local SQLite files
-      // In production, you might want to use better-sqlite3 for better performance
-      const client = createClient({
-        url: `file:${connection.filePath}`
-      });
+      let query = `SELECT * FROM ${tableName}`;
+      const params: any[] = [];
 
-      const tables = await client.execute('SELECT name FROM sqlite_master WHERE type="table"');
-      
-      const tableInfos: TableInfo[] = [];
-      for (const table of tables.rows) {
-        const tableName = table.name as string;
-        const schema = await client.execute(`PRAGMA table_info(${tableName})`);
-        
-        const columns: ColumnInfo[] = schema.rows.map((col: any) => ({
-          name: col.name,
-          type: col.type,
-          isPrimaryKey: col.pk === 1,
-          isForeignKey: false,
-          nullable: col.notnull === 0
-        }));
-
-        tableInfos.push({
-          name: tableName,
-          schema: JSON.stringify(schema.rows),
-          columns
-        });
+      if (search) {
+        query += ` WHERE CAST(${tableName} AS TEXT) LIKE ?`;
+        params.push(`%${search}%`);
       }
 
-      this.connections.set(connection.id!, client);
-
-      return {
-        success: true,
-        info: {
-          tables: tableInfos,
-          size: 0,
-          rowCounts: {}
-        }
-      };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'SQLite connection failed' 
-      };
-    }
-  }
-
-  private async testPostgresConnection(connection: Connection): Promise<{ success: boolean; error?: string; info?: DatabaseInfo }> {
-    // TODO: Implement PostgreSQL connection
-    // This would require adding pg package and implementing connection pooling
-    return { 
-      success: false, 
-      error: 'PostgreSQL support coming soon. Please use LibSQL or SQLite for now.' 
-    };
-  }
-
-  async executeQuery(connectionId: string, query: string): Promise<{ success: boolean; data?: any; error?: string }> {
-    try {
-      const connection = this.connections.get(connectionId);
-      if (!connection) {
-        return { success: false, error: 'Connection not found' };
+      if (sortBy) {
+        query += ` ORDER BY ${sortBy} ${sortOrder}`;
       }
 
-      const result = await connection.execute(query);
+      query += ` LIMIT ? OFFSET ?`;
+      params.push(limit, offset);
+
+      const countQuery = search 
+        ? `SELECT COUNT(*) as total FROM ${tableName} WHERE CAST(${tableName} AS TEXT) LIKE ?`
+        : `SELECT COUNT(*) as total FROM ${tableName}`;
+
+      const countParams = search ? [`%${search}%`] : [];
+
+      const [rows, countResult] = await Promise.all([
+        this.executeRawQuery(conn, query, params),
+        this.executeRawQuery(conn, countQuery, countParams)
+      ]);
+
+      const total = countResult[0]?.total || 0;
+      const hasMore = offset + limit < total;
+
       return {
         success: true,
         data: {
-          rows: result.rows,
-          columns: result.columns,
-          rowCount: result.rowsAffected
+          rows,
+          total,
+          hasMore
         }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  async executeQuery(connectionId: string, query: string): Promise<QueryResult> {
+    try {
+      const conn = this.activeConnections.get(connectionId);
+      if (!conn) {
+        return {
+          success: false,
+          error: 'No active connection found'
+        };
+      }
+
+      const result = await this.executeRawQuery(conn, query);
+      return {
+        success: true,
+        data: result
       };
     } catch (error) {
       return {
@@ -195,52 +184,289 @@ export class DatabaseConnectionService {
     }
   }
 
-  async getTableRows(
-    connectionId: string, 
-    tableName: string, 
-    limit: number = 100, 
-    offset: number = 0,
-    search?: string,
-    sortBy?: string,
-    sortOrder: 'asc' | 'desc' = 'asc'
-  ): Promise<{ success: boolean; data?: any; error?: string }> {
+  async getTableRowCounts(connectionId: string, tableNames: string[]): Promise<RowCountResult> {
     try {
-      const connection = this.connections.get(connectionId);
-      if (!connection) {
-        return { success: false, error: 'Connection not found' };
+      const conn = this.activeConnections.get(connectionId);
+      if (!conn) {
+        return {
+          success: false,
+          error: 'No active connection found'
+        };
       }
 
-      let query = `SELECT * FROM ${tableName}`;
-      const params: any[] = [];
-
-      if (search) {
-        // Simple search across all columns - in production, you'd want to be more specific
-        query += ` WHERE rowid IN (SELECT rowid FROM ${tableName} WHERE rowid LIKE ? OR name LIKE ?)`;
-        params.push(`%${search}%`, `%${search}%`);
-      }
-
-      if (sortBy) {
-        query += ` ORDER BY ${sortBy} ${sortOrder.toUpperCase()}`;
-      }
-
-      query += ` LIMIT ? OFFSET ?`;
-      params.push(limit, offset);
-
-      const result = await connection.execute(query, params);
+      const rowCounts: Record<string, number> = {};
       
+      for (const tableName of tableNames) {
+        try {
+          const result = await this.executeRawQuery(conn, `SELECT COUNT(*) as count FROM ${tableName}`);
+          rowCounts[tableName] = result[0]?.count || 0;
+        } catch (error) {
+          rowCounts[tableName] = 0;
+        }
+      }
+
       return {
         success: true,
-        data: {
-          rows: result.rows,
-          total: result.rows.length,
-          hasMore: result.rows.length === limit
-        }
+        data: rowCounts
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch table rows'
+        error: error instanceof Error ? error.message : 'Failed to get row counts'
       };
+    }
+  }
+
+  async getDatabaseSize(connectionId: string): Promise<SizeResult> {
+    try {
+      const conn = this.activeConnections.get(connectionId);
+      if (!conn) {
+        return {
+          success: false,
+          error: 'No active connection found'
+        };
+      }
+
+      // This is a simplified implementation - actual size calculation varies by database type
+      return {
+        success: true,
+        data: 0 // Placeholder - would need database-specific queries
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get database size'
+      };
+    }
+  }
+
+  private async testPostgreSQL(connection: Connection): Promise<ConnectionResult> {
+    let client: Client | undefined;
+    
+    try {
+      client = new Client({
+        host: connection.host,
+        port: connection.port,
+        database: connection.database,
+        user: connection.username,
+        password: connection.password,
+        ssl: connection.ssl ? { rejectUnauthorized: false } : false
+      });
+
+      await client.connect();
+      
+      // Get database version
+      const versionResult = await client.query('SELECT version()');
+      const version = versionResult.rows[0]?.version || 'Unknown';
+
+      // Get tables information
+      const tablesResult = await client.query(`
+        SELECT 
+          t.table_name,
+          c.column_name,
+          c.data_type,
+          c.is_nullable,
+          c.column_default,
+          CASE WHEN pk.column_name IS NOT NULL THEN true ELSE false END as is_primary_key
+        FROM information_schema.tables t
+        LEFT JOIN information_schema.columns c ON t.table_name = c.table_name
+        LEFT JOIN (
+          SELECT kcu.column_name, kcu.table_name
+          FROM information_schema.table_constraints tc
+          JOIN information_schema.key_column_usage kcu 
+            ON tc.constraint_name = kcu.constraint_name
+          WHERE tc.constraint_type = 'PRIMARY KEY'
+        ) pk ON c.table_name = pk.table_name AND c.column_name = pk.column_name
+        WHERE t.table_schema = 'public' 
+          AND t.table_type = 'BASE TABLE'
+        ORDER BY t.table_name, c.ordinal_position
+      `);
+
+      const tables = this.groupTableInfo(tablesResult.rows);
+      
+      // Store active connection
+      this.activeConnections.set(connection.id, client);
+
+      return {
+        success: true,
+        info: {
+          version,
+          tables
+        }
+      };
+    } catch (error) {
+      if (client) {
+        await client.end().catch(() => {});
+      }
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'PostgreSQL connection failed'
+      };
+    }
+  }
+
+  private async testMySQL(connection: Connection): Promise<ConnectionResult> {
+    let conn: any;
+    
+    try {
+      conn = await createConnection({
+        host: connection.host,
+        port: connection.port,
+        database: connection.database,
+        user: connection.username,
+        password: connection.password,
+        ssl: connection.ssl ? {} : false
+      });
+
+      // Get database version
+      const [versionRows] = await conn.execute('SELECT VERSION() as version');
+      const version = (versionRows as any[])[0]?.version || 'Unknown';
+
+      // Get tables information
+      const [tableRows] = await conn.execute(`
+        SELECT 
+          t.table_name,
+          c.column_name,
+          c.data_type,
+          c.is_nullable,
+          c.column_default,
+          CASE WHEN k.column_name IS NOT NULL THEN 1 ELSE 0 END as is_primary_key
+        FROM information_schema.tables t
+        LEFT JOIN information_schema.columns c ON t.table_name = c.table_name
+        LEFT JOIN information_schema.key_column_usage k ON c.table_name = k.table_name 
+          AND c.column_name = k.column_name 
+          AND k.constraint_name = 'PRIMARY'
+        WHERE t.table_schema = DATABASE()
+          AND t.table_type = 'BASE TABLE'
+        ORDER BY t.table_name, c.ordinal_position
+      `);
+
+      const tables = this.groupTableInfo(tableRows as any[]);
+      
+      // Store active connection
+      this.activeConnections.set(connection.id, conn);
+
+      return {
+        success: true,
+        info: {
+          version,
+          tables
+        }
+      };
+    } catch (error) {
+      if (conn) {
+        await conn.end().catch(() => {});
+      }
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'MySQL connection failed'
+      };
+    }
+  }
+
+  private async testSQLite(connection: Connection): Promise<ConnectionResult> {
+    let db: Database.Database | undefined;
+    
+    try {
+      db = new Database(connection.database);
+
+      // Get SQLite version
+      const versionResult = db.prepare('SELECT sqlite_version() as version').get() as any;
+      const version = `SQLite ${versionResult?.version || 'Unknown'}`;
+
+      // Get tables information
+      const tablesResult = db.prepare(`
+        SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'
+      `).all() as any[];
+
+      const tables: TableInfo[] = [];
+      
+      for (const table of tablesResult) {
+        const columnsResult = db.prepare(`PRAGMA table_info(${table.name})`).all() as any[];
+        
+        const columns: ColumnInfo[] = columnsResult.map(col => ({
+          name: col.name,
+          type: col.type,
+          nullable: col.notnull === 0,
+          defaultValue: col.dflt_value,
+          isPrimaryKey: col.pk === 1
+        }));
+
+        tables.push({
+          name: table.name,
+          columns
+        });
+      }
+      
+      // Store active connection
+      this.activeConnections.set(connection.id, db);
+
+      return {
+        success: true,
+        info: {
+          version,
+          tables
+        }
+      };
+    } catch (error) {
+      if (db) {
+        db.close();
+      }
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'SQLite connection failed'
+      };
+    }
+  }
+
+  private groupTableInfo(rows: any[]): TableInfo[] {
+    const tablesMap = new Map<string, TableInfo>();
+
+    for (const row of rows) {
+      const tableName = row.table_name;
+      
+      if (!tablesMap.has(tableName)) {
+        tablesMap.set(tableName, {
+          name: tableName,
+          columns: []
+        });
+      }
+
+      const table = tablesMap.get(tableName)!;
+      table.columns.push({
+        name: row.column_name,
+        type: row.data_type,
+        nullable: row.is_nullable === 'YES',
+        defaultValue: row.column_default,
+        isPrimaryKey: row.is_primary_key === true || row.is_primary_key === 1
+      });
+    }
+
+    return Array.from(tablesMap.values());
+  }
+
+  private async executeRawQuery(conn: any, query: string, params: any[] = []): Promise<any[]> {
+    if (conn instanceof Client) {
+      // PostgreSQL
+      const result = await conn.query(query, params);
+      return result.rows;
+    } else if (conn.execute) {
+      // MySQL
+      const [rows] = await conn.execute(query, params);
+      return rows as any[];
+    } else if (conn.prepare) {
+      // SQLite
+      const stmt = conn.prepare(query);
+      if (params.length > 0) {
+        return stmt.all(...params);
+      } else {
+        return stmt.all();
+      }
+    } else {
+      throw new Error('Unknown connection type');
     }
   }
 }

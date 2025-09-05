@@ -123,25 +123,25 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Type *
               </label>
               <select
                 {...form.register('type')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="income">Income</option>
                 <option value="expense">Expense</option>
               </select>
               {form.formState.errors.type && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-destructive text-xs mt-1">
                   {form.formState.errors.type.message}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Amount *
               </label>
               <Input
@@ -153,7 +153,7 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
                 className="w-full"
               />
               {form.formState.errors.amount && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-destructive text-xs mt-1">
                   {form.formState.errors.amount.message}
                 </p>
               )}
@@ -161,12 +161,12 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Category *
             </label>
             <select
               {...form.register('categoryId')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">Select a category</option>
               {filteredCategories.map((category) => (
@@ -176,14 +176,14 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
               ))}
             </select>
             {form.formState.errors.categoryId && (
-              <p className="text-red-500 text-xs mt-1">
+              <p className="text-destructive text-xs mt-1">
                 {form.formState.errors.categoryId.message}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Date *
             </label>
             <Input
@@ -192,14 +192,14 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
               className="w-full"
             />
             {form.formState.errors.date && (
-              <p className="text-red-500 text-xs mt-1">
+              <p className="text-destructive text-xs mt-1">
                 {form.formState.errors.date.message}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Description
             </label>
             <Input
@@ -208,7 +208,7 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
               className="w-full"
             />
             {form.formState.errors.description && (
-              <p className="text-red-500 text-xs mt-1">
+              <p className="text-destructive text-xs mt-1">
                 {form.formState.errors.description.message}
               </p>
             )}
@@ -216,7 +216,7 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Payee/Recipient
               </label>
               <Input
@@ -225,14 +225,14 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
                 className="w-full"
               />
               {form.formState.errors.payee && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-destructive text-xs mt-1">
                   {form.formState.errors.payee.message}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Reference
               </label>
               <Input
@@ -241,7 +241,7 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
                 className="w-full"
               />
               {form.formState.errors.reference && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-destructive text-xs mt-1">
                   {form.formState.errors.reference.message}
                 </p>
               )}
@@ -268,7 +268,7 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
             )}
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

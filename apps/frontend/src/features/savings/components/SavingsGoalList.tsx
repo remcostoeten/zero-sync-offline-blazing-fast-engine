@@ -39,6 +39,7 @@ import { SavingsGoalWithProgress } from '../actions';
 import { SavingsGoalCard } from './SavingsGoalCard';
 import { SavingsGoalForm } from './SavingsGoalForm';
 import { formatCurrency } from '@/lib/utils';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface SavingsGoalListProps {
   goals: SavingsGoalWithProgress[];
@@ -415,21 +416,24 @@ export function SavingsGoalList({
         </div>
       ) : filteredAndSortedGoals.length === 0 ? (
         <Card>
-          <CardContent className="p-12 text-center">
-            <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">No savings goals found</h3>
-            <p className="text-gray-500 mb-4">
-              {searchTerm || filterStatus !== 'all' || filterPriority !== 'all'
-                ? "No goals match your current filters"
-                : "Get started by creating your first savings goal"
+          <CardContent className="p-12">
+            <EmptyState
+              icon={<Target className="w-12 h-12" />}
+              title="No savings goals found"
+              description={
+                searchTerm || filterStatus !== 'all' || filterPriority !== 'all'
+                  ? 'No goals match your current filters'
+                  : 'Get started by creating your first savings goal'
               }
-            </p>
-            {(!searchTerm && filterStatus === 'all' && filterPriority === 'all') && (
-              <Button onClick={() => setShowCreateForm(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Your First Goal
-              </Button>
-            )}
+              actions={
+                (!searchTerm && filterStatus === 'all' && filterPriority === 'all') ? (
+                  <Button onClick={() => setShowCreateForm(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Your First Goal
+                  </Button>
+                ) : null
+              }
+            />
           </CardContent>
         </Card>
       ) : (

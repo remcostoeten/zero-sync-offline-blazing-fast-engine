@@ -94,6 +94,10 @@ connectionsRoutes.put('/:id', zValidator('json', updateConnectionSchema), async 
 connectionsRoutes.delete('/:id', async (c) => {
   try {
     const id = c.req.param('id');
+    
+    // Close the active connection if it exists
+    await dbConnectionService.closeConnection(id);
+    
     const result = await connectionsCRUD.delete(id);
     
     if (!result.success) {
@@ -247,16 +251,28 @@ connectionsRoutes.get('/:id/metrics', async (c) => {
       return c.json({ success: false, error: 'Connection not found' }, 404);
     }
 
+    // First get table information
     const testResult = await dbConnectionService.testConnection(connection.data);
     
     if (!testResult.success) {
       return c.json({ success: false, error: testResult.error }, 400);
     }
 
+    const tableNames = testResult.info?.tables.map(t => t.name) || [];
+    
+    // Get row counts for all tables
+    const rowCountResult = await dbConnectionService.getTableRowCounts(id, tableNames);
+    const tableRowCounts = rowCountResult.success ? rowCountResult.data || {} : {};
+    
+    // Get database size
+    const sizeResult = await dbConnectionService.getDatabaseSize(id);
+    const totalSize = sizeResult.success ? sizeResult.data || 0 : 0;
+
     const metrics = {
       tableCount: testResult.info?.tables.length || 0,
-      totalSize: testResult.info?.size || 0,
-      tableRowCounts: testResult.info?.rowCounts || {}
+      totalSize: totalSize,
+      tableRowCounts: tableRowCounts,
+      totalRows: Object.values(tableRowCounts).reduce((sum, count) => sum + count, 0)
     };
 
     return c.json({ success: true, data: metrics });

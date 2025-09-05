@@ -48,3 +48,5 @@ index.d.ts
 *.map
 
 index.js
+
+node_modules

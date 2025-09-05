@@ -22,6 +22,8 @@ type TBudgetResetOptions = {
 async function createBudget(data: TBudgetCreateData): Promise<TBudget> {
   const db = createDb();
   
+  console.log('Creating budget with data:', JSON.stringify(data, null, 2));
+  
   // Validate category exists
   const categoryExists = await db
     .select({ id: budgetsSchema.categoryId })
@@ -61,10 +63,25 @@ async function createBudget(data: TBudgetCreateData): Promise<TBudget> {
     budgetData.endDate = endDate.toISOString().split('T')[0];
   }
   
-  return await budgetCrud.create({
+  const insertData = {
     ...budgetData,
-    synced: false
-  });
+    synced: false,
+    // Ensure all required fields have default values
+    name: budgetData.name || `Budget for Category ${budgetData.categoryId}`, // Ensure name is always provided
+    spent: budgetData.spent || 0,
+    isActive: budgetData.isActive !== undefined ? budgetData.isActive : true,
+    rollover: budgetData.rollover !== undefined ? budgetData.rollover : false,
+    carryoverAmount: budgetData.carryoverAmount || 0,
+    color: budgetData.color || '#3B82F6',
+    priority: budgetData.priority || 'medium',
+    autoRenew: budgetData.autoRenew !== undefined ? budgetData.autoRenew : true,
+    resetDay: budgetData.resetDay || 1,
+    alertThreshold: budgetData.alertThreshold || 0.8
+  };
+  
+  console.log('Inserting budget with data:', JSON.stringify(insertData, null, 2));
+  
+  return await budgetCrud.create(insertData);
 }
 
 async function updateBudget(data: TBudgetUpdateData): Promise<TBudget> {

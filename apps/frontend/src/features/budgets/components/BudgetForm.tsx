@@ -38,14 +38,14 @@ import { CalendarIcon, Palette, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays, addMonths, addYears } from 'date-fns';
 import { createBudgetSchema, updateBudgetSchema } from '@/lib/validation/schemas';
-import { BudgetWithProgress, getBudgetCategories } from '../actions';
+import { BudgetWithUtilization, getBudgetCategories } from '../api-actions';
 import { TCategory } from '@/lib/database/schemas';
 
 type CreateFormData = z.infer<typeof createBudgetSchema>;
 type UpdateFormData = z.infer<typeof updateBudgetSchema>;
 
 interface BudgetFormProps {
-  budget?: BudgetWithProgress;
+  budget?: BudgetWithUtilization;
   onSubmit: (data: CreateFormData | UpdateFormData) => void;
   trigger?: React.ReactNode;
   open?: boolean;
@@ -97,22 +97,22 @@ export function BudgetForm({
     resolver: zodResolver(schema),
     defaultValues: isEditing ? {
       id: budget.id.toString(),
-      name: budget.name,
-      description: budget.description || '',
+      name: budget.categoryName, // Use category name as budget name
+      description: '',
       categoryId: budget.categoryId,
       amount: budget.amount,
-      spent: budget.spent || 0,
+      spent: budget.spentAmount,
       period: budget.period as 'weekly' | 'monthly' | 'quarterly' | 'yearly',
       startDate: budget.startDate,
       endDate: budget.endDate || undefined,
       isActive: budget.isActive,
-      alertThreshold: budget.alertThreshold || 0.8,
-      rollover: budget.rollover,
-      carryoverAmount: budget.carryoverAmount || 0,
-      color: budget.color || '#3B82F6',
-      priority: budget.priority as 'low' | 'medium' | 'high',
-      autoRenew: budget.autoRenew,
-      resetDay: budget.resetDay || 1,
+      alertThreshold: 0.8,
+      rollover: false,
+      carryoverAmount: 0,
+      color: budget.categoryColor || '#3B82F6',
+      priority: 'medium' as 'low' | 'medium' | 'high',
+      autoRenew: true,
+      resetDay: 1,
     } : {
       name: '',
       description: '',

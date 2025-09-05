@@ -49,6 +49,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface RecurringTransactionListProps {
   initialData?: RecurringTransactionWithAnalytics[];
@@ -456,19 +457,22 @@ export function RecurringTransactionList({
         ) : filteredTransactions.length === 0 ? (
           <div className="col-span-full">
             <Card>
-              <CardContent className="p-8 text-center">
-                <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="font-medium mb-2">No recurring transactions found</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {searchTerm || selectedType !== 'all' || selectedFrequency !== 'all' || selectedStatus !== 'all'
-                    ? 'Try adjusting your filters or search terms.'
-                    : 'Get started by creating your first recurring transaction.'
+              <CardContent className="p-8">
+                <EmptyState
+                  icon={<Calendar className="w-12 h-12" />}
+                  title="No recurring transactions found"
+                  description={
+                    searchTerm || selectedType !== 'all' || selectedFrequency !== 'all' || selectedStatus !== 'all'
+                      ? 'Try adjusting your filters or search terms.'
+                      : 'Get started by creating your first recurring transaction.'
                   }
-                </p>
-                <Button onClick={() => setIsFormOpen(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Recurring Transaction
-                </Button>
+                  actions={
+                    <Button onClick={() => setIsFormOpen(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Recurring Transaction
+                    </Button>
+                  }
+                />
               </CardContent>
             </Card>
           </div>

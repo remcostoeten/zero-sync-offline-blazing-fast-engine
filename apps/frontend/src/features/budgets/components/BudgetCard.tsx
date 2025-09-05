@@ -19,13 +19,13 @@ import {
   Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { BudgetWithProgress } from '../actions';
+import { BudgetWithUtilization } from '../api-actions';
 import { formatCurrency } from '@/lib/utils';
 import { formatDate } from '@/lib/utils/date';
 
 interface BudgetCardProps {
-  budget: BudgetWithProgress;
-  onEdit?: (budget: BudgetWithProgress) => void;
+  budget: BudgetWithUtilization;
+  onEdit?: (budget: BudgetWithUtilization) => void;
   onDelete?: (id: string) => void;
   onRefresh?: (id: string) => void;
   className?: string;
@@ -70,33 +70,34 @@ export function BudgetCard({
 
   const getHealthStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'text-green-600';
+      case 'on_track': return 'text-green-600';
       case 'warning': return 'text-yellow-600';
-      case 'danger': return 'text-orange-600';
-      case 'over-budget': return 'text-red-600';
+      case 'exceeded': return 'text-red-600';
+      case 'completed': return 'text-blue-600';
       default: return 'text-gray-600';
     }
   };
 
   const getProgressBarColor = () => {
-    switch (budget.progress.healthStatus) {
-      case 'healthy': return 'bg-green-500';
+    switch (budget.status) {
+      case 'on_track': return 'bg-green-500';
       case 'warning': return 'bg-yellow-500';
-      case 'danger': return 'bg-orange-500';
-      case 'over-budget': return 'bg-red-500';
+      case 'exceeded': return 'bg-red-500';
+      case 'completed': return 'bg-blue-500';
       default: return 'bg-gray-500';
     }
   };
 
   const getStatusIcon = () => {
-    switch (budget.progress.healthStatus) {
-      case 'healthy':
+    switch (budget.status) {
+      case 'on_track':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
       case 'warning':
-      case 'danger':
         return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
-      case 'over-budget':
+      case 'exceeded':
         return <AlertTriangle className="w-4 h-4 text-red-600" />;
+      case 'completed':
+        return <CheckCircle className="w-4 h-4 text-blue-600" />;
       default:
         return null;
     }
@@ -116,8 +117,8 @@ export function BudgetCard({
     <Card className={cn(
       'relative transition-all duration-200 hover:shadow-md',
       !budget.isActive && 'opacity-60',
-      budget.progress.isOverBudget && 'border-red-500/50 bg-destructive/5',
-      budget.progress.healthStatus === 'warning' && 'border-yellow-500/50 bg-yellow-500/5',
+      budget.status === 'exceeded' && 'border-red-500/50 bg-destructive/5',
+      budget.status === 'warning' && 'border-yellow-500/50 bg-yellow-500/5',
       className
     )}>
       {/* Priority indicator */}
@@ -133,18 +134,15 @@ export function BudgetCard({
           <div className="flex items-center space-x-3">
             <div 
               className="w-10 h-10 rounded-full flex items-center justify-center text-lg font-semibold text-white"
-              style={{ backgroundColor: budget.color || budget.category.color }}
+              style={{ backgroundColor: budget.categoryColor || '#3B82F6' }}
             >
-              {budget.category.icon || '💰'}
+              {budget.categoryIcon || '💰'}
             </div>
             <div>
-              <h3 className="font-semibold text-lg">{budget.name}</h3>
-              {budget.description && (
-                <p className="text-sm text-muted-foreground mt-1">{budget.description}</p>
-              )}
+              <h3 className="font-semibold text-lg">{budget.categoryName}</h3>
               <div className="flex items-center space-x-2 mt-1">
                 <span className="text-sm font-medium text-foreground">
-                  {budget.category.name}
+                  {budget.categoryName}
                 </span>
                 <Badge variant="outline" className="text-xs">
                   {getPeriodDisplay(budget.period)}
@@ -164,12 +162,12 @@ export function BudgetCard({
                 variant="outline" 
                 className={cn(
                   'text-xs',
-                  getHealthStatusColor(budget.progress.healthStatus)
+                  getHealthStatusColor(budget.status)
                 )}
               >
-                {budget.progress.healthStatus === 'over-budget' ? 'Over Budget' :
-                 budget.progress.healthStatus === 'danger' ? 'Critical' :
-                 budget.progress.healthStatus === 'warning' ? 'Warning' : 'Healthy'}
+                {budget.status === 'exceeded' ? 'Over Budget' :
+                 budget.status === 'warning' ? 'Warning' : 
+                 budget.status === 'completed' ? 'Completed' : 'On Track'}
               </Badge>
             </div>
           </div>
@@ -180,21 +178,21 @@ export function BudgetCard({
         {/* Progress Section */}
         <div className="space-y-2">
           <div className="flex justify-between items-center text-sm">
-            <span className={cn('font-medium', getHealthStatusColor(budget.progress.healthStatus))}>
-              {formatCurrency(budget.spent || 0)} / {formatCurrency(budget.progress.totalBudget)}
+            <span className={cn('font-medium', getHealthStatusColor(budget.status))}>
+              {formatCurrency(budget.spentAmount)} / {formatCurrency(budget.amount)}
             </span>
             <span className="font-bold">
-              {budget.progress.percentage.toFixed(1)}%
-              {budget.progress.isOverBudget && (
+              {budget.percentageUsed.toFixed(1)}%
+              {budget.status === 'exceeded' && (
                 <span className="text-red-600 ml-1">
-                  (+{(budget.progress.percentage - 100).toFixed(1)}%)
+                  (+{(budget.percentageUsed - 100).toFixed(1)}%)
                 </span>
               )}
             </span>
           </div>
           
           <Progress 
-            value={Math.min(budget.progress.percentage, 100)} 
+            value={Math.min(budget.percentageUsed, 100)} 
             className="h-3"
             style={{
               '--progress-background': getProgressBarColor()
@@ -202,9 +200,9 @@ export function BudgetCard({
           />
           
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{formatCurrency(budget.progress.remaining)} remaining</span>
-            {budget.progress.daysLeft && (
-              <span>{budget.progress.daysLeft} days left</span>
+            <span>{formatCurrency(budget.remainingAmount)} remaining</span>
+            {budget.daysRemaining && (
+              <span>{budget.daysRemaining} days left</span>
             )}
           </div>
         </div>
@@ -216,42 +214,18 @@ export function BudgetCard({
             <div>
               <div className="text-gray-600">Budget Amount</div>
               <div className="font-medium">{formatCurrency(budget.amount)}</div>
-              {budget.carryoverAmount && budget.carryoverAmount > 0 && (
-                <div className="text-xs text-green-600">
-                  +{formatCurrency(budget.carryoverAmount)} carryover
-                </div>
-              )}
             </div>
           </div>
 
-          {budget.progress.averageSpendingPerDay && (
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="w-4 h-4 text-gray-400" />
-              <div>
-                <div className="text-gray-600">Daily Average</div>
-                <div className="font-medium">
-                  {formatCurrency(budget.progress.averageSpendingPerDay)}
-                </div>
+          <div className="flex items-center space-x-2">
+            <TrendingUp className="w-4 h-4 text-gray-400" />
+            <div>
+              <div className="text-gray-600">Spent Amount</div>
+              <div className="font-medium">
+                {formatCurrency(budget.spentAmount)}
               </div>
             </div>
-          )}
-
-          {budget.progress.projectedSpending && (
-            <div className="flex items-center space-x-2">
-              <TrendingDown className="w-4 h-4 text-gray-400" />
-              <div>
-                <div className="text-gray-600">Projected Total</div>
-                <div className={cn(
-                  'font-medium',
-                  budget.progress.projectedSpending > budget.progress.totalBudget 
-                    ? 'text-red-600' 
-                    : 'text-green-600'
-                )}>
-                  {formatCurrency(budget.progress.projectedSpending)}
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
 
           <div className="flex items-center space-x-2">
             <Calendar className="w-4 h-4 text-gray-400" />
@@ -268,40 +242,29 @@ export function BudgetCard({
         </div>
 
         {/* Alert Threshold Info */}
-        {budget.progress.alertTriggered && (
+        {(budget.status === 'exceeded' || budget.status === 'warning') && (
           <div className={cn(
             'p-3 rounded-lg border text-sm',
-            budget.progress.isOverBudget 
+            budget.status === 'exceeded'
               ? 'bg-red-50 border-red-200 text-red-800'
               : 'bg-yellow-50 border-yellow-200 text-yellow-800'
           )}>
             <div className="flex items-center space-x-2">
               <AlertTriangle className="w-4 h-4" />
               <span className="font-medium">
-                {budget.progress.isOverBudget 
+                {budget.status === 'exceeded' 
                   ? 'Budget Exceeded!' 
                   : 'Alert Threshold Reached'
                 }
               </span>
             </div>
             <div className="mt-1">
-              {budget.progress.isOverBudget ? (
-                `You've overspent by ${formatCurrency((budget.spent || 0) - budget.progress.totalBudget)}`
+              {budget.status === 'exceeded' ? (
+                `You've overspent by ${formatCurrency(budget.spentAmount - budget.amount)}`
               ) : (
-                `You've reached ${(budget.alertThreshold || 0.8) * 100}% of your budget limit`
+                `You've reached ${budget.percentageUsed.toFixed(1)}% of your budget limit`
               )}
             </div>
-          </div>
-        )}
-
-        {/* Auto-renewal Info */}
-        {budget.autoRenew && (
-          <div className="text-xs text-gray-500 flex items-center space-x-1">
-            <RefreshCw className="w-3 h-3" />
-            <span>Auto-renews for next {budget.period.replace('ly', '')}</span>
-            {budget.rollover && (
-              <span> • Unused budget carries over</span>
-            )}
           </div>
         )}
 

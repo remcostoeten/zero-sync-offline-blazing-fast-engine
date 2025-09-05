@@ -1,46 +1,68 @@
 import { z } from 'zod';
 
-const budgetPeriodSchema = z.enum(['monthly', 'yearly']);
+const budgetPeriodSchema = z.enum(['weekly', 'monthly', 'quarterly', 'yearly']);
 
-const createBudgetSchema = z.object({
-  categoryId: z.number().int().positive('Category ID must be a positive integer'),
-  amount: z.number().positive('Budget amount must be positive'),
-  period: budgetPeriodSchema,
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format'),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'End date must be in YYYY-MM-DD format').optional()
+// Core budget schemas
+export const BudgetCreateSchema = z.object({
+  categoryId: z.number().int().positive('Category ID must be positive'),
+  name: z.string().min(1, 'Budget name is required').max(100, 'Name too long'),
+  description: z.string().optional(),
+  amount: z.number().positive('Amount must be positive'),
+  period: budgetPeriodSchema.default('monthly'),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)').optional(),
+  isActive: z.boolean().default(true).optional(),
+  alertThreshold: z.number().min(0).max(1).default(0.8).optional(),
+  rollover: z.boolean().default(false).optional(),
+  carryoverAmount: z.number().min(0).default(0).optional(),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color format').default('#3B82F6').optional(),
+  priority: z.enum(['low', 'medium', 'high']).default('medium').optional(),
+  autoRenew: z.boolean().default(true).optional(),
+  resetDay: z.number().int().min(1).max(31).default(1).optional()
 });
 
-const updateBudgetSchema = createBudgetSchema.partial();
+export const BudgetInsertSchema = BudgetCreateSchema.partial();
 
-const getBudgetsQuerySchema = z.object({
-  categoryId: z.coerce.number().int().positive().optional(),
-  period: budgetPeriodSchema.optional(),
-  status: z.enum(['active', 'exceeded', 'completed', 'all']).optional(),
-  includeInactive: z.coerce.boolean().optional(),
-  sortBy: z.enum(['amount', 'spent', 'remaining', 'percentage', 'categoryName', 'startDate']).optional(),
-  sortOrder: z.enum(['asc', 'desc']).optional(),
-  limit: z.coerce.number().int().positive().max(100).optional(),
-  offset: z.coerce.number().int().min(0).optional()
+export const BudgetUpdateSchema = BudgetInsertSchema.partial().extend({
+  id: z.number().int().positive().optional()
 });
 
-const budgetUtilizationQuerySchema = z.object({
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format').optional(),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'End date must be in YYYY-MM-DD format').optional(),
-  categoryIds: z.array(z.number().int().positive()).optional(),
-  alertThreshold: z.number().min(0).max(100).optional() // percentage threshold for alerts
+// Filter schema
+export const BudgetFiltersSchema = z.object({
+  categoryId: z.number().int().positive().optional(),
+  period: z.enum(['monthly', 'yearly', 'all']).default('all'),
+  isActive: z.boolean().optional(),
+  limit: z.number().int().min(1).max(100).default(50),
+  offset: z.number().int().min(0).default(0)
 });
 
-const resetBudgetSchema = z.object({
-  newAmount: z.number().positive('New budget amount must be positive').optional(),
-  newPeriod: budgetPeriodSchema.optional(),
-  resetSpent: z.boolean().default(true)
+// Budget utilization filters
+export const BudgetUtilizationFiltersSchema = z.object({
+  categoryId: z.number().int().positive().optional(),
+  period: z.enum(['monthly', 'yearly', 'all']).default('monthly'),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  alertsOnly: z.boolean().default(false)
 });
 
-export {
-  createBudgetSchema,
-  updateBudgetSchema,
-  getBudgetsQuerySchema,
-  budgetUtilizationQuerySchema,
-  resetBudgetSchema,
-  budgetPeriodSchema
-};
+// Budget reset schema
+export const BudgetResetSchema = z.object({
+  newAmount: z.number().positive().optional(),
+  resetPeriod: z.boolean().default(true),
+  resetSpent: z.boolean().default(true),
+  notes: z.string().optional()
+});
+
+// Legacy exports for backward compatibility
+export const createBudgetSchema = BudgetCreateSchema;
+export const updateBudgetSchema = BudgetUpdateSchema;
+export const getBudgetsQuerySchema = BudgetFiltersSchema;
+export const budgetUtilizationQuerySchema = BudgetUtilizationFiltersSchema;
+export const resetBudgetSchema = BudgetResetSchema;
+
+// Export types
+export type TBudgetInsert = z.infer<typeof BudgetInsertSchema>;
+export type TBudgetUpdate = z.infer<typeof BudgetUpdateSchema>;
+export type TBudgetFilters = z.infer<typeof BudgetFiltersSchema>;
+export type TBudgetUtilizationFilters = z.infer<typeof BudgetUtilizationFiltersSchema>;
+export type TBudgetReset = z.infer<typeof BudgetResetSchema>;

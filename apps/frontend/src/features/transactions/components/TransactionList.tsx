@@ -10,6 +10,7 @@ import { deleteTransaction, getTransactions, getTransactionSummary } from '../ac
 import { getCategories } from '@/features/categories/actions';
 import { Plus, Search, Filter, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import type { Transaction, Category } from '@/lib/database/schemas';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface TransactionListProps {
   initialTransactions: (Transaction & { category: { name: string; type: string; color?: string } })[];
@@ -281,16 +282,18 @@ export function TransactionList({ initialTransactions }: TransactionListProps) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-12">
-          <div className="text-gray-500 mb-2">
-            {transactions.length === 0 ? 'No transactions yet' : 'No transactions match your filters'}
-          </div>
-          {transactions.length === 0 && (
-            <Button onClick={() => setShowForm(true)} variant="outline">
-              Create your first transaction
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          title={transactions.length === 0 ? 'No transactions yet' : 'No transactions match your filters'}
+          description={transactions.length === 0 ? undefined : 'Try adjusting filters or search terms'}
+          actions={
+            transactions.length === 0 ? (
+              <Button onClick={() => setShowForm(true)} variant="outline">
+                Create your first transaction
+              </Button>
+            ) : null
+          }
+          size="md"
+        />
       )}
 
       {/* Form Modal */}

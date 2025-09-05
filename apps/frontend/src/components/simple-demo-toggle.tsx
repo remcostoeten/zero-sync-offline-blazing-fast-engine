@@ -113,9 +113,9 @@ export function SimpleDemoToggle({ className = '', showStats = true, onToggle }:
 
       <div className="mt-3 text-sm text-gray-500">
         {demoStatus.isDemoMode ? (
-          <p>📊 Using sample data to showcase app features. Use "Clear Demo Data" button below to start fresh.</p>
+          <p>📊 Using sample data to showcase app features. Use &quot;Clear Demo Data&quot; button below to start fresh.</p>
         ) : (
-          <p>💼 Using your real financial data. Run "bun run init:demo" to restore sample data.</p>
+          <p>💼 Using your real financial data. Run &quot;bun run init:demo&quot; to restore sample data.</p>
         )}
       </div>
     </div>

@@ -8,6 +8,7 @@ import { CategoryForm } from './CategoryForm';
 import { deleteCategoryLocal } from '../local-actions';
 import { Plus, Search, Filter } from 'lucide-react';
 import type { Category } from '@/lib/database/schemas';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface CategoryListProps {
   initialCategories: Category[];
@@ -126,16 +127,18 @@ export function CategoryList({ initialCategories }: CategoryListProps) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-12">
-          <div className="text-gray-500 mb-2">
-            {categories.length === 0 ? 'No categories yet' : 'No categories match your filters'}
-          </div>
-          {categories.length === 0 && (
-            <Button onClick={() => setShowForm(true)} variant="outline">
-              Create your first category
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          title={categories.length === 0 ? 'No categories yet' : 'No categories match your filters'}
+          description={categories.length === 0 ? undefined : 'Try adjusting filters or search terms'}
+          actions={
+            categories.length === 0 ? (
+              <Button onClick={() => setShowForm(true)} variant="outline">
+                Create your first category
+              </Button>
+            ) : null
+          }
+          size="md"
+        />
       )}
 
       {/* Form Modal */}

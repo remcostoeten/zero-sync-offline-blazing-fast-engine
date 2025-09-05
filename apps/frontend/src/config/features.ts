@@ -201,19 +201,14 @@ export const FEATURES: Record<string, TFeatureConfig> = {
     description: 'Browse and manage database tables with advanced querying',
     icon: Database,
     color: 'slate',
-    isEnabled: false,
+    isEnabled: true,
     permissions: ['read', 'admin'],
     routes: [
       {
-        path: '/database',
-        label: 'Tables',
+        path: '/database-viewer',
+        label: 'Database Viewer',
         icon: Database,
         exact: true
-      },
-      {
-        path: '/database/query',
-        label: 'Query Builder',
-        icon: Settings
       }
     ],
     metadata: {

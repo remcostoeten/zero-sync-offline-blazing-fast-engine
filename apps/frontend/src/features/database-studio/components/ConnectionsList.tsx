@@ -17,6 +17,7 @@ import {
   FileText,
   Globe
 } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface Connection {
   id: string;
@@ -172,12 +173,12 @@ export function ConnectionsList() {
   if (connections.length === 0) {
     return (
       <Card className="w-full max-w-2xl mx-auto">
-        <CardContent className="p-8 text-center">
-          <Database className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No connections yet</h3>
-          <p className="text-gray-600 mb-4">
-            Create your first database connection to get started
-          </p>
+        <CardContent className="p-8">
+          <EmptyState
+            icon={<Database className="h-12 w-12" />}
+            title="No connections yet"
+            description="Create your first database connection to get started"
+          />
         </CardContent>
       </Card>
     );
