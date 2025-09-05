@@ -6,6 +6,7 @@ import { categoriesSchema } from './categories.schema';
 
 export const transactionsSchema = sqliteTable('transactions', {
   ...createSyncableEntity(),
+  userId: text('user_id').notNull(), // Add user ID for user-specific transactions
   amount: real('amount').notNull(),
   type: text('type', { enum: ['income', 'expense'] }).notNull(),
   categoryId: integer('category_id').notNull().references(() => categoriesSchema.id),

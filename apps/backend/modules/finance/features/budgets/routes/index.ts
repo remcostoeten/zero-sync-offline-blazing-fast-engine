@@ -22,17 +22,19 @@ import {
   bulkDeleteBudgets
 } from '../api';
 import { z } from 'zod';
+import { authMiddleware, AuthenticatedContext } from '../../../../lib/auth-middleware';
 
 const budgetsRouter = new Hono();
 
 // GET /budgets - List all budgets with filters
 budgetsRouter.get(
   '/',
+  authMiddleware,
   zValidator('query', BudgetFiltersSchema.optional()),
-  async (c) => {
+  async (c: AuthenticatedContext) => {
     try {
       const filters = c.req.valid('query') || {};
-      const budgets = await getBudgets(filters);
+      const budgets = await getBudgets({ ...filters, userId: c.user.id });
       
       return c.json({
         success: true,
@@ -84,11 +86,12 @@ budgetsRouter.get(
 // POST /budgets - Create new budget
 budgetsRouter.post(
   '/',
+  authMiddleware,
   zValidator('json', BudgetCreateSchema),
-  async (c) => {
+  async (c: AuthenticatedContext) => {
     try {
       const data = c.req.valid('json');
-      const budget = await createBudget(data);
+      const budget = await createBudget({ ...data, userId: c.user.id });
       
       return c.json({
         success: true,

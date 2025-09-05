@@ -4,7 +4,8 @@ import { createSyncableEntity } from '../db/schema-helpers';
 
 export const categoriesSchema = sqliteTable('categories', {
   ...createSyncableEntity(),
-  name: text('name').notNull().unique(),
+  userId: text('user_id').notNull(), // Add user ID for user-specific categories
+  name: text('name').notNull(),
   type: text('type', { enum: ['income', 'expense'] }).notNull(),
   color: text('color').default('#3B82F6'),
   icon: text('icon').default('💰'),

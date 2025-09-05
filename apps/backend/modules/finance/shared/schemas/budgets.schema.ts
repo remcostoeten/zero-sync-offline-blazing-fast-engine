@@ -6,6 +6,7 @@ import { categoriesSchema } from './categories.schema';
 
 export const budgetsSchema = sqliteTable('budgets', {
   ...createSyncableEntity(),
+  userId: text('user_id').notNull(), // Add user ID for user-specific budgets
   categoryId: integer('category_id').notNull().references(() => categoriesSchema.id),
   name: text('name').notNull(),
   description: text('description'),

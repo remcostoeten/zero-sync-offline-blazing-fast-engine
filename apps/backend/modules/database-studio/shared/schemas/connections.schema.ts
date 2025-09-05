@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 
 export const connections = sqliteTable('connections', {
   id: text('id').primaryKey(),
+  userId: text('user_id').notNull(), // Add user ID for user-specific connections
   name: text('name').notNull(),
   type: text('type', { enum: ['postgres', 'sqlite', 'libsql'] }).notNull(),
   url: text('url'),

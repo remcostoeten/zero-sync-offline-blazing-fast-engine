@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
+
+// Finance Module Tables
+model Category {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  name      String
+  type      String   // 'income' or 'expense'
+  color     String   @default("#3B82F6")
+  icon      String   @default("💰")
+  isDemo    Boolean  @default(false) @map("is_demo")
+  synced    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("categories")
+}
+
+model Budget {
+  id              Int      @id @default(autoincrement())
+  userId          String   @map("user_id")
+  categoryId      Int      @map("category_id")
+  name            String
+  description     String?
+  amount          Float
+  spent           Float    @default(0)
+  period          String   // 'weekly', 'monthly', 'quarterly', 'yearly'
+  startDate       String   @map("start_date")
+  endDate         String?  @map("end_date")
+  isActive        Boolean  @default(true) @map("is_active")
+  alertThreshold  Float?   @map("alert_threshold")
+  rollover        Boolean  @default(false)
+  carryoverAmount Float?   @map("carryover_amount")
+  color           String   @default("#3B82F6")
+  priority        String   @default("medium")
+  autoRenew       Boolean  @default(true) @map("auto_renew")
+  resetDay        Int      @default(1) @map("reset_day")
+  synced          Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("budgets")
+}
+
+model Transaction {
+  id                    Int      @id @default(autoincrement())
+  userId                String   @map("user_id")
+  amount                Float
+  type                  String   // 'income' or 'expense'
+  categoryId            Int      @map("category_id")
+  note                  String?
+  date                  String
+  description           String?
+  payee                 String?
+  reference             String?
+  recurringTransactionId Int?    @map("recurring_transaction_id")
+  isDemo                Boolean  @default(false) @map("is_demo")
+  synced                Boolean  @default(false)
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("transactions")
+}
+
+model DatabaseConnection {
+  id          String   @id
+  userId      String   @map("user_id")
+  name        String
+  type        String   // 'postgres', 'sqlite', 'libsql'
+  url         String?
+  filePath    String?  @map("file_path")
+  token       String?
+  isFavorite  Boolean  @default(false) @map("is_favorite")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("connections")
+}

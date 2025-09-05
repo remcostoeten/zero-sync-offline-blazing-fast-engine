@@ -9,17 +9,18 @@ import { savingsRoutes } from './modules/finance/features/savings/routes';
 import { budgetsRouter } from './modules/finance/features/budgets';
 import { recurringRouter } from './modules/finance/features/recurring';
 import { demoToggleRoutes } from './modules/finance/features/demo-toggle/routes';
-import { authRoutes } from './modules/finance/features/auth/routes';
+import authRoutes from './routes/auth';
 import { connectionsRoutes } from './modules/database-studio/features/connections/api/routes';
+import type { AuthType } from './lib/auth';
 
-const app = new Hono();
+const app = new Hono<{ Variables: AuthType }>();
 
 app.use('*', logger());
 
 app.use('*', cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3001', 'http://localhost:4000', 'http://localhost:41000'],
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:4000', 'http://localhost:41000'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
+  allowHeaders: ['Content-Type', 'Authorization', 'Cookie'],
   credentials: true
 }));
 

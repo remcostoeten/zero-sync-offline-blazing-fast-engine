@@ -11,8 +11,8 @@ import { TBudgetWithUtilization, calculateBudgetUtilization } from '../queries';
 
 const budgetCrud = createCrudFactory<typeof budgetsSchema, TBudgetInsert, TBudgetSelect>(budgetsSchema)();
 
-type TBudgetCreateData = Omit<TBudgetInsert, 'id' | 'createdAt' | 'updatedAt' | 'synced'>;
-type TBudgetUpdateData = Partial<TBudgetCreateData> & { id: number };
+type TBudgetCreateData = Omit<TBudgetInsert, 'id' | 'createdAt' | 'updatedAt' | 'synced'> & { userId: string };
+type TBudgetUpdateData = Partial<TBudgetCreateData> & { id: number; userId: string };
 type TBudgetResetOptions = {
   preserveEndDate?: boolean;
   newStartDate?: string;
@@ -65,6 +65,7 @@ async function createBudget(data: TBudgetCreateData): Promise<TBudget> {
   
   const insertData = {
     ...budgetData,
+    userId: data.userId, // Include user ID
     synced: false,
     // Ensure all required fields have default values
     name: budgetData.name || `Budget for Category ${budgetData.categoryId}`, // Ensure name is always provided
@@ -95,7 +96,7 @@ async function updateBudget(data: TBudgetUpdateData): Promise<TBudget> {
     const currentBudget = await db
       .select()
       .from(budgetsSchema)
-      .where(eq(budgetsSchema.id, id))
+      .where(and(eq(budgetsSchema.id, id), eq(budgetsSchema.userId, data.userId)))
       .limit(1);
       
     if (!currentBudget[0]) {
