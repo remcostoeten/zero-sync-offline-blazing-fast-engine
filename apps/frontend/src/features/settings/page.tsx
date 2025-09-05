@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { DemoToggle } from '@/components/demo-toggle';
+import { SimpleDemoToggle } from '@/components/simple-demo-toggle';
+import { ClearDemoDataButton } from '@/components/clear-demo-data-button';
 import { 
   Settings as SettingsIcon,
   User,
@@ -52,13 +53,28 @@ export default function SettingsPage() {
             <p className="text-sm text-muted-foreground">
               Switch between your real financial data and sample demo data to explore the application safely.
             </p>
-            <DemoToggle 
+            <SimpleDemoToggle 
               className="w-full" 
               showStats={true}
               onToggle={(isDemoMode) => {
                 console.log('Demo mode toggled:', isDemoMode);
               }}
             />
+            
+            <div className="border-t pt-4">
+              <h4 className="font-medium mb-2">Demo Data Management</h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                Clear all demo data and start fresh, or reinitialize with sample data.
+              </p>
+              <ClearDemoDataButton 
+                onSuccess={() => {
+                  console.log('Demo data cleared successfully');
+                }}
+                onError={(error) => {
+                  console.error('Failed to clear demo data:', error);
+                }}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

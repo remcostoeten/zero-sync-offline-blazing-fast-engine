@@ -295,13 +295,30 @@ export function TransactionList({ initialTransactions }: TransactionListProps) {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <TransactionForm
-              transaction={editingTransaction}
-              onSuccess={handleFormSuccess}
-              onCancel={handleCancel}
-            />
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-lg">
+            <div className="sticky top-0 bg-card border-b border-border px-6 py-4 rounded-t-lg">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-card-foreground">
+                  {editingTransaction ? 'Edit Transaction' : 'New Transaction'}
+                </h2>
+                <button
+                  onClick={handleCancel}
+                  className="p-1 hover:bg-muted rounded-full transition-colors"
+                >
+                  <svg className="w-5 h-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <TransactionForm
+                transaction={editingTransaction}
+                onSuccess={handleFormSuccess}
+                onCancel={handleCancel}
+              />
+            </div>
           </div>
         </div>
       )}

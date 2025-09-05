@@ -191,27 +191,24 @@ async function getSavingsTransactions(filters: TSavingsTransactionsFilters = {})
     conditions.push(lte(savingsTransactionsSchema.date, filters.endDate));
   }
 
-  if (conditions.length > 0) {
-    query = query.where(and(...conditions));
-  }
-
-  query = query.orderBy(desc(savingsTransactionsSchema.date), desc(savingsTransactionsSchema.createdAt));
-
-  if (filters.limit) {
-    query = query.limit(filters.limit);
-  }
-  
-  if (filters.offset) {
-    query = query.offset(filters.offset);
-  }
-
-  return query;
+  // Execute query with all chaining in one expression
+  return conditions.length > 0
+    ? query
+        .where(and(...conditions))
+        .orderBy(desc(savingsTransactionsSchema.date), desc(savingsTransactionsSchema.createdAt))
+        .limit(filters.limit || 50)
+        .offset(filters.offset || 0)
+    : query
+        .orderBy(desc(savingsTransactionsSchema.date), desc(savingsTransactionsSchema.createdAt))
+        .limit(filters.limit || 50)
+        .offset(filters.offset || 0);
 }
 
 export { 
   getSavingsGoals, 
   getSavingsGoalById, 
   getSavingsTransactions, 
-  calculateSavingsProgress,
-  TSavingsGoalWithProgress
+  calculateSavingsProgress
 };
+
+export type { TSavingsGoalWithProgress };

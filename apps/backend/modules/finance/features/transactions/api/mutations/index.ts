@@ -3,11 +3,14 @@ import { transactionsSchema, TTransactionInsert, TTransactionSelect } from '../.
 
 const transactionCrud = createCrudFactory<typeof transactionsSchema, TTransactionInsert, TTransactionSelect>(transactionsSchema)();
 
-async function createTransaction(data: TTransactionInsert) {
-  const transactionData = {
+type TTransactionCreateData = Omit<TTransactionInsert, 'synced' | 'isDemo'>;
+
+async function createTransaction(data: TTransactionCreateData) {
+  const transactionData: TTransactionInsert = {
     ...data,
     date: data.date || new Date().toISOString().split('T')[0],
-    synced: false
+    synced: false,
+    isDemo: false
   };
 
   return transactionCrud.create(transactionData);
@@ -21,15 +24,14 @@ async function deleteTransaction(id: number) {
   return transactionCrud.destroy(id);
 }
 
-async function bulkImportTransactions(transactions: TTransactionInsert[]) {
+async function bulkImportTransactions(transactions: TTransactionCreateData[]) {
   const db = createDb();
   
-  const transactionsWithDefaults = transactions.map(transaction => ({
+  const transactionsWithDefaults: TTransactionInsert[] = transactions.map(transaction => ({
     ...transaction,
     date: transaction.date || new Date().toISOString().split('T')[0],
     synced: false,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    isDemo: false
   }));
 
   const results = await db

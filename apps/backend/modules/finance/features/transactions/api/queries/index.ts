@@ -52,21 +52,17 @@ async function getTransactions(filters: TTransactionFilters = {}) {
     conditions.push(eq(transactionsSchema.type, filters.type));
   }
 
-  if (conditions.length > 0) {
-    query = query.where(and(...conditions));
-  }
-
-  query = query.orderBy(desc(transactionsSchema.date), desc(transactionsSchema.createdAt));
-
-  if (filters.limit) {
-    query = query.limit(filters.limit);
-  }
-  
-  if (filters.offset) {
-    query = query.offset(filters.offset);
-  }
-
-  return query;
+  // Execute query with all chaining in one expression
+  return conditions.length > 0
+    ? query
+        .where(and(...conditions))
+        .orderBy(desc(transactionsSchema.date), desc(transactionsSchema.createdAt))
+        .limit(filters.limit || 50)
+        .offset(filters.offset || 0)
+    : query
+        .orderBy(desc(transactionsSchema.date), desc(transactionsSchema.createdAt))
+        .limit(filters.limit || 50)
+        .offset(filters.offset || 0);
 }
 
 async function getTransactionById(id: number) {

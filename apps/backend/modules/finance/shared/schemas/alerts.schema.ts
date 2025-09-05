@@ -32,4 +32,4 @@ type TAlertInsert = Omit<TAlert, 'id' | 'createdAt' | 'updatedAt'>;
 
 type TAlertSelect = TAlert;
 
-export { TAlert, TAlertInsert, TAlertSelect };
+export type { TAlert, TAlertInsert, TAlertSelect };

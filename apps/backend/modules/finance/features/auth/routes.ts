@@ -160,20 +160,26 @@ authRoutes.get('/profile', authMiddleware, async (c: AuthenticatedContext) => {
 });
 
 // Update user profile (protected route)
-authRoutes.put('/profile', authMiddleware, zValidator('json', z.object({
+const updateProfileSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
   profile: z.string().optional(),
   avatar: z.string().optional(),
-})), async (c: AuthenticatedContext) => {
+});
+
+authRoutes.put('/profile', authMiddleware, zValidator('json', updateProfileSchema), async (c: AuthenticatedContext) => {
   try {
-    const updates = c.req.valid('json');
+    const updates = c.req.valid('json') as z.infer<typeof updateProfileSchema>;
     const db = createDb();
 
+    const updateData = {
+      ...(updates.name && { name: updates.name }),
+      ...(updates.profile !== undefined && { profile: updates.profile }),
+      ...(updates.avatar !== undefined && { avatar: updates.avatar }),
+      updatedAt: new Date(),
+    };
+
     const [updatedUser] = await db.update(users)
-      .set({
-        ...updates,
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(users.id, c.user.userId))
       .returning();
 

@@ -13,12 +13,17 @@ import { eq } from 'drizzle-orm';
 const savingsGoalCrud = createCrudFactory<typeof savingsGoalsSchema, TSavingsGoalInsert, TSavingsGoalSelect>(savingsGoalsSchema)();
 const savingsTransactionCrud = createCrudFactory<typeof savingsTransactionsSchema, TSavingsTransactionInsert, TSavingsTransactionSelect>(savingsTransactionsSchema)();
 
-async function createSavingsGoal(data: TSavingsGoalInsert) {
-  const goalData = {
+type TSavingsGoalCreateData = Omit<TSavingsGoalInsert, 'synced'>;
+
+async function createSavingsGoal(data: TSavingsGoalCreateData) {
+  const goalData: TSavingsGoalInsert = {
     ...data,
-    currentAmount: 0,
+    currentAmount: data.currentAmount || 0,
     color: data.color || '#10B981',
     icon: data.icon || '🎯',
+    priority: data.priority || 'medium',
+    isCompleted: data.isCompleted || false,
+    isActive: data.isActive !== undefined ? data.isActive : true,
     synced: false
   };
 
@@ -46,10 +51,12 @@ async function deleteSavingsGoal(id: number) {
   return savingsGoalCrud.destroy(id);
 }
 
-async function addSavingsTransaction(data: TSavingsTransactionInsert) {
+type TSavingsTransactionCreateData = Omit<TSavingsTransactionInsert, 'synced'>;
+
+async function addSavingsTransaction(data: TSavingsTransactionCreateData) {
   const db = createDb();
   
-  const transactionData = {
+  const transactionData: TSavingsTransactionInsert = {
     ...data,
     date: data.date || new Date().toISOString().split('T')[0],
     synced: false
@@ -89,8 +96,7 @@ async function withdrawFromSavings(goalId: number, amount: number, note?: string
     amount,
     type: 'withdrawal',
     note: note || `Withdrawal from ${goal.name}`,
-    date: date || new Date().toISOString().split('T')[0],
-    synced: false
+    date: date || new Date().toISOString().split('T')[0]
   });
 }
 

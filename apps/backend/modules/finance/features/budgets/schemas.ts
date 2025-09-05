@@ -1,16 +1,18 @@
 import { z } from 'zod';
 
 // Core budget schemas
-export const BudgetInsertSchema = z.object({
+export const BudgetCreateSchema = z.object({
   categoryId: z.number().int().positive('Category ID must be positive'),
   amount: z.number().positive('Amount must be positive'),
   period: z.enum(['monthly', 'yearly']).default('monthly'),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)').optional(),
-  isActive: z.boolean().default(true),
-  alertThreshold: z.number().min(0).max(100).default(80), // Percentage threshold for alerts
+  isActive: z.boolean().default(true).optional(),
+  alertThreshold: z.number().min(0).max(100).default(80).optional(),
   notes: z.string().optional()
 });
+
+export const BudgetInsertSchema = BudgetCreateSchema.partial();
 
 export const BudgetUpdateSchema = BudgetInsertSchema.partial().extend({
   id: z.number().int().positive().optional()

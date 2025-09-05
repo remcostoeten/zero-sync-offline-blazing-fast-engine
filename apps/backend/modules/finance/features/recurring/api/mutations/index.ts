@@ -92,7 +92,8 @@ async function createRecurringTransaction(data: TRecurringTransactionCreateData)
   const recurringData: TRecurringTransactionInsert = {
     ...data,
     generatedCount: 0,
-    lastGenerated: null
+    lastGenerated: null,
+    synced: false
   };
   
   return await recurringCrud.create(recurringData);
@@ -328,11 +329,13 @@ async function generateTransactionsForRecurring(
           type: recurringData.type,
           categoryId: recurringData.categoryId,
           date: date,
-          description: `${recurringData.name} - ${recurringData.frequency} recurring`,
+          note: `${recurringData.name} - ${recurringData.frequency} recurring`,
+          description: recurringData.description,
           payee: recurringData.payee,
           reference: recurringData.reference,
-          tags: recurringData.tags || [],
-          recurringTransactionId: recurringId
+          recurringTransactionId: recurringId,
+          synced: false,
+          isDemo: false
         };
         
         const createdTransaction = await transactionCrud.create(transactionData);
@@ -497,6 +500,7 @@ export {
   generateTransactionsForAll,
   bulkCreateRecurringTransactions,
   bulkUpdateRecurringTransactions,
-  bulkDeleteRecurringTransactions,
-  TGenerationResult
+  bulkDeleteRecurringTransactions
 };
+
+export type { TGenerationResult };

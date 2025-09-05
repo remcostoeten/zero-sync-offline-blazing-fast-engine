@@ -5,7 +5,7 @@ export const CategoryInsertSchema = z.object({
   name: z.string().min(1, 'Name is required').max(50, 'Name too long'),
   description: z.string().optional(),
   type: z.enum(['income', 'expense', 'debt', 'investment', 'savings'], {
-    required_error: 'Type is required'
+    errorMap: () => ({ message: 'Type is required' })
   }),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color format').optional(),
   icon: z.string().optional(),
@@ -32,7 +32,7 @@ export const TransactionInsertSchema = z.object({
     .transform(val => Number(val))
     .refine(val => val > 0, 'Amount must be positive'),
   type: z.enum(['income', 'expense'], {
-    required_error: 'Transaction type is required'
+    errorMap: () => ({ message: 'Transaction type is required' })
   }),
   categoryId: z
     .union([z.string(), z.number()])
@@ -137,7 +137,7 @@ export const BudgetInsertSchema = z.object({
     .refine(val => val >= 0, 'Spent amount cannot be negative')
     .default(0),
   period: z.enum(['weekly', 'monthly', 'quarterly', 'yearly'], {
-    required_error: 'Budget period is required'
+    errorMap: () => ({ message: 'Budget period is required' })
   }),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)').optional(),

@@ -385,5 +385,5 @@ void main() {
   );
 };
 
-export default Gradient;
+export default GradientBlinds;
 

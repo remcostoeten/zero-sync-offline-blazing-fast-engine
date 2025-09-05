@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
 import { categoriesRoutes } from './modules/finance/features/categories/routes';
 import { transactionsRoutes } from './modules/finance/features/transactions/routes';
 import { savingsRoutes } from './modules/finance/features/savings/routes';
@@ -8,6 +10,7 @@ import { budgetsRouter } from './modules/finance/features/budgets';
 import { recurringRouter } from './modules/finance/features/recurring';
 import { demoToggleRoutes } from './modules/finance/features/demo-toggle/routes';
 import { authRoutes } from './modules/finance/features/auth/routes';
+import { connectionsRoutes } from './modules/database-studio/features/connections/api/routes';
 
 const app = new Hono();
 
@@ -20,12 +23,35 @@ app.use('*', cors({
   credentials: true
 }));
 
+// Serve the index page at root
+app.get('/', (c) => {
+  try {
+    const indexPath = join(process.cwd(), 'public', 'index.html');
+    if (existsSync(indexPath)) {
+      const content = readFileSync(indexPath, 'utf-8');
+      return c.html(content);
+    } else {
+      return c.json({
+        success: false,
+        error: { message: 'Index page not found' }
+      }, 404);
+    }
+  } catch (error) {
+    console.error('Error serving index page:', error);
+    return c.json({
+      success: false,
+      error: { message: 'Failed to serve index page' }
+    }, 500);
+  }
+});
+
 app.get('/health', (c) => {
   return c.json({
     success: true,
-    message: 'Hono Finance API is running',
+    message: 'Hono Finance API & Database Studio is running',
     timestamp: new Date().toISOString(),
-    version: '2.0.0'
+    version: '2.0.0',
+    modules: ['finance', 'database-studio']
   });
 });
 
@@ -36,6 +62,7 @@ app.route('/api/finance/budgets', budgetsRouter);
 app.route('/api/finance/recurring', recurringRouter);
 app.route('/api/finance/demo-toggle', demoToggleRoutes);
 app.route('/api/auth', authRoutes);
+app.route('/api/database-studio/connections', connectionsRoutes);
 
 app.get('/api/finance', (c) => {
   return c.json({
@@ -231,13 +258,68 @@ app.get('/api/finance', (c) => {
   });
 });
 
-app.notFound((c) => {
+app.get('/api/database-studio', (c) => {
   return c.json({
-    success: false,
-    error: {
-      message: `Route ${c.req.path} not found`
+    success: true,
+    message: 'Database Studio API - Browser-based Database Management',
+    version: '1.0.0',
+    architecture: 'Phase 1 MVP - Core Developer Tool',
+    supportedDatabases: ['LibSQL', 'SQLite', 'PostgreSQL (coming soon)'],
+    
+    endpoints: {
+      connections: {
+        base: '/api/database-studio/connections',
+        methods: {
+          'POST /': 'Create new database connection',
+          'GET /': 'List all connections',
+          'GET /:id': 'Get connection by ID',
+          'PUT /:id': 'Update connection',
+          'DELETE /:id': 'Delete connection',
+          'POST /:id/connect': 'Test connection',
+          'GET /:id/tables': 'List tables for connection',
+          'GET /:id/tables/:table/rows': 'Get table rows with pagination',
+          'POST /:id/query': 'Execute raw SQL query',
+          'GET /:id/metrics': 'Get database metrics',
+          'PATCH /:id/favorite': 'Toggle favorite status'
+        }
+      }
+    },
+    
+    features: {
+      '✅ Connection Management': 'Create, read, update, delete database connections',
+      '✅ Database Testing': 'Test connections before saving',
+      '✅ Table Discovery': 'Automatically discover database schema',
+      '✅ Row Browsing': 'Browse table data with pagination and search',
+      '✅ Query Execution': 'Execute raw SQL queries',
+      '✅ Metrics & Stats': 'Database and table statistics',
+      '✅ Favorites': 'Mark frequently used connections as favorites',
+      '🚧 Inline Editing': 'Coming in Phase 2',
+      '🚧 Multi-User': 'Coming in Phase 2',
+      '🚧 Dashboards': 'Coming in Phase 3'
+    },
+    
+    roadmap: {
+      'Phase 1': 'MVP - Core Developer Tool (Current)',
+      'Phase 2': 'Multi-User & Security Layer',
+      'Phase 3': 'Analytics & Dashboards',
+      'Phase 4': 'AI suggestions, schema diff/ERD, offline sync'
     }
-  }, 404);
+  });
+});
+
+app.notFound((c) => {
+  // For API routes, return JSON 404
+  if (c.req.path.startsWith('/api') || c.req.path.startsWith('/health')) {
+    return c.json({
+      success: false,
+      error: {
+        message: `Route ${c.req.path} not found`
+      }
+    }, 404);
+  }
+  
+  // For all other routes, redirect to the index page
+  return c.redirect('/');
 });
 
 app.onError((err, c) => {

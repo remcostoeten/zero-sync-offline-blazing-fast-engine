@@ -173,7 +173,7 @@ class ServiceWorkerManager {
     }
   }
 
-  private postMessage(message: any, transfer?: Transferable[]) {
+    private postMessage(message: unknown, transfer?: Transferable[]) {
     if (navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage(message, transfer || []);
     } else if (this.registration?.active) {

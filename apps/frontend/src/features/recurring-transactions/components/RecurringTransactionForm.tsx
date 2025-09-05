@@ -49,7 +49,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-interface RecurringTransactionFormProps {
+type TProps = {
   transaction?: TRecurringTransaction;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -61,7 +61,7 @@ export function RecurringTransactionForm({
   isOpen,
   onOpenChange,
   onSuccess
-}: RecurringTransactionFormProps) {
+}: TProps) {
   const [categories, setCategories] = useState<TCategory[]>([]);
   const [tags, setTags] = useState<string[]>(transaction?.tags || []);
   const [newTag, setNewTag] = useState('');

@@ -22,24 +22,24 @@ async function generateDemoCategories() {
   const db = createDb();
   
   const demoCategories = [
-    { name: 'Salary', type: 'income', color: '#10B981', icon: '💰', isDemo: true },
-    { name: 'Freelance', type: 'income', color: '#059669', icon: '💻', isDemo: true },
-    { name: 'Investments', type: 'income', color: '#7C3AED', icon: '📈', isDemo: true },
-    { name: 'Side Business', type: 'income', color: '#0891B2', icon: '🏪', isDemo: true },
+    { name: 'Salary', type: 'income' as const, color: '#10B981', icon: '💰', isDemo: true },
+    { name: 'Freelance', type: 'income' as const, color: '#059669', icon: '💻', isDemo: true },
+    { name: 'Investments', type: 'income' as const, color: '#7C3AED', icon: '📈', isDemo: true },
+    { name: 'Side Business', type: 'income' as const, color: '#0891B2', icon: '🏦', isDemo: true },
     
-    { name: 'Groceries', type: 'expense', color: '#F59E0B', icon: '🛒', isDemo: true },
-    { name: 'Transportation', type: 'expense', color: '#EF4444', icon: '🚗', isDemo: true },
-    { name: 'Utilities', type: 'expense', color: '#6366F1', icon: '⚡', isDemo: true },
-    { name: 'Entertainment', type: 'expense', color: '#EC4899', icon: '🎬', isDemo: true },
-    { name: 'Dining Out', type: 'expense', color: '#EA580C', icon: '🍽️', isDemo: true },
-    { name: 'Healthcare', type: 'expense', color: '#DC2626', icon: '🏥', isDemo: true },
-    { name: 'Education', type: 'expense', color: '#7C2D12', icon: '📚', isDemo: true },
-    { name: 'Shopping', type: 'expense', color: '#BE185D', icon: '🛍️', isDemo: true },
-    { name: 'Insurance', type: 'expense', color: '#1F2937', icon: '🛡️', isDemo: true },
-    { name: 'Subscriptions', type: 'expense', color: '#374151', icon: '📱', isDemo: true },
-    { name: 'Travel', type: 'expense', color: '#0D9488', icon: '✈️', isDemo: true },
-    { name: 'Home Maintenance', type: 'expense', color: '#B45309', icon: '🏠', isDemo: true },
-  ] as const;
+    { name: 'Groceries', type: 'expense' as const, color: '#F59E0B', icon: '🛒', isDemo: true },
+    { name: 'Transportation', type: 'expense' as const, color: '#EF4444', icon: '🚗', isDemo: true },
+    { name: 'Utilities', type: 'expense' as const, color: '#6366F1', icon: '⚡', isDemo: true },
+    { name: 'Entertainment', type: 'expense' as const, color: '#EC4899', icon: '🎦', isDemo: true },
+    { name: 'Dining Out', type: 'expense' as const, color: '#EA580C', icon: '🍽️', isDemo: true },
+    { name: 'Healthcare', type: 'expense' as const, color: '#DC2626', icon: '🏥', isDemo: true },
+    { name: 'Education', type: 'expense' as const, color: '#7C2D12', icon: '📚', isDemo: true },
+    { name: 'Shopping', type: 'expense' as const, color: '#BE185D', icon: '🛍️', isDemo: true },
+    { name: 'Insurance', type: 'expense' as const, color: '#1F2937', icon: '🛡️', isDemo: true },
+    { name: 'Subscriptions', type: 'expense' as const, color: '#374151', icon: '📱', isDemo: true },
+    { name: 'Travel', type: 'expense' as const, color: '#0D9488', icon: '✈️', isDemo: true },
+    { name: 'Home Maintenance', type: 'expense' as const, color: '#B45309', icon: '🏠', isDemo: true },
+  ];
 
   try {
     const insertedCategories = await db
@@ -84,86 +84,86 @@ async function generateDemoTransactions(categories: TCategory[]) {
   
   const demoTransactions = [
     // Monthly salaries (last 3 months)
-    { amount: 5500.00, type: 'income', categoryId: salaryCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 1)), note: 'Monthly salary - Current month', isDemo: true },
-    { amount: 5500.00, type: 'income', categoryId: salaryCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth() - 1, 1)), note: 'Monthly salary - Last month', isDemo: true },
-    { amount: 5500.00, type: 'income', categoryId: salaryCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth() - 2, 1)), note: 'Monthly salary - Two months ago', isDemo: true },
+    { amount: 5500.00, type: 'income' as const, categoryId: salaryCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 1)), note: 'Monthly salary - Current month', isDemo: true },
+    { amount: 5500.00, type: 'income' as const, categoryId: salaryCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth() - 1, 1)), note: 'Monthly salary - Last month', isDemo: true },
+    { amount: 5500.00, type: 'income' as const, categoryId: salaryCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth() - 2, 1)), note: 'Monthly salary - Two months ago', isDemo: true },
     
     // Freelance income
     ...(freelanceCategory ? [
-      { amount: 1200.00, type: 'income', categoryId: freelanceCategory.id, date: getRandomDateInRange(lastMonth, now), note: 'Web development project', isDemo: true },
-      { amount: 850.00, type: 'income', categoryId: freelanceCategory.id, date: getRandomDateInRange(twoWeeksAgo, now), note: 'Logo design work', isDemo: true },
+      { amount: 1200.00, type: 'income' as const, categoryId: freelanceCategory.id, date: getRandomDateInRange(lastMonth, now), note: 'Web development project', isDemo: true },
+      { amount: 850.00, type: 'income' as const, categoryId: freelanceCategory.id, date: getRandomDateInRange(twoWeeksAgo, now), note: 'Logo design work', isDemo: true },
     ] : []),
     
     // Investment returns
     ...(investmentCategory ? [
-      { amount: 324.50, type: 'income', categoryId: investmentCategory.id, date: getRandomDateInRange(lastMonth, now), note: 'Dividend payment - VTSAX', isDemo: true },
-      { amount: 89.75, type: 'income', categoryId: investmentCategory.id, date: getRandomDateInRange(threeMonthsAgo, lastMonth), note: 'Stock sale profit', isDemo: true },
+      { amount: 324.50, type: 'income' as const, categoryId: investmentCategory.id, date: getRandomDateInRange(lastMonth, now), note: 'Dividend payment - VTSAX', isDemo: true },
+      { amount: 89.75, type: 'income' as const, categoryId: investmentCategory.id, date: getRandomDateInRange(threeMonthsAgo, lastMonth), note: 'Stock sale profit', isDemo: true },
     ] : []),
     
     // Regular expenses - Groceries (weekly-ish)
-    { amount: 147.82, type: 'expense', categoryId: groceriesCategory.id, date: formatDate(yesterday), note: 'Weekly grocery shopping - Whole Foods', isDemo: true },
-    { amount: 89.45, type: 'expense', categoryId: groceriesCategory.id, date: formatDate(oneWeekAgo), note: 'Grocery run - Target', isDemo: true },
-    { amount: 203.67, type: 'expense', categoryId: groceriesCategory.id, date: getRandomDateInRange(twoWeeksAgo, oneWeekAgo), note: 'Monthly bulk shopping - Costco', isDemo: true },
-    { amount: 76.23, type: 'expense', categoryId: groceriesCategory.id, date: getRandomDateInRange(lastMonth, twoWeeksAgo), note: 'Quick grocery stop - Safeway', isDemo: true },
+    { amount: 147.82, type: 'expense' as const, categoryId: groceriesCategory.id, date: formatDate(yesterday), note: 'Weekly grocery shopping - Whole Foods', isDemo: true },
+    { amount: 89.45, type: 'expense' as const, categoryId: groceriesCategory.id, date: formatDate(oneWeekAgo), note: 'Grocery run - Target', isDemo: true },
+    { amount: 203.67, type: 'expense' as const, categoryId: groceriesCategory.id, date: getRandomDateInRange(twoWeeksAgo, oneWeekAgo), note: 'Monthly bulk shopping - Costco', isDemo: true },
+    { amount: 76.23, type: 'expense' as const, categoryId: groceriesCategory.id, date: getRandomDateInRange(lastMonth, twoWeeksAgo), note: 'Quick grocery stop - Safeway', isDemo: true },
     
     // Transportation
     ...(transportCategory ? [
-      { amount: 65.40, type: 'expense', categoryId: transportCategory.id, date: formatDate(yesterday), note: 'Gas fill-up - Shell', isDemo: true },
-      { amount: 45.20, type: 'expense', categoryId: transportCategory.id, date: getRandomDateInRange(oneWeekAgo, yesterday), note: 'Gas - Chevron', isDemo: true },
-      { amount: 28.50, type: 'expense', categoryId: transportCategory.id, date: getRandomDateInRange(twoWeeksAgo, oneWeekAgo), note: 'Uber to airport', isDemo: true },
-      { amount: 120.00, type: 'expense', categoryId: transportCategory.id, date: getRandomDateInRange(lastMonth, twoWeeksAgo), note: 'Car maintenance - oil change', isDemo: true },
+      { amount: 65.40, type: 'expense' as const, categoryId: transportCategory.id, date: formatDate(yesterday), note: 'Gas fill-up - Shell', isDemo: true },
+      { amount: 45.20, type: 'expense' as const, categoryId: transportCategory.id, date: getRandomDateInRange(oneWeekAgo, yesterday), note: 'Gas - Chevron', isDemo: true },
+      { amount: 28.50, type: 'expense' as const, categoryId: transportCategory.id, date: getRandomDateInRange(twoWeeksAgo, oneWeekAgo), note: 'Uber to airport', isDemo: true },
+      { amount: 120.00, type: 'expense' as const, categoryId: transportCategory.id, date: getRandomDateInRange(lastMonth, twoWeeksAgo), note: 'Car maintenance - oil change', isDemo: true },
     ] : []),
     
     // Utilities (monthly)
     ...(utilitiesCategory ? [
-      { amount: 89.34, type: 'expense', categoryId: utilitiesCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 15)), note: 'Electricity bill - PG&E', isDemo: true },
-      { amount: 67.50, type: 'expense', categoryId: utilitiesCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 10)), note: 'Internet - Comcast', isDemo: true },
-      { amount: 42.80, type: 'expense', categoryId: utilitiesCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 5)), note: 'Water bill', isDemo: true },
+      { amount: 89.34, type: 'expense' as const, categoryId: utilitiesCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 15)), note: 'Electricity bill - PG&E', isDemo: true },
+      { amount: 67.50, type: 'expense' as const, categoryId: utilitiesCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 10)), note: 'Internet - Comcast', isDemo: true },
+      { amount: 42.80, type: 'expense' as const, categoryId: utilitiesCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 5)), note: 'Water bill', isDemo: true },
     ] : []),
     
     // Entertainment
     ...(entertainmentCategory ? [
-      { amount: 15.99, type: 'expense', categoryId: entertainmentCategory.id, date: getRandomDateInRange(oneWeekAgo, now), note: 'Netflix subscription', isDemo: true },
-      { amount: 12.99, type: 'expense', categoryId: entertainmentCategory.id, date: getRandomDateInRange(oneWeekAgo, now), note: 'Spotify Premium', isDemo: true },
-      { amount: 45.00, type: 'expense', categoryId: entertainmentCategory.id, date: getRandomDateInRange(twoWeeksAgo, oneWeekAgo), note: 'Movie tickets for two', isDemo: true },
-      { amount: 89.99, type: 'expense', categoryId: entertainmentCategory.id, date: getRandomDateInRange(lastMonth, twoWeeksAgo), note: 'Concert tickets', isDemo: true },
+      { amount: 15.99, type: 'expense' as const, categoryId: entertainmentCategory.id, date: getRandomDateInRange(oneWeekAgo, now), note: 'Netflix subscription', isDemo: true },
+      { amount: 12.99, type: 'expense' as const, categoryId: entertainmentCategory.id, date: getRandomDateInRange(oneWeekAgo, now), note: 'Spotify Premium', isDemo: true },
+      { amount: 45.00, type: 'expense' as const, categoryId: entertainmentCategory.id, date: getRandomDateInRange(twoWeeksAgo, oneWeekAgo), note: 'Movie tickets for two', isDemo: true },
+      { amount: 89.99, type: 'expense' as const, categoryId: entertainmentCategory.id, date: getRandomDateInRange(lastMonth, twoWeeksAgo), note: 'Concert tickets', isDemo: true },
     ] : []),
     
     // Dining Out
     ...(diningCategory ? [
-      { amount: 67.45, type: 'expense', categoryId: diningCategory.id, date: formatDate(yesterday), note: 'Dinner at Italian restaurant', isDemo: true },
-      { amount: 23.80, type: 'expense', categoryId: diningCategory.id, date: formatDate(oneWeekAgo), note: 'Lunch - Thai food', isDemo: true },
-      { amount: 18.50, type: 'expense', categoryId: diningCategory.id, date: getRandomDateInRange(twoWeeksAgo, oneWeekAgo), note: 'Coffee & pastry', isDemo: true },
-      { amount: 89.30, type: 'expense', categoryId: diningCategory.id, date: getRandomDateInRange(lastMonth, twoWeeksAgo), note: 'Date night dinner', isDemo: true },
+      { amount: 67.45, type: 'expense' as const, categoryId: diningCategory.id, date: formatDate(yesterday), note: 'Dinner at Italian restaurant', isDemo: true },
+      { amount: 23.80, type: 'expense' as const, categoryId: diningCategory.id, date: formatDate(oneWeekAgo), note: 'Lunch - Thai food', isDemo: true },
+      { amount: 18.50, type: 'expense' as const, categoryId: diningCategory.id, date: getRandomDateInRange(twoWeeksAgo, oneWeekAgo), note: 'Coffee & pastry', isDemo: true },
+      { amount: 89.30, type: 'expense' as const, categoryId: diningCategory.id, date: getRandomDateInRange(lastMonth, twoWeeksAgo), note: 'Date night dinner', isDemo: true },
     ] : []),
     
     // Healthcare
     ...(healthcareCategory ? [
-      { amount: 35.00, type: 'expense', categoryId: healthcareCategory.id, date: getRandomDateInRange(twoWeeksAgo, now), note: 'Pharmacy - prescription', isDemo: true },
-      { amount: 150.00, type: 'expense', categoryId: healthcareCategory.id, date: getRandomDateInRange(lastMonth, twoWeeksAgo), note: 'Dental cleaning', isDemo: true },
-      { amount: 25.00, type: 'expense', categoryId: healthcareCategory.id, date: getRandomDateInRange(threeMonthsAgo, lastMonth), note: 'Doctor copay', isDemo: true },
+      { amount: 35.00, type: 'expense' as const, categoryId: healthcareCategory.id, date: getRandomDateInRange(twoWeeksAgo, now), note: 'Pharmacy - prescription', isDemo: true },
+      { amount: 150.00, type: 'expense' as const, categoryId: healthcareCategory.id, date: getRandomDateInRange(lastMonth, twoWeeksAgo), note: 'Dental cleaning', isDemo: true },
+      { amount: 25.00, type: 'expense' as const, categoryId: healthcareCategory.id, date: getRandomDateInRange(threeMonthsAgo, lastMonth), note: 'Doctor copay', isDemo: true },
     ] : []),
     
     // Shopping & miscellaneous
     ...(shoppingCategory ? [
-      { amount: 89.99, type: 'expense', categoryId: shoppingCategory.id, date: getRandomDateInRange(oneWeekAgo, now), note: 'New shoes - Nike', isDemo: true },
-      { amount: 45.60, type: 'expense', categoryId: shoppingCategory.id, date: getRandomDateInRange(twoWeeksAgo, oneWeekAgo), note: 'Household supplies - Target', isDemo: true },
-      { amount: 234.50, type: 'expense', categoryId: shoppingCategory.id, date: getRandomDateInRange(lastMonth, twoWeeksAgo), note: 'New laptop accessories', isDemo: true },
+      { amount: 89.99, type: 'expense' as const, categoryId: shoppingCategory.id, date: getRandomDateInRange(oneWeekAgo, now), note: 'New shoes - Nike', isDemo: true },
+      { amount: 45.60, type: 'expense' as const, categoryId: shoppingCategory.id, date: getRandomDateInRange(twoWeeksAgo, oneWeekAgo), note: 'Household supplies - Target', isDemo: true },
+      { amount: 234.50, type: 'expense' as const, categoryId: shoppingCategory.id, date: getRandomDateInRange(lastMonth, twoWeeksAgo), note: 'New laptop accessories', isDemo: true },
     ] : []),
     
     // Subscriptions
     ...(subscriptionCategory ? [
-      { amount: 9.99, type: 'expense', categoryId: subscriptionCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 1)), note: 'Apple iCloud storage', isDemo: true },
-      { amount: 19.99, type: 'expense', categoryId: subscriptionCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 3)), note: 'Adobe Creative Cloud', isDemo: true },
-      { amount: 5.99, type: 'expense', categoryId: subscriptionCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 5)), note: 'Medium subscription', isDemo: true },
+      { amount: 9.99, type: 'expense' as const, categoryId: subscriptionCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 1)), note: 'Apple iCloud storage', isDemo: true },
+      { amount: 19.99, type: 'expense' as const, categoryId: subscriptionCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 3)), note: 'Adobe Creative Cloud', isDemo: true },
+      { amount: 5.99, type: 'expense' as const, categoryId: subscriptionCategory.id, date: formatDate(new Date(now.getFullYear(), now.getMonth(), 5)), note: 'Medium subscription', isDemo: true },
     ] : []),
     
     // Travel (occasional)
     ...(travelCategory ? [
-      { amount: 450.00, type: 'expense', categoryId: travelCategory.id, date: getRandomDateInRange(lastMonth, now), note: 'Weekend trip - hotel', isDemo: true },
-      { amount: 280.50, type: 'expense', categoryId: travelCategory.id, date: getRandomDateInRange(lastMonth, now), note: 'Flight tickets', isDemo: true },
+      { amount: 450.00, type: 'expense' as const, categoryId: travelCategory.id, date: getRandomDateInRange(lastMonth, now), note: 'Weekend trip - hotel', isDemo: true },
+      { amount: 280.50, type: 'expense' as const, categoryId: travelCategory.id, date: getRandomDateInRange(lastMonth, now), note: 'Flight tickets', isDemo: true },
     ] : []),
-  ] as const;
+  ];
 
   try {
     const insertedTransactions = await db

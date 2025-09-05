@@ -7,7 +7,8 @@ import {
   Target, 
   TrendingUp,
   BarChart3,
-  Settings
+  Settings,
+  Database
 } from 'lucide-react';
 
 export function Navigation() {
@@ -19,6 +20,7 @@ export function Navigation() {
     { href: '/savings', label: 'Savings', icon: PiggyBank },
     { href: '/recurring-transactions', label: 'Recurring', icon: TrendingUp },
     { href: '/reports', label: 'Reports', icon: BarChart3 },
+    { href: '/database-studio', label: 'Database Studio', icon: Database },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
 

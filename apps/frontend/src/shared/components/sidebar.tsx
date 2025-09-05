@@ -240,7 +240,8 @@ export function Sidebar({ className = '' }: TProps) {
               
               {filteredRoutes.length === 0 && !state.isCollapsed && (
                 <div className="px-3 py-8 text-center text-sm text-gray-500">
-                  No results found for "{state.searchQuery}"
+                                    No results found for &quot;{state.searchQuery}&quot;
+
                 </div>
               )}
             </div>

@@ -444,7 +444,7 @@ Provide personalized advice in JSON format:
     };
   }
 
-  private getFallbackBudgetForecast(request: TForecastRequest) {
+    private getFallbackBudgetForecast(_request: TForecastRequest) {
     return {
       budgetForecasts: [],
       overallAnalysis: {

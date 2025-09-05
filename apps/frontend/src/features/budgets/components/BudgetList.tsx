@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { BudgetCard } from './BudgetCard';
 import { BudgetForm } from './BudgetForm';
-import { deleteBudget, getBudgets, getBudgetSummary, getBudgetAlerts, type BudgetWithSpending } from '../actions';
+import { deleteBudget, getBudgets, getBudgetsSummary, getBudgetAlerts, type BudgetWithSpending } from '../actions';
 import { getCategories } from '@/features/categories/actions';
 import { Plus, Search, Filter, Target, AlertTriangle, TrendingUp, DollarSign } from 'lucide-react';
 import type { Category } from '@/lib/database/schemas';
@@ -43,7 +43,7 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
       try {
         const [fetchedCategories, summaryData, alertsData] = await Promise.all([
           getCategories(),
-          getBudgetSummary(),
+          getBudgetsSummary(),
           getBudgetAlerts()
         ]);
         setCategories(fetchedCategories);
@@ -84,7 +84,7 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
     try {
       const [updatedBudgets, updatedSummary, updatedAlerts] = await Promise.all([
         getBudgets(),
-        getBudgetSummary(),
+        getBudgetsSummary(),
         getBudgetAlerts()
       ]);
       setBudgets(updatedBudgets);
@@ -108,7 +108,7 @@ export function BudgetList({ initialBudgets }: BudgetListProps) {
         
         // Refresh summary and alerts
         const [updatedSummary, updatedAlerts] = await Promise.all([
-          getBudgetSummary(),
+          getBudgetsSummary(),
           getBudgetAlerts()
         ]);
         setSummary(updatedSummary);

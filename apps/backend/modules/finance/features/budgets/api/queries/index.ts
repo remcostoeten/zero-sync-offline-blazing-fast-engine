@@ -13,7 +13,7 @@ const budgetCrud = createCrudFactory<typeof budgetsSchema, TBudgetInsert, TBudge
 
 type TBudgetsFilters = {
   categoryId?: number;
-  period?: 'monthly' | 'yearly';
+  period?: 'monthly' | 'yearly' | 'all';
   status?: 'active' | 'exceeded' | 'completed' | 'all';
   includeInactive?: boolean;
   sortBy?: 'amount' | 'spent' | 'remaining' | 'percentage' | 'categoryName' | 'startDate';
@@ -145,7 +145,7 @@ async function getBudgets(filters: TBudgetsFilters = {}): Promise<TBudgetWithUti
     conditions.push(eq(budgetsSchema.categoryId, filters.categoryId));
   }
   
-  if (filters.period) {
+  if (filters.period && filters.period !== 'all') {
     conditions.push(eq(budgetsSchema.period, filters.period));
   }
   
@@ -153,14 +153,15 @@ async function getBudgets(filters: TBudgetsFilters = {}): Promise<TBudgetWithUti
     conditions.push(eq(budgetsSchema.isActive, true));
   }
 
-  if (conditions.length > 0) {
-    query = query.where(and(...conditions));
-  }
-
-  // Execute base query
-  const budgets = await query
-    .limit(filters.limit || 50)
-    .offset(filters.offset || 0);
+  // Execute query with conditions
+  const budgets = conditions.length > 0 
+    ? await query
+        .where(and(...conditions))
+        .limit(filters.limit || 50)
+        .offset(filters.offset || 0)
+    : await query
+        .limit(filters.limit || 50)
+        .offset(filters.offset || 0);
 
   // Calculate utilization for each budget
   const budgetsWithUtilization: TBudgetWithUtilization[] = [];

@@ -35,68 +35,60 @@ export type TSyncOptions = {
   entities?: string[];
 };
 
-class SyncOrchestrator {
-  private isSyncing = false;
-  private syncPromise: Promise<TSyncResult> | null = null;
-  private eventListeners: Array<(event: { type: string; data: any }) => void> = [];
+function createSyncOrchestrator() {
+  let isSyncing = false;
+  let syncPromise: Promise<TSyncResult> | null = null;
+  const eventListeners: Array<(event: { type: string; data: any }) => void> = [];
 
-  // Default sync options
-  private defaultOptions: Required<TSyncOptions> = {
+  const defaultOptions: Required<TSyncOptions> = {
     priority: 'normal',
     batchSize: 10,
     retryFailedOnly: false,
     entities: ['categories', 'transactions', 'budgets'],
   };
 
-  constructor() {
-    this.setupAutoSync();
-  }
-
-  private setupAutoSync() {
-    // Auto-sync on visibility change (when user returns to tab)
+  function setupAutoSync() {
     if (typeof window !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
-        if (!document.hidden && !this.isSyncing) {
-          this.syncAll({ priority: 'low' }).catch(console.error);
+        if (!document.hidden && !isSyncing) {
+          syncAll({ priority: 'low' }).catch(console.error);
         }
       });
 
-      // Auto-sync on network reconnection
       window.addEventListener('online', () => {
-        if (!this.isSyncing) {
-          this.syncAll({ priority: 'high' }).catch(console.error);
+        if (!isSyncing) {
+          syncAll({ priority: 'high' }).catch(console.error);
         }
       });
     }
   }
 
-  async syncAll(options: TSyncOptions = {}): Promise<TSyncResult> {
-    // Return existing promise if already syncing
-    if (this.isSyncing && this.syncPromise) {
-      return this.syncPromise;
+  async function syncAll(options: TSyncOptions = {}): Promise<TSyncResult> {
+    if (isSyncing && syncPromise) {
+      return syncPromise;
     }
 
-    const finalOptions = { ...this.defaultOptions, ...options };
+    const finalOptions = { ...defaultOptions, ...options };
     
-    this.isSyncing = true;
-    this.emitEvent('sync-start', { options: finalOptions });
+    isSyncing = true;
+    emitEvent('sync-start', { options: finalOptions });
 
-    this.syncPromise = this.performSync(finalOptions);
+    syncPromise = performSync(finalOptions);
     
     try {
-      const result = await this.syncPromise;
-      this.emitEvent('sync-complete', result);
+      const result = await syncPromise;
+      emitEvent('sync-complete', result);
       return result;
     } catch (error) {
-      this.emitEvent('sync-error', { error });
+      emitEvent('sync-error', { error });
       throw error;
     } finally {
-      this.isSyncing = false;
-      this.syncPromise = null;
+      isSyncing = false;
+      syncPromise = null;
     }
   }
 
-  private async performSync(options: Required<TSyncOptions>): Promise<TSyncResult> {
+  async function performSync(options: Required<TSyncOptions>): Promise<TSyncResult> {
     const client = getLocalClient();
     
     if (!client.isOnline()) {
@@ -109,10 +101,9 @@ class SyncOrchestrator {
       errors: []
     };
 
-    // Sync each entity type
     for (const entity of options.entities) {
       try {
-        this.emitEvent('entity-sync-start', { entity });
+        emitEvent('entity-sync-start', { entity });
         
         let entityResult: { success: number; failed: number };
 
@@ -134,7 +125,7 @@ class SyncOrchestrator {
         results.success += entityResult.success;
         results.failed += entityResult.failed;
 
-        this.emitEvent('entity-sync-complete', { 
+        emitEvent('entity-sync-complete', { 
           entity, 
           result: entityResult 
         });
@@ -144,7 +135,7 @@ class SyncOrchestrator {
         results.errors.push(error as Error);
         results.failed++;
 
-        this.emitEvent('entity-sync-error', { 
+        emitEvent('entity-sync-error', { 
           entity, 
           error 
         });
@@ -154,7 +145,7 @@ class SyncOrchestrator {
     return results;
   }
 
-  async getSyncStats(): Promise<TSyncStats> {
+  async function getSyncStats(): Promise<TSyncStats> {
     const stats: TSyncStats = {
       totalPending: 0,
       totalSynced: 0,
@@ -163,11 +154,9 @@ class SyncOrchestrator {
     };
 
     try {
-      // Get pending operations from sync queue
       const pendingOps = syncQueue.getPendingOperations();
       stats.totalPending = pendingOps.length;
 
-      // Get unsynced records for each entity
       const [
         unsyncedCategories,
         unsyncedTransactions,  
@@ -181,8 +170,8 @@ class SyncOrchestrator {
       stats.entitiesStatus = {
         categories: {
           pending: unsyncedCategories.length,
-          synced: 0, // Would need to calculate from total - pending
-          failed: 0  // Would need to track failed syncs
+          synced: 0,
+          failed: 0
         },
         transactions: {
           pending: unsyncedTransactions.length,
@@ -203,22 +192,21 @@ class SyncOrchestrator {
     return stats;
   }
 
-  async forceSyncEntity(entity: string): Promise<TSyncResult> {
-    return this.syncAll({ 
+  async function forceSyncEntity(entity: string): Promise<TSyncResult> {
+    return syncAll({ 
       entities: [entity],
       priority: 'high'
     });
   }
 
-  async retryFailedOperations(): Promise<TSyncResult> {
-    return this.syncAll({
+  async function retryFailedOperations(): Promise<TSyncResult> {
+    return syncAll({
       retryFailedOnly: true,
       priority: 'high'
     });
   }
 
-  // Batch sync with controlled concurrency
-  async batchSync(
+  async function batchSync(
     operations: Array<() => Promise<any>>,
     batchSize = 5
   ): Promise<TSyncResult> {
@@ -245,7 +233,6 @@ class SyncOrchestrator {
           }
         });
 
-        // Add small delay between batches to avoid overwhelming the server
         if (i + batchSize < operations.length) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -260,20 +247,19 @@ class SyncOrchestrator {
     return results;
   }
 
-  // Event system for UI updates
-  addEventListener(callback: (event: { type: string; data: any }) => void): () => void {
-    this.eventListeners.push(callback);
+  function addEventListener(callback: (event: { type: string; data: any }) => void): () => void {
+    eventListeners.push(callback);
     
     return () => {
-      const index = this.eventListeners.indexOf(callback);
+      const index = eventListeners.indexOf(callback);
       if (index > -1) {
-        this.eventListeners.splice(index, 1);
+        eventListeners.splice(index, 1);
       }
     };
   }
 
-  private emitEvent(type: string, data: any): void {
-    this.eventListeners.forEach(callback => {
+  function emitEvent(type: string, data: any): void {
+    eventListeners.forEach(callback => {
       try {
         callback({ type, data });
       } catch (error) {
@@ -282,42 +268,48 @@ class SyncOrchestrator {
     });
   }
 
-  // Get current sync status
-  getSyncStatus(): { 
+  function getSyncStatus(): { 
     isSyncing: boolean;
     hasActiveSyncPromise: boolean;
   } {
     return {
-      isSyncing: this.isSyncing,
-      hasActiveSyncPromise: this.syncPromise !== null,
+      isSyncing,
+      hasActiveSyncPromise: syncPromise !== null,
     };
   }
 
-  // Priority sync for critical operations
-  async prioritySync(entity: string, recordIds: number[]): Promise<TSyncResult> {
-    // This would implement priority sync for specific records
-    // For now, just sync the entire entity with high priority
-    return this.forceSyncEntity(entity);
+    async function prioritySync(entity: string): Promise<TSyncResult> {
+    return forceSyncEntity(entity);
   }
 
-  // Cleanup method
-  cleanup(): void {
-    this.eventListeners = [];
-    if (this.syncPromise) {
-      this.syncPromise = null;
+  function cleanup(): void {
+    eventListeners.length = 0;
+    if (syncPromise) {
+      syncPromise = null;
     }
-    this.isSyncing = false;
+    isSyncing = false;
   }
+
+  setupAutoSync();
+
+  return {
+    syncAll,
+    getSyncStats,
+    forceSyncEntity,
+    retryFailedOperations,
+    batchSync,
+    addEventListener,
+    getSyncStatus,
+    prioritySync,
+    cleanup,
+  };
 }
 
-// Singleton instance
-let syncOrchestratorInstance: SyncOrchestrator | null = null;
+let syncOrchestratorInstance: ReturnType<typeof createSyncOrchestrator> | null = null;
 
-export function getSyncOrchestrator(): SyncOrchestrator {
+export function getSyncOrchestrator() {
   if (!syncOrchestratorInstance) {
-    syncOrchestratorInstance = new SyncOrchestrator();
+    syncOrchestratorInstance = createSyncOrchestrator();
   }
   return syncOrchestratorInstance;
 }
-
-export { SyncOrchestrator };

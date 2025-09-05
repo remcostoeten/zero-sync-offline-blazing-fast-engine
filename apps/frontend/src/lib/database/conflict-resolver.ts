@@ -37,25 +37,23 @@ export type TConflictResolution<T = any> = {
   keepBoth?: boolean;
 };
 
-class ConflictResolver {
-  private conflicts: Map<string, TConflictRecord> = new Map();
-  private resolutionStrategies: Map<string, TResolutionStrategy> = new Map();
+function createConflictResolver() {
+  const conflicts = new Map<string, TConflictRecord>();
+  const resolutionStrategies = new Map<string, TResolutionStrategy>();
 
-  // Default resolution strategies per entity type
-  private defaultStrategies: Record<string, TResolutionStrategy> = {
+  const defaultStrategies: Record<string, TResolutionStrategy> = {
     categories: 'newest_wins',
     transactions: 'merge_fields', 
     budgets: 'ask_user',
     savings_goals: 'newest_wins'
   };
 
-  detectConflict<T extends Record<string, any>>(
+  function detectConflict<T extends Record<string, any>>(
     entity: string,
     localData: T | null,
     remoteData: T | null,
     id: string
   ): TConflictRecord<T> | null {
-    // No conflict if one side is null (simple create/delete)
     if (!localData || !remoteData) {
       return null;
     }
@@ -63,11 +61,9 @@ class ConflictResolver {
     const localTimestamp = new Date(localData.updatedAt || localData.createdAt);
     const remoteTimestamp = new Date(remoteData.updatedAt || remoteData.createdAt);
     
-    // Compare timestamps
     const timeDiff = localTimestamp.getTime() - remoteTimestamp.getTime();
     const fieldConflicts: string[] = [];
 
-    // Detect field-level conflicts (excluding metadata fields)
     const excludeFields = ['id', 'createdAt', 'updatedAt', 'synced'];
     
     for (const key in localData) {
@@ -78,15 +74,13 @@ class ConflictResolver {
       }
     }
 
-    // Determine conflict type
     let conflictType: TConflictType;
     
     if (fieldConflicts.length === 0) {
-      // No actual data conflicts, just timestamp differences
       return null;
     }
     
-    if (Math.abs(timeDiff) < 1000) { // Less than 1 second difference
+    if (Math.abs(timeDiff) < 1000) {
       conflictType = 'both_modified';
     } else if (timeDiff > 0) {
       conflictType = 'local_newer';
@@ -105,23 +99,23 @@ class ConflictResolver {
       resolved: false
     };
 
-    this.conflicts.set(conflict.id, conflict);
+    conflicts.set(conflict.id, conflict);
     return conflict;
   }
 
-  async resolveConflict<T extends Record<string, any>>(
+  async function resolveConflict<T extends Record<string, any>>(
     conflictId: string,
     strategy?: TResolutionStrategy
   ): Promise<TConflictResolution<T> | null> {
-    const conflict = this.conflicts.get(conflictId) as TConflictRecord<T>;
+    const conflict = conflicts.get(conflictId) as TConflictRecord<T>;
     
     if (!conflict || conflict.resolved) {
       return null;
     }
 
     const resolveStrategy = strategy || 
-      this.resolutionStrategies.get(conflict.entity) ||
-      this.defaultStrategies[conflict.entity] ||
+      resolutionStrategies.get(conflict.entity) ||
+      defaultStrategies[conflict.entity] ||
       'newest_wins';
 
     let resolvedData: T;
@@ -143,7 +137,7 @@ class ConflictResolver {
         break;
 
       case 'merge_fields':
-        resolvedData = this.mergeFields(conflict.localData!, conflict.remoteData!);
+        resolvedData = mergeFields(conflict.localData!, conflict.remoteData!);
         break;
 
       case 'create_duplicate':
@@ -152,8 +146,6 @@ class ConflictResolver {
         break;
 
       case 'ask_user':
-        // This would trigger UI for user decision
-        // For now, fall back to newest_wins
         const localTimestamp = new Date(conflict.localData?.updatedAt || 0).getTime();
         const remoteTimestamp = new Date(conflict.remoteData?.updatedAt || 0).getTime();
         resolvedData = localTimestamp > remoteTimestamp ? conflict.localData! : conflict.remoteData!;
@@ -163,7 +155,6 @@ class ConflictResolver {
         resolvedData = conflict.remoteData!;
     }
 
-    // Mark as resolved
     conflict.resolved = true;
     conflict.resolution = resolveStrategy;
     conflict.resolvedData = resolvedData;
@@ -175,39 +166,34 @@ class ConflictResolver {
     };
   }
 
-  private mergeFields<T extends Record<string, any>>(local: T, remote: T): T {
-    const merged = { ...remote }; // Start with remote as base
+  function mergeFields<T extends Record<string, any>>(local: T, remote: T): T {
+    const merged = { ...remote };
 
-    // Merge strategy: take local values for user-modified fields
     const userFields = ['name', 'description', 'amount', 'color', 'icon'];
     const localTimestamp = new Date(local.updatedAt || 0).getTime();
     const remoteTimestamp = new Date(remote.updatedAt || 0).getTime();
 
     for (const field of userFields) {
       if (field in local && local[field] !== remote[field]) {
-        // If local is newer for this field, use local value
         if (localTimestamp > remoteTimestamp) {
           merged[field] = local[field];
         }
-        // Otherwise keep remote value (already in merged)
       }
     }
 
-    // Always use the newest timestamp
     merged.updatedAt = localTimestamp > remoteTimestamp ? local.updatedAt : remote.updatedAt;
 
     return merged;
   }
 
-  // Batch conflict resolution
-  async resolveAllConflicts(
+  async function resolveAllConflicts(
     defaultStrategy: TResolutionStrategy = 'newest_wins'
   ): Promise<TConflictResolution[]> {
     const resolutions: TConflictResolution[] = [];
 
-    for (const conflict of this.conflicts.values()) {
+    for (const conflict of conflicts.values()) {
       if (!conflict.resolved) {
-        const resolution = await this.resolveConflict(conflict.id, defaultStrategy);
+        const resolution = await resolveConflict(conflict.id, defaultStrategy);
         if (resolution) {
           resolutions.push(resolution);
         }
@@ -217,50 +203,44 @@ class ConflictResolver {
     return resolutions;
   }
 
-  // Get unresolved conflicts
-  getUnresolvedConflicts(): TConflictRecord[] {
-    return Array.from(this.conflicts.values()).filter(c => !c.resolved);
+  function getUnresolvedConflicts(): TConflictRecord[] {
+    return Array.from(conflicts.values()).filter(c => !c.resolved);
   }
 
-  // Get conflicts by entity
-  getConflictsByEntity(entity: string): TConflictRecord[] {
-    return Array.from(this.conflicts.values()).filter(c => c.entity === entity);
+  function getConflictsByEntity(entity: string): TConflictRecord[] {
+    return Array.from(conflicts.values()).filter(c => c.entity === entity);
   }
 
-  // Set resolution strategy for entity type
-  setResolutionStrategy(entity: string, strategy: TResolutionStrategy): void {
-    this.resolutionStrategies.set(entity, strategy);
+  function setResolutionStrategy(entity: string, strategy: TResolutionStrategy): void {
+    resolutionStrategies.set(entity, strategy);
   }
 
-  // Clear resolved conflicts (cleanup)
-  clearResolvedConflicts(): void {
-    for (const [id, conflict] of this.conflicts.entries()) {
+  function clearResolvedConflicts(): void {
+    for (const [id, conflict] of conflicts.entries()) {
       if (conflict.resolved) {
-        this.conflicts.delete(id);
+        conflicts.delete(id);
       }
     }
   }
 
-  // Get conflict statistics
-  getConflictStats(): {
+  function getConflictStats(): {
     total: number;
     resolved: number;
     unresolved: number;
     byType: Record<TConflictType, number>;
     byEntity: Record<string, number>;
   } {
-    const conflicts = Array.from(this.conflicts.values());
+    const allConflicts = Array.from(conflicts.values());
     
     const stats = {
-      total: conflicts.length,
-      resolved: conflicts.filter(c => c.resolved).length,
-      unresolved: conflicts.filter(c => !c.resolved).length,
+      total: allConflicts.length,
+      resolved: allConflicts.filter(c => c.resolved).length,
+      unresolved: allConflicts.filter(c => !c.resolved).length,
       byType: {} as Record<TConflictType, number>,
       byEntity: {} as Record<string, number>
     };
 
-    // Count by type
-    for (const conflict of conflicts) {
+    for (const conflict of allConflicts) {
       stats.byType[conflict.conflictType] = (stats.byType[conflict.conflictType] || 0) + 1;
       stats.byEntity[conflict.entity] = (stats.byEntity[conflict.entity] || 0) + 1;
     }
@@ -268,26 +248,23 @@ class ConflictResolver {
     return stats;
   }
 
-  // Auto-resolve simple conflicts
-  async autoResolveSimpleConflicts(): Promise<number> {
+  async function autoResolveSimpleConflicts(): Promise<number> {
     let resolved = 0;
     
-    for (const conflict of this.conflicts.values()) {
+    for (const conflict of conflicts.values()) {
       if (conflict.resolved) continue;
 
-      // Auto-resolve if only metadata fields changed
       if (!conflict.fieldConflicts || conflict.fieldConflicts.length === 0) {
-        await this.resolveConflict(conflict.id, 'newest_wins');
+        await resolveConflict(conflict.id, 'newest_wins');
         resolved++;
       }
       
-      // Auto-resolve if conflict is just timestamp differences
       if (conflict.conflictType === 'remote_newer' || conflict.conflictType === 'local_newer') {
         const hasRealConflicts = conflict.fieldConflicts && 
           conflict.fieldConflicts.some(field => !['updatedAt', 'createdAt'].includes(field));
         
         if (!hasRealConflicts) {
-          await this.resolveConflict(conflict.id, 'newest_wins');
+          await resolveConflict(conflict.id, 'newest_wins');
           resolved++;
         }
       }
@@ -295,16 +272,25 @@ class ConflictResolver {
 
     return resolved;
   }
+
+  return {
+    detectConflict,
+    resolveConflict,
+    resolveAllConflicts,
+    getUnresolvedConflicts,
+    getConflictsByEntity,
+    setResolutionStrategy,
+    clearResolvedConflicts,
+    getConflictStats,
+    autoResolveSimpleConflicts,
+  };
 }
 
-// Singleton instance
-let conflictResolverInstance: ConflictResolver | null = null;
+let conflictResolverInstance: ReturnType<typeof createConflictResolver> | null = null;
 
-export function getConflictResolver(): ConflictResolver {
+export function getConflictResolver() {
   if (!conflictResolverInstance) {
-    conflictResolverInstance = new ConflictResolver();
+    conflictResolverInstance = createConflictResolver();
   }
   return conflictResolverInstance;
 }
-
-export { ConflictResolver };

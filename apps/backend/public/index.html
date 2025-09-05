@@ -1,0 +1,2198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zero Sync API Documentation</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/nord.min.css">
+  <style>
+    :root {
+      --bg-primary: #111111;
+      --bg-secondary: #0e0e0e;
+      --bg-card: #1a1a1a;
+      --bg-hover: #222222;
+      --border: rgba(255, 255, 255, 0.08);
+      --text-primary: #ffffff;
+      --text-secondary: #b3b3b3;
+      --text-muted: #777777;
+      --text-code: #a2e2ff;
+      --accent-blue: #3396ff;
+      --accent-blue-light: #61dafb;
+      --accent-green: #4caf50;
+      --accent-orange: #ff9800;
+      --accent-red: #f44336;
+      --accent-purple: #9c27b0;
+      --accent-teal: #66cfcf;
+      --gradient: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-teal) 100%);
+      --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.5);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, Consolas, monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: var(--accent-blue-light);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .app-container {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      grid-template-rows: 60px 1fr;
+      grid-template-areas:
+        "sidebar header"
+        "sidebar main";
+      min-height: 100vh;
+      padding-bottom: 128px;
+    }
+
+    /* Header */
+    .header {
+      grid-area: header;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 2rem;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+    }
+
+    .search-container {
+      position: relative;
+      flex-grow: 1;
+      max-width: 600px;
+      margin-right: 2rem;
+    }
+
+    .search-input {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 0.6rem 1rem 0.6rem 2.8rem;
+      width: 100%;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+
+    .search-input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 0 0 2px rgba(97, 218, 251, 0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 1.2rem;
+      align-items: center;
+    }
+
+    .header-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .header-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .header-icon {
+      margin-right: 0.5rem;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      grid-area: sidebar;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow-y: auto;
+      position: sticky;
+      top: 0;
+    }
+
+    .logo {
+      padding: 1.2rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav {
+      padding: 1rem 0;
+      flex-grow: 1;
+    }
+
+    .nav-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .nav-group-title {
+      padding: 0.5rem 1.5rem;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 0.6rem 1.5rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-link.active {
+      color: var(--text-primary);
+      background: var(--bg-hover);
+      font-weight: 500;
+      border-left: 3px solid var(--accent-blue);
+    }
+
+    .nav-link.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 3px;
+      background: var(--accent-blue);
+    }
+
+    .nav-link-icon {
+      margin-right: 0.8rem;
+      opacity: 0.8;
+    }
+
+    .sidebar-footer {
+      padding: 1.2rem 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* Main Content */
+    .main {
+      grid-area: main;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .content-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-description {
+      color: var(--text-secondary);
+      max-width: 800px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-header {
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media (max-width: 1200px) {
+      .grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .app-container {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "header"
+          "main";
+      }
+
+      .sidebar {
+        display: none;
+      }
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab {
+      padding: 0.8rem 1.2rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+    }
+
+    .tab.active {
+      color: var(--accent-blue-light);
+      border-bottom-color: var(--accent-blue-light);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* API Endpoints */
+    .endpoint {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 1rem;
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      gap: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .method {
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      min-width: 50px;
+      text-align: center;
+    }
+
+    .method-get {
+      background: var(--accent-green);
+      color: white;
+    }
+
+    .method-post {
+      background: var(--accent-blue);
+      color: white;
+    }
+
+    .method-put {
+      background: var(--accent-orange);
+      color: white;
+    }
+
+    .method-delete {
+      background: var(--accent-red);
+      color: white;
+    }
+
+    .method-patch {
+      background: var(--accent-purple);
+      color: white;
+    }
+
+    .endpoint-path {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      flex-grow: 1;
+    }
+
+    .endpoint-body {
+      padding: 1.5rem;
+      display: none;
+    }
+
+    .endpoint.active .endpoint-body {
+      display: block;
+    }
+
+    .endpoint-desc {
+      margin-bottom: 1.5rem;
+    }
+
+    .endpoint-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .endpoint-description {
+      color: var(--text-secondary);
+    }
+
+    .code-sample {
+      margin-bottom: 1.5rem;
+    }
+
+    .code-header {
+      padding: 0.5rem 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-top-left-radius: var(--radius-sm);
+      border-top-right-radius: var(--radius-sm);
+      display: flex;
+      justify-content: space-between;
+      border: 1px solid rgba(0, 0, 0, 0.4);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .code-content {
+      border-bottom-left-radius: var(--radius-sm);
+      border-bottom-right-radius: var(--radius-sm);
+      overflow: auto;
+      max-height: 300px;
+      background: #0a0a0a;
+      border: 1px solid rgba(0, 0, 0, 0.4);
+      border-top: none;
+    }
+
+    pre {
+      margin: 0;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      color: var(--text-code);
+    }
+
+    .request-params {
+      margin-bottom: 1.5rem;
+    }
+
+    .params-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .params-table th,
+    .params-table td {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .params-table th {
+      background: rgba(0, 0, 0, 0.25);
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .param-type {
+      color: var(--accent-blue-light);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    .param-required {
+      color: var(--accent-red);
+      font-size: 0.7rem;
+      margin-left: 0.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 50px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .badge-auth {
+      background: rgba(97, 218, 251, 0.1);
+      color: var(--accent-blue-light);
+    }
+
+    .badge-stable {
+      background: rgba(76, 175, 80, 0.1);
+      color: var(--accent-green);
+    }
+
+    .endpoint-meta {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent-blue-light);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* Visualization */
+    .visualization-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .viz-filters {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .viz-filter-btn,
+    select.viz-filter-btn,
+    #method-select {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    .viz-filter-btn:hover,
+    .viz-filter-btn.active,
+    select.viz-filter-btn:hover,
+    #method-select:hover {
+      background: rgba(97, 218, 251, 0.1);
+      color: var(--accent-blue-light);
+      border-color: rgba(97, 218, 251, 0.3);
+    }
+
+    .viz-filter-btn:focus,
+    select.viz-filter-btn:focus,
+    #method-select:focus {
+      outline: none;
+      background: rgba(97, 218, 251, 0.1);
+      color: var(--accent-blue-light);
+      border-color: rgba(97, 218, 251, 0.5);
+    }
+
+    /* Custom select dropdown arrow */
+    select.viz-filter-btn::after,
+    #method-select::after {
+      content: '▼';
+      position: absolute;
+      right: 0.5rem;
+      pointer-events: none;
+      color: var(--text-secondary);
+    }
+
+    /* Select option styling */
+    select.viz-filter-btn option,
+    #method-select option {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      padding: 0.5rem;
+    }
+
+    select.viz-filter-btn option:hover,
+    #method-select option:hover {
+      background: var(--bg-hover);
+    }
+
+    .visualization {
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .line-chart {
+      position: relative;
+      height: 100%;
+      width: 100%;
+    }
+
+    .chart-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 60%;
+      background: linear-gradient(to bottom, rgba(97, 218, 251, 0.3) 0%, rgba(97, 218, 251, 0) 100%);
+      clip-path: path('M0,100 C150,80 250,150 500,60 L500,240 L0,240 Z');
+    }
+
+    .chart-line::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent-blue-light);
+      clip-path: path('M0,0 C150,-20 250,50 500,-40');
+    }
+
+    .chart-axis {
+      position: absolute;
+      background: var(--border);
+    }
+
+    .axis-x {
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+    }
+
+    .axis-y {
+      top: 0;
+      left: 0;
+      width: 1px;
+      height: 100%;
+    }
+
+    .chart-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+    }
+
+    .grid-line {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .chart-point {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: var(--accent-blue-light);
+      border-radius: 50%;
+      transform: translate(-50%, 50%);
+    }
+
+    .point-1 {
+      left: 0%;
+      bottom: 40%;
+    }
+
+    .point-2 {
+      left: 20%;
+      bottom: 60%;
+    }
+
+    .point-3 {
+      left: 40%;
+      bottom: 30%;
+    }
+
+    .point-4 {
+      left: 60%;
+      bottom: 70%;
+    }
+
+    .point-5 {
+      left: 80%;
+      bottom: 50%;
+    }
+
+    .point-6 {
+      left: 100%;
+      bottom: 65%;
+    }
+
+    /* Testing Console */
+    .console-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .console-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .console-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .console-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .console-label {
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+    }
+
+    .console-input {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      resize: none;
+      height: 200px;
+    }
+
+    .console-input:focus {
+      outline: none;
+      border-color: rgba(97, 218, 251, 0.5);
+    }
+
+    .console-controls {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: #2589ff;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+      .console-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .copy-btn:hover {
+      color: var(--text-primary);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/languages/javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/languages/json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/languages/bash.min.js"></script>
+</head>
+
+<body>
+  <div class="app-container">
+    <header class="header">
+      <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search endpoints, entities, schemas...">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <div class="header-controls">
+        <button class="header-btn">
+          <svg class="header-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          Documentation
+        </button>
+        <button class="header-btn">
+          <svg class="header-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 15V3M12 15L8 11M12 15L16 11M19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          Export
+        </button>
+      </div>
+    </header>
+    <aside class="sidebar">
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M3 6C3 4.34315 4.34315 3 6 3H8C9.65685 3 11 4.34315 11 6V8C11 9.65685 9.65685 11 8 11H6C4.34315 11 3 9.65685 3 8V6Z"
+            stroke="#61DAFB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path
+            d="M13 6C13 4.34315 14.3431 3 16 3H18C19.6569 3 21 4.34315 21 6V8C21 9.65685 19.6569 11 18 11H16C14.3431 11 13 9.65685 13 8V6Z"
+            stroke="#61DAFB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path
+            d="M3 16C3 14.3431 4.34315 13 6 13H8C9.65685 13 11 14.3431 11 16V18C11 19.6569 9.65685 21 8 21H6C4.34315 21 3 19.6569 3 18V16Z"
+            stroke="#61DAFB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path
+            d="M13 16C13 14.3431 14.3431 13 16 13H18C19.6569 13 21 14.3431 21 16V18C21 19.6569 19.6569 21 18 21H16C14.3431 21 13 19.6569 13 18V16Z"
+            stroke="#61DAFB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>Zero Sync API</span>
+      </div>
+      <nav class="nav">
+        <div class="nav-group">
+          <h3 class="nav-group-title">Overview</h3>
+          <a href="#overview" class="nav-link active" data-tab="overview">
+            <svg class="nav-link-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M9 19V13C9 11.8954 8.10457 11 7 11H5C3.89543 11 3 11.8954 3 13V19C3 20.1046 3.89543 21 5 21H7C8.10457 21 9 20.1046 9 19Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path
+                d="M21 19V6C21 4.89543 20.1046 4 19 4H17C15.8954 4 15 4.89543 15 6V19C15 20.1046 15.8954 21 17 21H19C20.1046 21 21 20.1046 21 19Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M15 11H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            Dashboard
+          </a>
+          <a href="#console" class="nav-link" data-tab="console">
+            <svg class="nav-link-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 9L12 5M12 5L16 9M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            Testing Console
+          </a>
+        </div>
+        <div class="nav-group">
+          <h3 class="nav-group-title">API Endpoints</h3>
+          <a href="#finance" class="nav-link" data-tab="finance">
+            <svg class="nav-link-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 8C10.3431 8 9 6.65685 9 5C9 3.34315 10.3431 2 12 2C13.6569 2 15 3.34315 15 5C15 6.65685 13.6569 8 12 8Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path
+                d="M12 22C10.3431 22 9 20.6569 9 19C9 17.3431 10.3431 16 12 16C13.6569 16 15 17.3431 15 19C15 20.6569 13.6569 22 12 22Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path
+                d="M5 15C3.34315 15 2 13.6569 2 12C2 10.3431 3.34315 9 5 9C6.65685 9 8 10.3431 8 12C8 13.6569 6.65685 15 5 15Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path
+                d="M19 15C17.3431 15 16 13.6569 16 12C16 10.3431 17.3431 9 19 9C20.6569 9 22 10.3431 22 12C22 13.6569 20.6569 15 19 15Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Finance
+          </a>
+          <a href="#database" class="nav-link" data-tab="database">
+            <svg class="nav-link-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M21 5C21 6.65685 16.9706 8 12 8C7.02944 8 3 6.65685 3 5M21 5C21 3.34315 16.9706 2 12 2C7.02944 2 3 3.34315 3 5M21 5V19C21 20.66 17 22 12 22C7 22 3 20.66 3 19V5M21 12C21 13.66 17 15 12 15C7 15 3 13.66 3 12"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Database Studio
+          </a>
+          <a href="#system" class="nav-link" data-tab="system">
+            <svg class="nav-link-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M10.3246 4.31731C10.751 2.5609 13.249 2.5609 13.6754 4.31731C13.9508 5.45193 15.2507 5.99038 16.2478 5.38285C17.7913 4.44239 19.5576 6.2087 18.6172 7.75218C18.0096 8.74925 18.5481 10.0492 19.6827 10.3246C21.4391 10.751 21.4391 13.249 19.6827 13.6754C18.5481 13.9508 18.0096 15.2507 18.6172 16.2478C19.5576 17.7913 17.7913 19.5576 16.2478 18.6172C15.2507 18.0096 13.9508 18.5481 13.6754 19.6827C13.249 21.4391 10.751 21.4391 10.3246 19.6827C10.0492 18.5481 8.74926 18.0096 7.75219 18.6172C6.2087 19.5576 4.44239 17.7913 5.38285 16.2478C5.99038 15.2507 5.45193 13.9508 4.31731 13.6754C2.5609 13.249 2.5609 10.751 4.31731 10.3246C5.45193 10.0492 5.99037 8.74926 5.38285 7.75218C4.44239 6.2087 6.2087 4.44239 7.75219 5.38285C8.74926 5.99037 10.0492 5.45193 10.3246 4.31731Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path
+                d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            System
+          </a>
+        </div>
+        <div class="nav-group">
+          <h3 class="nav-group-title">Coming Soon</h3>
+          <a href="#roadmap" class="nav-link" data-tab="roadmap">
+            <svg class="nav-link-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Roadmap
+          </a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div>Version: 2.0.0</div>
+        <div>&copy; 2024 Zero Sync API</div>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="content-container">
+        <div class="tab-content active" id="overview">
+          <div class="page-header">
+            <h1 class="page-title">API Dashboard</h1>
+            <p class="page-description">
+              Zero Sync is a blazing fast offline-first finance API with real-time sync capabilities.
+              Built with Hono.js, Drizzle ORM, and TypeScript.
+            </p>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="total-routes">42</div>
+              <div class="stat-label">API Endpoints</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">5</div>
+              <div class="stat-label">Active Modules</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">100%</div>
+              <div class="stat-label">Type Coverage</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">v2.0</div>
+              <div class="stat-label">API Version</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M9 19V13C9 11.8954 8.10457 11 7 11H5C3.89543 11 3 11.8954 3 13V19C3 20.1046 3.89543 21 5 21H7C8.10457 21 9 20.1046 9 19Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path
+                    d="M21 19V6C21 4.89543 20.1046 4 19 4H17C15.8954 4 15 4.89543 15 6V19C15 20.1046 15.8954 21 17 21H19C20.1046 21 21 20.1046 21 19Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M15 11H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+                API Activity
+              </div>
+              <div class="visualization-header">
+                <div class="viz-filters">
+                  <button class="viz-filter-btn active">Daily</button>
+                  <button class="viz-filter-btn">Weekly</button>
+                  <button class="viz-filter-btn">Monthly</button>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="visualization">
+                <div class="line-chart">
+                  <div class="chart-grid">
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                  </div>
+                  <div class="chart-axis axis-x"></div>
+                  <div class="chart-axis axis-y"></div>
+                  <div class="chart-line"></div>
+                  <div class="chart-point point-1"></div>
+                  <div class="chart-point point-2"></div>
+                  <div class="chart-point point-3"></div>
+                  <div class="chart-point point-4"></div>
+                  <div class="chart-point point-5"></div>
+                  <div class="chart-point point-6"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-2">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M12 8C10.3431 8 9 6.65685 9 5C9 3.34315 10.3431 2 12 2C13.6569 2 15 3.34315 15 5C15 6.65685 13.6569 8 12 8Z"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                      d="M12 22C10.3431 22 9 20.6569 9 19C9 17.3431 10.3431 16 12 16C13.6569 16 15 17.3431 15 19C15 20.6569 13.6569 22 12 22Z"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                      d="M5 15C3.34315 15 2 13.6569 2 12C2 10.3431 3.34315 9 5 9C6.65685 9 8 10.3431 8 12C8 13.6569 6.65685 15 5 15Z"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                      d="M19 15C17.3431 15 16 13.6569 16 12C16 10.3431 17.3431 9 19 9C20.6569 9 22 10.3431 22 12C22 13.6569 20.6569 15 19 15Z"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  Recent Finance API Calls
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="endpoint">
+                  <div class="endpoint-header">
+                    <span class="method method-get">GET</span>
+                    <span class="endpoint-path">/api/finance/transactions</span>
+                    <span class="endpoint-meta">
+                      <span class="badge badge-stable">200 OK</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="endpoint">
+                  <div class="endpoint-header">
+                    <span class="method method-post">POST</span>
+                    <span class="endpoint-path">/api/finance/categories</span>
+                    <span class="endpoint-meta">
+                      <span class="badge badge-stable">201 Created</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="endpoint">
+                  <div class="endpoint-header">
+                    <span class="method method-put">PUT</span>
+                    <span class="endpoint-path">/api/finance/budgets/42</span>
+                    <span class="endpoint-meta">
+                      <span class="badge badge-stable">200 OK</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="endpoint">
+                  <div class="endpoint-header">
+                    <span class="method method-delete">DELETE</span>
+                    <span class="endpoint-path">/api/finance/transactions/15</span>
+                    <span class="endpoint-meta">
+                      <span class="badge badge-stable">204 No Content</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M21 5C21 6.65685 16.9706 8 12 8C7.02944 8 3 6.65685 3 5M21 5C21 3.34315 16.9706 2 12 2C7.02944 2 3 3.34315 3 5M21 5V19C21 20.66 17 22 12 22C7 22 3 20.66 3 19V5M21 12C21 13.66 17 15 12 15C7 15 3 13.66 3 12"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  Database Studio Activity
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="endpoint">
+                  <div class="endpoint-header">
+                    <span class="method method-get">GET</span>
+                    <span class="endpoint-path">/api/database-studio/connections</span>
+                    <span class="endpoint-meta">
+                      <span class="badge badge-stable">200 OK</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="endpoint">
+                  <div class="endpoint-header">
+                    <span class="method method-post">POST</span>
+                    <span class="endpoint-path">/api/database-studio/connections/3/query</span>
+                    <span class="endpoint-meta">
+                      <span class="badge badge-stable">200 OK</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="endpoint">
+                  <div class="endpoint-header">
+                    <span class="method method-get">GET</span>
+                    <span class="endpoint-path">/api/database-studio/connections/3/tables</span>
+                    <span class="endpoint-meta">
+                      <span class="badge badge-stable">200 OK</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="endpoint">
+                  <div class="endpoint-header">
+                    <span class="method method-put">PUT</span>
+                    <span class="endpoint-path">/api/database-studio/connections/2</span>
+                    <span class="endpoint-meta">
+                      <span class="badge badge-stable">200 OK</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="finance">
+          <div class="page-header">
+            <h1 class="page-title">Finance API</h1>
+            <p class="page-description">
+              The Finance API provides comprehensive endpoints for managing categories, transactions, budgets,
+              recurring transactions, and savings goals with real-time tracking.
+            </p>
+          </div>
+
+          <div class="endpoints-container">
+            <!-- Categories -->
+            <div class="endpoint">
+              <div class="endpoint-header" onclick="toggleEndpoint(this.parentNode)">
+                <span class="method method-get">GET</span>
+                <span class="endpoint-path">/api/finance/categories</span>
+                <span class="endpoint-meta">
+                  <span class="badge badge-auth">Auth</span>
+                  <span class="badge badge-stable">Stable</span>
+                </span>
+              </div>
+              <div class="endpoint-body">
+                <div class="endpoint-desc">
+                  <h4 class="endpoint-title">List categories</h4>
+                  <p class="endpoint-description">Returns a list of all categories with optional type filtering.</p>
+                </div>
+
+                <div class="request-params">
+                  <h5>Query Parameters</h5>
+                  <table class="params-table">
+                    <thead>
+                      <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>type</td>
+                        <td><span class="param-type">string</span></td>
+                        <td>Filter categories by type (income, expense)</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="code-sample">
+                  <div class="code-header">
+                    <span>Example Request</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-content">
+                    <pre><code class="language-bash">curl -X GET
+                        "http://localhost:4000/api/finance/categories?type=expense" \
+                        -H "Content-Type: application/json"</code></pre>
+                  </div>
+                </div>
+
+                <div class="code-sample">
+                  <div class="code-header">
+                    <span>Example Response</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-content">
+                    <pre><code class="language-json">{
+                        "success": true,
+                        "data": [
+                        {
+                        "id": 1,
+                        "name": "Groceries",
+                        "type": "expense",
+                        "color": "#4caf50",
+                        "createdAt": "2024-01-15T10:30:00Z",
+                        "updatedAt": "2024-01-15T10:30:00Z"
+                        },
+                        {
+                        "id": 2,
+                        "name": "Dining Out",
+                        "type": "expense",
+                        "color": "#ff9800",
+                        "createdAt": "2024-01-15T10:30:00Z",
+                        "updatedAt": "2024-01-15T10:30:00Z"
+                        }
+                        ]
+                        }</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="endpoint">
+              <div class="endpoint-header" onclick="toggleEndpoint(this.parentNode)">
+                <span class="method method-post">POST</span>
+                <span class="endpoint-path">/api/finance/categories</span>
+                <span class="endpoint-meta">
+                  <span class="badge badge-auth">Auth</span>
+                  <span class="badge badge-stable">Stable</span>
+                </span>
+              </div>
+              <div class="endpoint-body">
+                <div class="endpoint-desc">
+                  <h4 class="endpoint-title">Create category</h4>
+                  <p class="endpoint-description">Creates a new category for transactions.</p>
+                </div>
+
+                <div class="request-params">
+                  <h5>Request Body</h5>
+                  <table class="params-table">
+                    <thead>
+                      <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>name <span class="param-required">required</span></td>
+                        <td><span class="param-type">string</span></td>
+                        <td>The name of the category</td>
+                      </tr>
+                      <tr>
+                        <td>type <span class="param-required">required</span></td>
+                        <td><span class="param-type">string</span></td>
+                        <td>Category type (income, expense)</td>
+                      </tr>
+                      <tr>
+                        <td>color <span class="param-required">required</span></td>
+                        <td><span class="param-type">string</span></td>
+                        <td>Color code (hex) for the category</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="code-sample">
+                  <div class="code-header">
+                    <span>Example Request</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-content">
+                    <pre><code class="language-bash">curl -X POST "http://localhost:4000/api/finance/categories" \
+                        -H "Content-Type: application/json" \
+                        -d '{
+                        "name": "Entertainment",
+                        "type": "expense",
+                        "color": "#9c27b0"
+                        }'</code></pre>
+                  </div>
+                </div>
+
+                <div class="code-sample">
+                  <div class="code-header">
+                    <span>Example Response</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-content">
+                    <pre><code class="language-json">{
+                        "success": true,
+                        "data": {
+                        "id": 3,
+                        "name": "Entertainment",
+                        "type": "expense",
+                        "color": "#9c27b0",
+                        "createdAt": "2024-01-15T14:22:31Z",
+                        "updatedAt": "2024-01-15T14:22:31Z"
+                        }
+                        }</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Transactions -->
+            <div class="endpoint">
+              <div class="endpoint-header" onclick="toggleEndpoint(this.parentNode)">
+                <span class="method method-get">GET</span>
+                <span class="endpoint-path">/api/finance/transactions</span>
+                <span class="endpoint-meta">
+                  <span class="badge badge-auth">Auth</span>
+                  <span class="badge badge-stable">Stable</span>
+                </span>
+              </div>
+              <div class="endpoint-body">
+                <div class="endpoint-desc">
+                  <h4 class="endpoint-title">List transactions</h4>
+                  <p class="endpoint-description">Returns a list of transactions with optional filtering and pagination.
+                  </p>
+                </div>
+
+                <div class="request-params">
+                  <h5>Query Parameters</h5>
+                  <table class="params-table">
+                    <thead>
+                      <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>categoryId</td>
+                        <td><span class="param-type">number</span></td>
+                        <td>Filter by category ID</td>
+                      </tr>
+                      <tr>
+                        <td>startDate</td>
+                        <td><span class="param-type">string</span></td>
+                        <td>Filter by start date (ISO format)</td>
+                      </tr>
+                      <tr>
+                        <td>endDate</td>
+                        <td><span class="param-type">string</span></td>
+                        <td>Filter by end date (ISO format)</td>
+                      </tr>
+                      <tr>
+                        <td>page</td>
+                        <td><span class="param-type">number</span></td>
+                        <td>Page number for pagination</td>
+                      </tr>
+                      <tr>
+                        <td>limit</td>
+                        <td><span class="param-type">number</span></td>
+                        <td>Number of items per page</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="code-sample">
+                  <div class="code-header">
+                    <span>Example Request</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-content">
+                    <pre><code class="language-bash">curl -X GET
+                        "http://localhost:4000/api/finance/transactions?startDate=2024-01-01&endDate=2024-01-31&page=1&limit=10"
+                        \
+                        -H "Content-Type: application/json"</code></pre>
+                  </div>
+                </div>
+
+                <div class="code-sample">
+                  <div class="code-header">
+                    <span>Example Response</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-content">
+                    <pre><code class="language-json">{
+                        "success": true,
+                        "data": {
+                        "transactions": [
+                        {
+                        "id": 1,
+                        "amount": -45.99,
+                        "description": "Weekly grocery shopping",
+                        "date": "2024-01-10T18:30:00Z",
+                        "categoryId": 1,
+                        "category": {
+                        "id": 1,
+                        "name": "Groceries",
+                        "type": "expense",
+                        "color": "#4caf50"
+                        },
+                        "createdAt": "2024-01-10T18:35:21Z",
+                        "updatedAt": "2024-01-10T18:35:21Z"
+                        }
+                        ],
+                        "pagination": {
+                        "page": 1,
+                        "limit": 10,
+                        "totalItems": 1,
+                        "totalPages": 1
+                        }
+                        }
+                        }</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="database">
+          <div class="page-header">
+            <h1 class="page-title">Database Studio API</h1>
+            <p class="page-description">
+              The Database Studio API provides comprehensive tools for managing connections to LibSQL, SQLite,
+              and PostgreSQL databases, with table browsing, query execution, and more.
+            </p>
+          </div>
+
+          <div class="endpoints-container">
+            <!-- Connections -->
+            <div class="endpoint">
+              <div class="endpoint-header" onclick="toggleEndpoint(this.parentNode)">
+                <span class="method method-post">POST</span>
+                <span class="endpoint-path">/api/database-studio/connections</span>
+                <span class="endpoint-meta">
+                  <span class="badge badge-auth">Auth</span>
+                  <span class="badge badge-stable">Stable</span>
+                </span>
+              </div>
+              <div class="endpoint-body">
+                <div class="endpoint-desc">
+                  <h4 class="endpoint-title">Create connection</h4>
+                  <p class="endpoint-description">Creates a new database connection.</p>
+                </div>
+
+                <div class="request-params">
+                  <h5>Request Body</h5>
+                  <table class="params-table">
+                    <thead>
+                      <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>name <span class="param-required">required</span></td>
+                        <td><span class="param-type">string</span></td>
+                        <td>Connection name</td>
+                      </tr>
+                      <tr>
+                        <td>type <span class="param-required">required</span></td>
+                        <td><span class="param-type">string</span></td>
+                        <td>Database type (libsql, sqlite, postgres)</td>
+                      </tr>
+                      <tr>
+                        <td>url <span class="param-required">required</span></td>
+                        <td><span class="param-type">string</span></td>
+                        <td>Connection URL or file path</td>
+                      </tr>
+                      <tr>
+                        <td>token</td>
+                        <td><span class="param-type">string</span></td>
+                        <td>Authentication token (for LibSQL)</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="code-sample">
+                  <div class="code-header">
+                    <span>Example Request</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-content">
+                    <pre><code class="language-bash">curl -X POST
+                        "http://localhost:4000/api/database-studio/connections" \
+                        -H "Content-Type: application/json" \
+                        -d '{
+                        "name": "Local Finance DB",
+                        "type": "libsql",
+                        "url": "libsql://finance-db.turso.io",
+                        "token": "ey..."
+                        }'</code></pre>
+                  </div>
+                </div>
+
+                <div class="code-sample">
+                  <div class="code-header">
+                    <span>Example Response</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-content">
+                    <pre><code class="language-json">{
+                        "success": true,
+                        "data": {
+                        "id": 1,
+                        "name": "Local Finance DB",
+                        "type": "libsql",
+                        "url": "libsql://finance-db.turso.io",
+                        "isFavorite": false,
+                        "createdAt": "2024-01-15T16:42:31Z",
+                        "updatedAt": "2024-01-15T16:42:31Z"
+                        }
+                        }</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="system">
+          <div class="page-header">
+            <h1 class="page-title">System API</h1>
+            <p class="page-description">
+              System endpoints provide health monitoring, API documentation, and system-wide configuration.
+            </p>
+          </div>
+
+          <div class="endpoints-container">
+            <div class="endpoint">
+              <div class="endpoint-header" onclick="toggleEndpoint(this.parentNode)">
+                <span class="method method-get">GET</span>
+                <span class="endpoint-path">/health</span>
+                <span class="endpoint-meta">
+                  <span class="badge badge-stable">Stable</span>
+                </span>
+              </div>
+              <div class="endpoint-body">
+                <div class="endpoint-desc">
+                  <h4 class="endpoint-title">Health check</h4>
+                  <p class="endpoint-description">Returns the current health status of the API.</p>
+                </div>
+
+                <div class="code-sample">
+                  <div class="code-header">
+                    <span>Example Request</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-content">
+                    <pre><code class="language-bash">curl -X GET "http://localhost:4000/health" \
+                        -H "Content-Type: application/json"</code></pre>
+                  </div>
+                </div>
+
+                <div class="code-sample">
+                  <div class="code-header">
+                    <span>Example Response</span>
+                    <button class="copy-btn">Copy</button>
+                  </div>
+                  <div class="code-content">
+                    <pre><code class="language-json">{
+                        "success": true,
+                        "message": "Hono Finance API & Database Studio is running",
+                        "timestamp": "2024-01-25T14:30:22.142Z",
+                        "version": "2.0.0",
+                        "modules": ["finance", "database-studio"]
+                        }</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="console">
+          <div class="page-header">
+            <h1 class="page-title">Testing Console</h1>
+            <p class="page-description">
+              Test API endpoints directly from this interface. The console provides a simple way to experiment with
+              requests and see responses.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 9L12 5M12 5L16 9M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+                API Request Tester
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="console-header">
+                <div class="console-title">Test API endpoints</div>
+                <div class="endpoint-meta">
+                  <select id="method-select" class="viz-filter-btn">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                    <option value="PATCH">PATCH</option>
+                  </select>
+                  <input type="text" id="endpoint-input" class="search-input" placeholder="/api/finance/categories"
+                    style="width: 250px;">
+                </div>
+              </div>
+
+              <div class="console-body">
+                <div class="console-section">
+                  <div class="console-label">Request Body (JSON)</div>
+                  <textarea id="request-body" class="console-input">{
+                    "name": "Entertainment",
+                    "type": "expense",
+                    "color": "#9c27b0"
+                    }</textarea>
+                </div>
+                <div class="console-section">
+                  <div class="console-label">Response</div>
+                  <pre id="response-output" class="console-input">{
+                    "success": true,
+                    "data": {
+                    "id": 3,
+                    "name": "Entertainment",
+                    "type": "expense",
+                    "color": "#9c27b0",
+                    "createdAt": "2024-01-15T14:22:31Z",
+                    "updatedAt": "2024-01-15T14:22:31Z"
+                    }
+                    }
+                  </pre>
+                </div>
+              </div>
+
+              <div class="console-controls">
+                <button id="clear-btn" class="btn btn-secondary">Clear</button>
+                <button id="send-btn" class="btn btn-primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  Send Request
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="roadmap">
+          <div class="page-header">
+            <h1 class="page-title">Roadmap</h1>
+            <p class="page-description">
+              Upcoming features and improvements planned for Zero Sync API.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Coming Soon Features</div>
+            </div>
+            <div class="card-body">
+              <div class="grid grid-3">
+                <div class="stat-card">
+                  <div class="stat-value">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      style="color: var(--accent-blue-light);">
+                      <path
+                        d="M12 8C10.3431 8 9 6.65685 9 5C9 3.34315 10.3431 2 12 2C13.6569 2 15 3.34315 15 5C15 6.65685 13.6569 8 12 8Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      <path
+                        d="M12 22C10.3431 22 9 20.6569 9 19C9 17.3431 10.3431 16 12 16C13.6569 16 15 17.3431 15 19C15 20.6569 13.6569 22 12 22Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      <path
+                        d="M5 15C3.34315 15 2 13.6569 2 12C2 10.3431 3.34315 9 5 9C6.65685 9 8 10.3431 8 12C8 13.6569 6.65685 15 5 15Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      <path
+                        d="M19 15C17.3431 15 16 13.6569 16 12C16 10.3431 17.3431 9 19 9C20.6569 9 22 10.3431 22 12C22 13.6569 20.6569 15 19 15Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </div>
+                  <h4>Debt Management</h4>
+                  <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                    <li>• Payment schedules</li>
+                    <li>• Interest calculations</li>
+                    <li>• Amortization tables</li>
+                    <li>• Payoff strategies</li>
+                  </ul>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      style="color: var(--accent-blue-light);">
+                      <path
+                        d="M10.3246 4.31731C10.751 2.5609 13.249 2.5609 13.6754 4.31731C13.9508 5.45193 15.2507 5.99038 16.2478 5.38285C17.7913 4.44239 19.5576 6.2087 18.6172 7.75218C18.0096 8.74925 18.5481 10.0492 19.6827 10.3246C21.4391 10.751 21.4391 13.249 19.6827 13.6754C18.5481 13.9508 18.0096 15.2507 18.6172 16.2478C19.5576 17.7913 17.7913 19.5576 16.2478 18.6172C15.2507 18.0096 13.9508 18.5481 13.6754 19.6827C13.249 21.4391 10.751 21.4391 10.3246 19.6827C10.0492 18.5481 8.74926 18.0096 7.75219 18.6172C6.2087 19.5576 4.44239 17.7913 5.38285 16.2478C5.99038 15.2507 5.45193 13.9508 4.31731 13.6754C2.5609 13.249 2.5609 10.751 4.31731 10.3246C5.45193 10.0492 5.99037 8.74926 5.38285 7.75218C4.44239 6.2087 6.2087 4.44239 7.75219 5.38285C8.74926 5.99037 10.0492 5.45193 10.3246 4.31731Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      <path
+                        d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </div>
+                  <h4>Smart Alerts</h4>
+                  <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                    <li>• Budget notifications</li>
+                    <li>• Bill reminders</li>
+                    <li>• Goal milestones</li>
+                    <li>• Custom triggers</li>
+                  </ul>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      style="color: var(--accent-blue-light);">
+                      <path
+                        d="M9 12H15M9 16H15M17 21H7C5.89543 21 5 20.1046 5 19V5C5 3.89543 5.89543 3 7 3H12.5858C12.851 3 13.1054 3.10536 13.2929 3.29289L18.7071 8.70711C18.8946 8.89464 19 9.149 19 9.41421V19C19 20.1046 18.1046 21 17 21Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </div>
+                  <h4>Multi-Currency</h4>
+                  <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                    <li>• Exchange rates</li>
+                    <li>• Currency conversion</li>
+                    <li>• Global transactions</li>
+                    <li>• Rate history</li>
+                  </ul>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      style="color: var(--accent-blue-light);">
+                      <path
+                        d="M9 19V13C9 11.8954 8.10457 11 7 11H5C3.89543 11 3 11.8954 3 13V19C3 20.1046 3.89543 21 5 21H7C8.10457 21 9 20.1046 9 19Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      <path
+                        d="M21 19V6C21 4.89543 20.1046 4 19 4H17C15.8954 4 15 4.89543 15 6V19C15 20.1046 15.8954 21 17 21H19C20.1046 21 21 20.1046 21 19Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      <path d="M15 11H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    </svg>
+                  </div>
+                  <h4>Analytics Dashboard</h4>
+                  <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                    <li>• Spending insights</li>
+                    <li>• Forecasting</li>
+                    <li>• Trend analysis</li>
+                    <li>• Custom reports</li>
+                  </ul>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      style="color: var(--accent-blue-light);">
+                      <path
+                        d="M15 21V19C15 16.7909 13.2091 15 11 15H5C2.79086 15 1 16.7909 1 19V21M16 3.13584C16.8604 3.35319 17.623 3.85836 18.1676 4.57294C18.7122 5.28752 19.0001 6.1632 19.0001 7.05993C19.0001 7.95665 18.7122 8.83233 18.1676 9.54691C17.623 10.2615 16.8604 10.7667 16 10.984M23 21V19C22.9975 18.1146 22.7229 17.2536 22.2 16.55C21.6771 15.8464 20.9325 15.3348 20.08 15.11"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      <path
+                        d="M8 15C10.2091 15 12 13.2091 12 11C12 8.79086 10.2091 7 8 7C5.79086 7 4 8.79086 4 11C4 13.2091 5.79086 15 8 15Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </div>
+                  <h4>Advanced Sync</h4>
+                  <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                    <li>• Conflict resolution</li>
+                    <li>• Offline queuing</li>
+                    <li>• Multi-device sync</li>
+                    <li>• Data integrity</li>
+                  </ul>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      style="color: var(--accent-blue-light);">
+                      <path
+                        d="M12 15V3M12 15L8 11M12 15L16 11M19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </div>
+                  <h4>Security & Audit</h4>
+                  <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                    <li>• Activity logs</li>
+                    <li>• Change tracking</li>
+                    <li>• Access controls</li>
+                    <li>• Data encryption</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // API Routes Data
+    const apiRoutes = {
+      finance: [
+        {
+          name: "Categories",
+          path: "/api/finance/categories",
+          description: "Manage income and expense categories with type safety",
+          methods: [
+            {method: "GET", endpoint: "/", description: "List categories (filterable by type)"},
+            {method: "GET", endpoint: "/:id", description: "Get single category"},
+            {method: "POST", endpoint: "/", description: "Create new category"},
+            {method: "PUT", endpoint: "/:id", description: "Update category"},
+            {method: "DELETE", endpoint: "/:id", description: "Delete category"}
+          ]
+        },
+        {
+          name: "Transactions",
+          path: "/api/finance/transactions",
+          description: "Complete transaction management with advanced filtering",
+          methods: [
+            {method: "GET", endpoint: "/", description: "List transactions (advanced filtering)"},
+            {method: "GET", endpoint: "/:id", description: "Get single transaction with category"},
+            {method: "GET", endpoint: "/category/:categoryId", description: "Get transactions by category"},
+            {method: "GET", endpoint: "/date-range/:start/:end", description: "Get transactions by date range"},
+            {method: "POST", endpoint: "/", description: "Create new transaction"},
+            {method: "POST", endpoint: "/bulk-import", description: "Bulk import transactions (up to 100)"},
+            {method: "PUT", endpoint: "/:id", description: "Update transaction"},
+            {method: "DELETE", endpoint: "/:id", description: "Delete transaction"}
+          ]
+        },
+        {
+          name: "Budgets",
+          path: "/api/finance/budgets",
+          description: "Smart budget tracking with real-time utilization alerts",
+          methods: [
+            {method: "GET", endpoint: "/", description: "List budgets with utilization tracking"},
+            {method: "GET", endpoint: "/:id", description: "Get single budget with analytics"},
+            {method: "GET", endpoint: "/utilization/overview", description: "Budget utilization overview with alerts"},
+            {method: "POST", endpoint: "/", description: "Create new budget with period validation"},
+            {method: "POST", endpoint: "/:id/reset", description: "Reset budget period and amount"},
+            {method: "PUT", endpoint: "/:id", description: "Update budget with conflict checking"},
+            {method: "DELETE", endpoint: "/:id", description: "Delete budget"},
+            {method: "PATCH", endpoint: "/:id/toggle", description: "Toggle budget active status"}
+          ]
+        },
+        {
+          name: "Savings",
+          path: "/api/finance/savings",
+          description: "Goal-based savings with progress tracking and smart withdrawals",
+          methods: [
+            {method: "GET", endpoint: "/goals", description: "List savings goals with progress"},
+            {method: "GET", endpoint: "/goals/:id", description: "Get single goal with detailed progress"},
+            {method: "POST", endpoint: "/goals", description: "Create new savings goal"},
+            {method: "POST", endpoint: "/transactions", description: "Add savings transaction"},
+            {method: "POST", endpoint: "/goals/:goalId/withdraw", description: "Smart withdrawal with validation"},
+            {method: "PUT", endpoint: "/goals/:id", description: "Update savings goal"},
+            {method: "DELETE", endpoint: "/goals/:id", description: "Delete goal (if no transactions)"}
+          ]
+        },
+        {
+          name: "Recurring",
+          path: "/api/finance/recurring",
+          description: "Automated recurring transactions with smart scheduling",
+          methods: [
+            {method: "GET", endpoint: "/", description: "List recurring transactions with schedules"},
+            {method: "GET", endpoint: "/due", description: "Get transactions due for generation"},
+            {method: "GET", endpoint: "/:id/schedule", description: "Preview upcoming transaction dates"},
+            {method: "POST", endpoint: "/", description: "Create recurring transaction with rules"},
+            {method: "POST", endpoint: "/generate", description: "Generate transactions for all rules"},
+            {method: "POST", endpoint: "/:id/generate", description: "Generate for specific rule"},
+            {method: "PUT", endpoint: "/:id", description: "Update recurring rule and schedule"},
+            {method: "PATCH", endpoint: "/:id/toggle", description: "Toggle active status"}
+          ]
+        }
+      ],
+      database: [
+        {
+          name: "Connections",
+          path: "/api/database-studio/connections",
+          description: "Database connection management for LibSQL, SQLite, and PostgreSQL",
+          methods: [
+            {method: "POST", endpoint: "/", description: "Create new database connection"},
+            {method: "GET", endpoint: "/", description: "List all connections"},
+            {method: "GET", endpoint: "/:id", description: "Get connection by ID"},
+            {method: "PUT", endpoint: "/:id", description: "Update connection settings"},
+            {method: "DELETE", endpoint: "/:id", description: "Delete connection"},
+            {method: "POST", endpoint: "/:id/connect", description: "Test connection"},
+            {method: "GET", endpoint: "/:id/tables", description: "List tables for connection"},
+            {method: "GET", endpoint: "/:id/tables/:table/rows", description: "Browse table data with pagination"},
+            {method: "POST", endpoint: "/:id/query", description: "Execute raw SQL queries"},
+            {method: "PATCH", endpoint: "/:id/favorite", description: "Toggle favorite status"}
+          ]
+        }
+      ],
+      system: [
+        {
+          name: "Health",
+          path: "/health",
+          description: "System health check and status monitoring",
+          methods: [
+            {method: "GET", endpoint: "/", description: "Get system health status"}
+          ]
+        },
+        {
+          name: "API Info",
+          path: "/api/finance",
+          description: "Comprehensive API documentation and feature overview",
+          methods: [
+            {method: "GET", endpoint: "/", description: "Get complete API documentation"}
+          ]
+        },
+        {
+          name: "Database Studio Info",
+          path: "/api/database-studio",
+          description: "Database Studio features and capabilities",
+          methods: [
+            {method: "GET", endpoint: "/", description: "Get Database Studio documentation"}
+          ]
+        }
+      ]
+    };
+
+    // Calculate total routes
+    function calculateTotalRoutes() {
+      return Object.values(apiRoutes).flat().reduce((sum, route) => sum + route.methods.length, 0);
+    }
+
+    // Tab navigation
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        // Deactivate all tabs
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+
+        // Activate clicked tab
+        link.classList.add('active');
+        const tabId = link.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+
+    // Toggle endpoint details
+    function toggleEndpoint(element) {
+      element.classList.toggle('active');
+    }
+
+    // Initialize highlight.js
+    document.addEventListener('DOMContentLoaded', () => {
+      hljs.highlightAll();
+
+      // Update total routes count
+      document.getElementById('total-routes').textContent = calculateTotalRoutes();
+
+      // Setup search
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          const query = e.target.value.toLowerCase();
+
+          if (query.length > 2) {
+            // Highlight matching endpoints
+            document.querySelectorAll('.endpoint').forEach(endpoint => {
+              const text = endpoint.textContent.toLowerCase();
+              if (text.includes(query)) {
+                endpoint.style.display = 'block';
+                if (!endpoint.classList.contains('active')) {
+                  endpoint.classList.add('active');
+                }
+              } else {
+                endpoint.style.display = 'none';
+              }
+            });
+          } else {
+            // Reset display
+            document.querySelectorAll('.endpoint').forEach(endpoint => {
+              endpoint.style.display = 'block';
+              endpoint.classList.remove('active');
+            });
+          }
+        });
+      }
+
+      // Console testing
+      const clearBtn = document.getElementById('clear-btn');
+      const sendBtn = document.getElementById('send-btn');
+
+      if (clearBtn && sendBtn) {
+        clearBtn.addEventListener('click', () => {
+          document.getElementById('request-body').value = '{}';
+          document.getElementById('response-output').textContent = '';
+        });
+
+        sendBtn.addEventListener('click', () => {
+          const method = document.getElementById('method-select').value;
+          const endpoint = document.getElementById('endpoint-input').value;
+          const requestBody = document.getElementById('request-body').value;
+
+          // Simulate API call
+          const responseOutput = document.getElementById('response-output');
+          responseOutput.textContent = 'Loading...';
+
+          setTimeout(() => {
+            let response;
+            try {
+              if (endpoint.includes('categories') && method === 'POST') {
+                const body = JSON.parse(requestBody);
+                response = {
+                  success: true,
+                  data: {
+                    id: Math.floor(Math.random() * 1000) + 1,
+                    ...body,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                  }
+                };
+              } else if (endpoint.includes('transactions') && method === 'GET') {
+                response = {
+                  success: true,
+                  data: {
+                    transactions: [
+                      {
+                        id: 1,
+                        amount: -45.99,
+                        description: "Weekly grocery shopping",
+                        date: new Date().toISOString(),
+                        categoryId: 1,
+                        category: {
+                          id: 1,
+                          name: "Groceries",
+                          type: "expense",
+                          color: "#4caf50"
+                        }
+                      }
+                    ],
+                    pagination: {
+                      page: 1,
+                      limit: 10,
+                      totalItems: 1,
+                      totalPages: 1
+                    }
+                  }
+                };
+              } else {
+                response = {
+                  success: true,
+                  message: `${method} request to ${endpoint} completed successfully`,
+                  timestamp: new Date().toISOString()
+                };
+              }
+
+              responseOutput.textContent = JSON.stringify(response, null, 2);
+              hljs.highlightElement(responseOutput);
+            } catch (e) {
+              responseOutput.textContent = JSON.stringify({
+                success: false,
+                error: {
+                  message: e.message
+                }
+              }, null, 2);
+              hljs.highlightElement(responseOutput);
+            }
+          }, 500);
+        });
+      }
+
+      // Copy buttons
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const codeElement = e.target.closest('.code-header').nextElementSibling.querySelector('code');
+          const text = codeElement.textContent;
+
+          navigator.clipboard.writeText(text).then(() => {
+            const originalText = e.target.textContent;
+            e.target.textContent = 'Copied!';
+            setTimeout(() => {
+              e.target.textContent = originalText;
+            }, 2000);
+          });
+        });
+      });
+
+      // Filter buttons
+      document.querySelectorAll('.viz-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const parent = this.closest('.viz-filters');
+          if (parent) {
+            parent.querySelectorAll('.viz-filter-btn').forEach(b => {
+              b.classList.remove('active');
+            });
+            this.classList.add('active');
+          }
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>

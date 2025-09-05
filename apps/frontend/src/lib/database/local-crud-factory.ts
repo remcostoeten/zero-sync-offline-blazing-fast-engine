@@ -156,14 +156,15 @@ export function createLocalCrudFactory<
   // Read (always from local first)
   async function read(): Promise<TSelect[]> {
     const db = getDb();
-    return await db.select().from(table).orderBy(sql`created_at DESC`);
+    const results = await db.select().from(table).orderBy(sql`created_at DESC`);
+    return results as TSelect[];
   }
 
   // Read by ID
   async function readById(id: number): Promise<TSelect | null> {
     const db = getDb();
     const result = await db.select().from(table).where(eq((table as any).id, id)).limit(1);
-    return result[0] || null;
+    return (result[0] as TSelect) || null;
   }
 
   // Update with optimistic update
@@ -263,7 +264,8 @@ export function createLocalCrudFactory<
   // Get unsynced records
   async function getUnsyncedRecords(): Promise<TSelect[]> {
     const db = getDb();
-    return await db.select().from(table).where(eq((table as any).synced, false));
+    const results = await db.select().from(table).where(eq((table as any).synced, false));
+    return results as TSelect[];
   }
 
   // Force sync all unsynced records

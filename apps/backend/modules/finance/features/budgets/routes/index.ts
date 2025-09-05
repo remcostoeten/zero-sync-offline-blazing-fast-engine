@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import {
+  BudgetCreateSchema,
   BudgetInsertSchema,
   BudgetUpdateSchema,
   BudgetFiltersSchema,
@@ -83,7 +84,7 @@ budgetsRouter.get(
 // POST /budgets - Create new budget
 budgetsRouter.post(
   '/',
-  zValidator('json', BudgetInsertSchema),
+  zValidator('json', BudgetCreateSchema),
   async (c) => {
     try {
       const data = c.req.valid('json');
@@ -245,7 +246,7 @@ budgetsRouter.get(
 budgetsRouter.post(
   '/bulk',
   zValidator('json', z.object({
-    budgets: z.array(BudgetInsertSchema)
+    budgets: z.array(BudgetCreateSchema)
   })),
   async (c) => {
     try {

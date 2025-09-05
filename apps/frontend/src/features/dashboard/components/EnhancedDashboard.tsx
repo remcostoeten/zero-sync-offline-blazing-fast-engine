@@ -18,16 +18,16 @@ type TProps = {
   savingsProgress: any[];
   insights: any;
   trends?: any[];
-  
+
   // History data
   allTransactions: any[];
   categories: any[];
   totalTransactionCount: number;
-  
+
   // Recurring data
   recurringTransactions: any[];
   upcomingTransactions: any[];
-  
+
   // Notification counts
   notificationCount?: number;
   upcomingRecurringCount?: number;
@@ -106,7 +106,7 @@ export function EnhancedDashboard({
 
   function handleTabChange(tabId: TTabId) {
     setActiveTab(tabId);
-    
+
     // Update URL without page refresh
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', tabId);
@@ -197,7 +197,7 @@ export function EnhancedDashboard({
             />
           </Suspense>
         );
-        
+
       case 'history':
         return (
           <Suspense fallback={<TabSkeleton />}>
@@ -212,7 +212,7 @@ export function EnhancedDashboard({
             />
           </Suspense>
         );
-        
+
       case 'recurring':
         return (
           <Suspense fallback={<TabSkeleton />}>
@@ -229,10 +229,10 @@ export function EnhancedDashboard({
             />
           </Suspense>
         );
-        
+
       case 'notifications':
         return <NotificationsTabPlaceholder />;
-        
+
       case 'prognoses':
         return (
           <Suspense fallback={<TabSkeleton />}>
@@ -243,7 +243,7 @@ export function EnhancedDashboard({
             />
           </Suspense>
         );
-        
+
       default:
         return <OverviewTab
           overview={overview}

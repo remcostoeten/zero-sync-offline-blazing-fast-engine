@@ -5,6 +5,7 @@ import { Sidebar } from '../sidebar';
 import { Breadcrumbs } from '../breadcrumbs';
 import { getFeature, getAllRoutes } from '@/config/features';
 import { useTheme } from '@/lib/providers/theme-provider';
+import { ThemeSwitcher } from '@/components/ui/theme-switcher';
 
 type TProps = {
   children: React.ReactNode;
@@ -13,7 +14,7 @@ type TProps = {
 
 export function AppLayout({ children, className = '' }: TProps) {
   const pathname = usePathname();
-  const { actualTheme } = useTheme();
+  useTheme();
 
   function getCurrentFeature() {
     const allRoutes = getAllRoutes();
@@ -26,12 +27,12 @@ export function AppLayout({ children, className = '' }: TProps) {
   const currentFeature = getCurrentFeature();
 
   return (
-    <div className="flex h-screen bg-foreground text-background">
+    <div className="flex min-h-screen bg-foreground text-background">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
+      <div className="pb-28 flex-1 flex flex-col min-w-0 lg:ml-0">
         {/* Header with breadcrumbs */}
         <header className="bg-muted border-b border-neutral-200 dark:border-neutral-700 px-6 py-4">
           <div className="flex items-center justify-between">
@@ -65,11 +66,6 @@ export function AppLayout({ children, className = '' }: TProps) {
             {children}
           </div>
         </main>
-      </div>
-    </div>
-  );
-}
-
       </div>
     </div>
   );

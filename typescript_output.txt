@@ -1,0 +1,578 @@
+apps/backend/modules/database-studio/features/connections/api/routes/index.ts(20,49): error TS2345: Argument of type '{ name?: string; type?: "sqlite" | "postgres" | "libsql"; token?: string; url?: string; filePath?: string; isFavorite?: boolean; }' is not assignable to parameter of type 'TCreateConnectionData'.
+  Property 'name' is optional in type '{ name?: string; type?: "sqlite" | "postgres" | "libsql"; token?: string; url?: string; filePath?: string; isFavorite?: boolean; }' but required in type 'TCreateConnectionData'.
+apps/backend/modules/finance/features/auth/routes.ts(169,33): error TS2345: Argument of type '"json"' is not assignable to parameter of type 'never'.
+apps/backend/modules/finance/features/auth/routes.ts(174,9): error TS2698: Spread types may only be created from object types.
+apps/backend/modules/finance/features/budgets/routes/index.ts(34,40): error TS2345: Argument of type '{ limit?: number; offset?: number; categoryId?: number; isActive?: boolean; period?: "all" | "monthly" | "yearly"; }' is not assignable to parameter of type 'TBudgetsFilters'.
+  Types of property 'period' are incompatible.
+    Type '"all" | "monthly" | "yearly"' is not assignable to type '"monthly" | "yearly"'.
+      Type '"all"' is not assignable to type '"monthly" | "yearly"'.
+apps/backend/modules/finance/features/budgets/routes/index.ts(90,41): error TS2345: Argument of type '{ amount?: number; categoryId?: number; isActive?: boolean; period?: "monthly" | "yearly"; startDate?: string; endDate?: string; notes?: string; alertThreshold?: number; }' is not assignable to parameter of type 'TBudgetCreateData'.
+  Property 'amount' is optional in type '{ amount?: number; categoryId?: number; isActive?: boolean; period?: "monthly" | "yearly"; startDate?: string; endDate?: string; notes?: string; alertThreshold?: number; }' but required in type 'TBudgetCreateData'.
+apps/backend/modules/finance/features/budgets/routes/index.ts(202,44): error TS2559: Type '{ notes?: string; newAmount?: number; resetPeriod?: boolean; resetSpent?: boolean; }' has no properties in common with type 'TBudgetResetOptions'.
+apps/backend/modules/finance/features/budgets/routes/index.ts(253,47): error TS2345: Argument of type '{ amount?: number; categoryId?: number; isActive?: boolean; period?: "monthly" | "yearly"; startDate?: string; endDate?: string; notes?: string; alertThreshold?: number; }[]' is not assignable to parameter of type 'TBudgetCreateData[]'.
+  Type '{ amount?: number; categoryId?: number; isActive?: boolean; period?: "monthly" | "yearly"; startDate?: string; endDate?: string; notes?: string; alertThreshold?: number; }' is not assignable to type 'TBudgetCreateData'.
+    Property 'amount' is optional in type '{ amount?: number; categoryId?: number; isActive?: boolean; period?: "monthly" | "yearly"; startDate?: string; endDate?: string; notes?: string; alertThreshold?: number; }' but required in type 'TBudgetCreateData'.
+apps/backend/modules/finance/features/budgets/routes/index.ts(281,47): error TS2345: Argument of type '{ id?: number; amount?: number; categoryId?: number; isActive?: boolean; period?: "monthly" | "yearly"; startDate?: string; endDate?: string; notes?: string; alertThreshold?: number; }[]' is not assignable to parameter of type 'TBudgetUpdateData[]'.
+  Type '{ id?: number; amount?: number; categoryId?: number; isActive?: boolean; period?: "monthly" | "yearly"; startDate?: string; endDate?: string; notes?: string; alertThreshold?: number; }' is not assignable to type 'TBudgetUpdateData'.
+    Type '{ id?: number; amount?: number; categoryId?: number; isActive?: boolean; period?: "monthly" | "yearly"; startDate?: string; endDate?: string; notes?: string; alertThreshold?: number; }' is not assignable to type '{ id: number; }'.
+      Property 'id' is optional in type '{ id?: number; amount?: number; categoryId?: number; isActive?: boolean; period?: "monthly" | "yearly"; startDate?: string; endDate?: string; notes?: string; alertThreshold?: number; }' but required in type '{ id: number; }'.
+apps/backend/modules/finance/features/categories/routes.ts(76,45): error TS2345: Argument of type '{ name?: string; type?: "income" | "expense"; color?: string; icon?: string; }' is not assignable to parameter of type 'Omit<TCategoryInsert, "synced" | "isDemo">'.
+  Property 'name' is optional in type '{ name?: string; type?: "income" | "expense"; color?: string; icon?: string; }' but required in type 'Omit<TCategoryInsert, "synced" | "isDemo">'.
+apps/backend/modules/finance/features/debt/api/queries/index.ts(213,5): error TS2740: Type 'Omit<SQLiteSelectBase<"debts", "async", ResultSet, { id: SQLiteColumn<{ name: "id"; tableName: "debts"; dataType: "number"; columnType: "SQLiteInteger"; data: number; driverParam: number; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, object>; ... 21 more ...; synced: SQLiteColumn<...>...' is missing the following properties from type 'SQLiteSelectBase<"debts", "async", ResultSet, { id: SQLiteColumn<{ name: "id"; tableName: "debts"; dataType: "number"; columnType: "SQLiteInteger"; data: number; driverParam: number; notNull: true; hasDefault: true; enumValues: undefined; baseColumn: never; }, object>; ... 21 more ...; synced: SQLiteColumn<...>; }, ...': joinsNotNullableMap, tableName, isPartialSelect, session, and 4 more.
+apps/backend/modules/finance/features/debt/api/queries/index.ts(286,27): error TS2345: Argument of type '{ totalPaid: number; remainingBalance: number; monthlyInterest: number; payoffDate: string; totalInterest: number; paymentCount: number; lastPaymentDate: string; lastPaymentAmount: number; ... 26 more ...; synced: boolean; }' is not assignable to parameter of type 'TDebtWithDetails'.
+  Type '{ totalPaid: number; remainingBalance: number; monthlyInterest: number; payoffDate: string; totalInterest: number; paymentCount: number; lastPaymentDate: string; lastPaymentAmount: number; ... 26 more ...; synced: boolean; }' is missing the following properties from type '{ name: string; description?: string; creditor: string; type: "loan" | "credit_card" | "mortgage" | "personal_debt" | "other"; debtType: "credit_card" | "mortgage" | "other" | "personal_loan" | "auto_loan" | "student_loan" | "line_of_credit"; ... 19 more ...; synced: boolean; }': type, originalAmount, startDate, endDate
+apps/backend/modules/finance/features/debt/api/queries/index.ts(424,7): error TS2322: Type '{ id: number; debtId: number; amount: number; paymentDate: string; paymentType: "regular" | "extra" | "minimum" | "interest_only"; principalAmount: number; interestAmount: number; feesAmount: number; ... 8 more ...; creditor: string; }[]' is not assignable to type '({ id: number; } & TTimestamps & { debtId: number; amount: number; paymentDate: string; paymentType: "regular" | "extra" | "minimum" | "interest_only"; paymentMethod?: "credit_card" | ... 4 more ... | "auto_pay"; ... 8 more ...; synced: boolean; } & { ...; })[]'.
+  Type '{ id: number; debtId: number; amount: number; paymentDate: string; paymentType: "regular" | "extra" | "minimum" | "interest_only"; principalAmount: number; interestAmount: number; feesAmount: number; ... 8 more ...; creditor: string; }' is not assignable to type '{ id: number; } & TTimestamps & { debtId: number; amount: number; paymentDate: string; paymentType: "regular" | "extra" | "minimum" | "interest_only"; paymentMethod?: "credit_card" | ... 4 more ... | "auto_pay"; ... 8 more ...; synced: boolean; } & { ...; }'.
+    Type '{ id: number; debtId: number; amount: number; paymentDate: string; paymentType: "regular" | "extra" | "minimum" | "interest_only"; principalAmount: number; interestAmount: number; feesAmount: number; ... 8 more ...; creditor: string; }' is missing the following properties from type '{ debtId: number; amount: number; paymentDate: string; paymentType: "regular" | "extra" | "minimum" | "interest_only"; paymentMethod?: "credit_card" | "other" | "bank_transfer" | "check" | "cash" | "auto_pay"; ... 8 more ...; synced: boolean; }': isExtraPayment, notes
+apps/backend/modules/finance/features/debt/api/queries/index.ts(429,7): error TS2322: Type '{ id: number; debtId: number; amount: number; paymentDate: string; paymentType: "regular" | "extra" | "minimum" | "interest_only"; principalAmount: number; interestAmount: number; feesAmount: number; ... 8 more ...; creditor: string; }[]' is not assignable to type '({ id: number; } & TTimestamps & { debtId: number; amount: number; paymentDate: string; paymentType: "regular" | "extra" | "minimum" | "interest_only"; paymentMethod?: "credit_card" | ... 4 more ... | "auto_pay"; ... 8 more ...; synced: boolean; } & { ...; })[]'.
+  Type '{ id: number; debtId: number; amount: number; paymentDate: string; paymentType: "regular" | "extra" | "minimum" | "interest_only"; principalAmount: number; interestAmount: number; feesAmount: number; ... 8 more ...; creditor: string; }' is not assignable to type '{ id: number; } & TTimestamps & { debtId: number; amount: number; paymentDate: string; paymentType: "regular" | "extra" | "minimum" | "interest_only"; paymentMethod?: "credit_card" | ... 4 more ... | "auto_pay"; ... 8 more ...; synced: boolean; } & { ...; }'.
+    Type '{ id: number; debtId: number; amount: number; paymentDate: string; paymentType: "regular" | "extra" | "minimum" | "interest_only"; principalAmount: number; interestAmount: number; feesAmount: number; ... 8 more ...; creditor: string; }' is missing the following properties from type '{ debtId: number; amount: number; paymentDate: string; paymentType: "regular" | "extra" | "minimum" | "interest_only"; paymentMethod?: "credit_card" | "other" | "bank_transfer" | "check" | "cash" | "auto_pay"; ... 8 more ...; synced: boolean; }': isExtraPayment, notes
+apps/backend/modules/finance/features/debt/routes/index.ts(57,33): error TS2345: Argument of type '{ name?: string; description?: string; tags?: string[]; creditor?: string; debtType?: "credit_card" | "mortgage" | "other" | "personal_loan" | "auto_loan" | "student_loan" | "line_of_credit"; ... 13 more ...; notes?: string; }' is not assignable to parameter of type 'TDebtCreateData'.
+  Type '{ name?: string; description?: string; tags?: string[]; creditor?: string; debtType?: "credit_card" | "mortgage" | "other" | "personal_loan" | "auto_loan" | "student_loan" | "line_of_credit"; ... 13 more ...; notes?: string; }' is missing the following properties from type 'TDebtCreateData': type, startDate, endDate, originalAmount
+apps/backend/modules/finance/features/debt/routes/index.ts(84,47): error TS2345: Argument of type '{ description?: string; amount?: number; reference?: string; debtId?: number; paymentDate?: string; paymentType?: "regular" | "extra" | "minimum" | "interest_only"; paymentMethod?: "credit_card" | ... 4 more ... | "auto_pay"; principalAmount?: number; interestAmount?: number; feesAmount?: number; isVerified?: boolea...' is not assignable to parameter of type 'TPaymentCreateData'.
+  Type '{ description?: string; amount?: number; reference?: string; debtId?: number; paymentDate?: string; paymentType?: "regular" | "extra" | "minimum" | "interest_only"; paymentMethod?: "credit_card" | ... 4 more ... | "auto_pay"; principalAmount?: number; interestAmount?: number; feesAmount?: number; isVerified?: boolea...' is missing the following properties from type 'TPaymentCreateData': notes, isExtraPayment
+apps/backend/modules/finance/features/debt/routes/index.ts(104,41): error TS2345: Argument of type '{ name?: string; description?: string; tags?: string[]; creditor?: string; debtType?: "credit_card" | "mortgage" | "other" | "personal_loan" | "auto_loan" | "student_loan" | "line_of_credit"; ... 13 more ...; notes?: string; }[]' is not assignable to parameter of type 'TDebtCreateData[]'.
+  Type '{ name?: string; description?: string; tags?: string[]; creditor?: string; debtType?: "credit_card" | "mortgage" | "other" | "personal_loan" | "auto_loan" | "student_loan" | "line_of_credit"; ... 13 more ...; notes?: string; }' is missing the following properties from type 'TDebtCreateData': type, startDate, endDate, originalAmount
+apps/backend/modules/finance/features/debt/routes/index.ts(110,41): error TS2345: Argument of type '{ name?: string; description?: string; id?: number; tags?: string[]; creditor?: string; debtType?: "credit_card" | "mortgage" | "other" | "personal_loan" | "auto_loan" | "student_loan" | "line_of_credit"; ... 13 more ...; notes?: string; }[]' is not assignable to parameter of type 'TDebtUpdateData[]'.
+  Type '{ name?: string; description?: string; id?: number; tags?: string[]; creditor?: string; debtType?: "credit_card" | "mortgage" | "other" | "personal_loan" | "auto_loan" | "student_loan" | "line_of_credit"; ... 13 more ...; notes?: string; }' is not assignable to type 'TDebtUpdateData'.
+    Type '{ name?: string; description?: string; id?: number; tags?: string[]; creditor?: string; debtType?: "credit_card" | "mortgage" | "other" | "personal_loan" | "auto_loan" | "student_loan" | "line_of_credit"; ... 13 more ...; notes?: string; }' is not assignable to type '{ id: number; }'.
+      Property 'id' is optional in type '{ name?: string; description?: string; id?: number; tags?: string[]; creditor?: string; debtType?: "credit_card" | "mortgage" | "other" | "personal_loan" | "auto_loan" | "student_loan" | "line_of_credit"; ... 13 more ...; notes?: string; }' but required in type '{ id: number; }'.
+apps/backend/modules/finance/features/debt/routes/index.ts(116,47): error TS2345: Argument of type '{ description?: string; amount?: number; reference?: string; debtId?: number; paymentDate?: string; paymentType?: "regular" | "extra" | "minimum" | "interest_only"; paymentMethod?: "credit_card" | ... 4 more ... | "auto_pay"; principalAmount?: number; interestAmount?: number; feesAmount?: number; isVerified?: boolea...' is not assignable to parameter of type 'TPaymentCreateData[]'.
+  Type '{ description?: string; amount?: number; reference?: string; debtId?: number; paymentDate?: string; paymentType?: "regular" | "extra" | "minimum" | "interest_only"; paymentMethod?: "credit_card" | ... 4 more ... | "auto_pay"; principalAmount?: number; interestAmount?: number; feesAmount?: number; isVerified?: boolea...' is missing the following properties from type 'TPaymentCreateData': notes, isExtraPayment
+apps/backend/modules/finance/features/debt/routes/index.ts(147,56): error TS2345: Argument of type '{ name?: string; description?: string; tags?: string[]; creditor?: string; debtType?: "credit_card" | "mortgage" | "other" | "personal_loan" | "auto_loan" | "student_loan" | "line_of_credit"; ... 11 more ...; notes?: string; }' is not assignable to parameter of type 'Omit<TDebtCreateData, "principal" | "currentBalance">'.
+  Type '{ name?: string; description?: string; tags?: string[]; creditor?: string; debtType?: "credit_card" | "mortgage" | "other" | "personal_loan" | "auto_loan" | "student_loan" | "line_of_credit"; ... 11 more ...; notes?: string; }' is missing the following properties from type 'Omit<TDebtCreateData, "principal" | "currentBalance">': type, startDate, endDate, originalAmount
+apps/backend/modules/finance/features/recurring/api/queries/index.ts(237,9): error TS2322: Type '{ nextExecutionDate: string; remainingOccurrences: number; status: "active" | "completed" | "paused" | "expired"; daysUntilNext: number; totalExpectedAmount: number; id: number; name: string; ... 25 more ...; categoryIcon: string; }[]' is not assignable to type 'TRecurringTransactionWithDetails[]'.
+  Type '{ nextExecutionDate: string; remainingOccurrences: number; status: "active" | "completed" | "paused" | "expired"; daysUntilNext: number; totalExpectedAmount: number; id: number; name: string; ... 25 more ...; categoryIcon: string; }' is not assignable to type 'TRecurringTransactionWithDetails'.
+    Type '{ nextExecutionDate: string; remainingOccurrences: number; status: "active" | "completed" | "paused" | "expired"; daysUntilNext: number; totalExpectedAmount: number; id: number; name: string; ... 25 more ...; categoryIcon: string; }' is missing the following properties from type '{ name: string; description?: string; amount: number; type: "income" | "expense"; categoryId: number; recurrenceRule: "monthly" | "yearly" | "weekly"; nextDueDate: string; frequency?: "monthly" | ... 4 more ... | "quarterly"; ... 16 more ...; synced: boolean; }': recurrenceRule, nextDueDate, note
+apps/backend/modules/finance/features/recurring/api/queries/index.ts(238,58): error TS2345: Argument of type '{ id: number; name: string; description: string; categoryId: number; amount: number; type: "income" | "expense"; frequency: "monthly" | "yearly" | "weekly" | "daily" | "biweekly" | "quarterly"; ... 20 more ...; categoryIcon: string; }' is not assignable to parameter of type 'TRecurringTransaction'.
+  Type '{ id: number; name: string; description: string; categoryId: number; amount: number; type: "income" | "expense"; frequency: "monthly" | "yearly" | "weekly" | "daily" | "biweekly" | "quarterly"; ... 20 more ...; categoryIcon: string; }' is missing the following properties from type '{ name: string; description?: string; amount: number; type: "income" | "expense"; categoryId: number; recurrenceRule: "monthly" | "yearly" | "weekly"; nextDueDate: string; frequency?: "monthly" | ... 4 more ... | "quarterly"; ... 16 more ...; synced: boolean; }': recurrenceRule, nextDueDate, note
+apps/backend/modules/finance/features/recurring/api/queries/index.ts(239,64): error TS2345: Argument of type '{ id: number; name: string; description: string; categoryId: number; amount: number; type: "income" | "expense"; frequency: "monthly" | "yearly" | "weekly" | "daily" | "biweekly" | "quarterly"; ... 20 more ...; categoryIcon: string; }' is not assignable to parameter of type 'TRecurringTransaction'.
+  Type '{ id: number; name: string; description: string; categoryId: number; amount: number; type: "income" | "expense"; frequency: "monthly" | "yearly" | "weekly" | "daily" | "biweekly" | "quarterly"; ... 20 more ...; categoryIcon: string; }' is missing the following properties from type '{ name: string; description?: string; amount: number; type: "income" | "expense"; categoryId: number; recurrenceRule: "monthly" | "yearly" | "weekly"; nextDueDate: string; frequency?: "monthly" | ... 4 more ... | "quarterly"; ... 16 more ...; synced: boolean; }': recurrenceRule, nextDueDate, note
+apps/backend/modules/finance/features/recurring/api/queries/index.ts(240,36): error TS2345: Argument of type '{ id: number; name: string; description: string; categoryId: number; amount: number; type: "income" | "expense"; frequency: "monthly" | "yearly" | "weekly" | "daily" | "biweekly" | "quarterly"; ... 20 more ...; categoryIcon: string; }' is not assignable to parameter of type 'TRecurringTransaction'.
+  Type '{ id: number; name: string; description: string; categoryId: number; amount: number; type: "income" | "expense"; frequency: "monthly" | "yearly" | "weekly" | "daily" | "biweekly" | "quarterly"; ... 20 more ...; categoryIcon: string; }' is missing the following properties from type '{ name: string; description?: string; amount: number; type: "income" | "expense"; categoryId: number; recurrenceRule: "monthly" | "yearly" | "weekly"; nextDueDate: string; frequency?: "monthly" | ... 4 more ... | "quarterly"; ... 16 more ...; synced: boolean; }': recurrenceRule, nextDueDate, note
+apps/backend/modules/finance/features/recurring/index.ts(3,1): error TS2308: Module './api' has already exported a member named 'TGenerationResult'. Consider explicitly re-exporting to resolve the ambiguity.
+apps/backend/modules/finance/features/recurring/routes/index.ts(187,58): error TS2345: Argument of type '{ name?: string; description?: string; type?: "income" | "expense"; amount?: number; categoryId?: number; payee?: string; reference?: string; isActive?: boolean; startDate?: string; endDate?: string; frequency?: "monthly" | ... 4 more ... | "quarterly"; ... 7 more ...; tags?: string[]; }' is not assignable to parameter of type 'TRecurringTransactionCreateData'.
+  Type '{ name?: string; description?: string; type?: "income" | "expense"; amount?: number; categoryId?: number; payee?: string; reference?: string; isActive?: boolean; startDate?: string; endDate?: string; frequency?: "monthly" | ... 4 more ... | "quarterly"; ... 7 more ...; tags?: string[]; }' is missing the following properties from type 'TRecurringTransactionCreateData': note, recurrenceRule, nextDueDate
+apps/backend/modules/finance/features/recurring/routes/index.ts(215,58): error TS2345: Argument of type '{ name?: string; description?: string; id: number; type?: "income" | "expense"; amount?: number; categoryId?: number; payee?: string; reference?: string; isActive?: boolean; startDate?: string; endDate?: string; ... 8 more ...; tags?: string[]; }' is not assignable to parameter of type 'TRecurringTransactionUpdateData'.
+  Type '{ name?: string; description?: string; id: number; type?: "income" | "expense"; amount?: number; categoryId?: number; payee?: string; reference?: string; isActive?: boolean; startDate?: string; endDate?: string; ... 8 more ...; tags?: string[]; }' is not assignable to type 'Partial<TRecurringTransactionCreateData>'.
+    Types of property 'tags' are incompatible.
+      Type 'string[]' is not assignable to type 'string'.
+apps/backend/modules/finance/features/recurring/routes/index.ts(406,61): error TS2345: Argument of type '{ name?: string; description?: string; type?: "income" | "expense"; amount?: number; categoryId?: number; payee?: string; reference?: string; isActive?: boolean; startDate?: string; endDate?: string; frequency?: "monthly" | ... 4 more ... | "quarterly"; ... 7 more ...; tags?: string[]; }[]' is not assignable to parameter of type 'TRecurringTransactionCreateData[]'.
+  Type '{ name?: string; description?: string; type?: "income" | "expense"; amount?: number; categoryId?: number; payee?: string; reference?: string; isActive?: boolean; startDate?: string; endDate?: string; frequency?: "monthly" | ... 4 more ... | "quarterly"; ... 7 more ...; tags?: string[]; }' is missing the following properties from type 'TRecurringTransactionCreateData': note, recurrenceRule, nextDueDate
+apps/backend/modules/finance/features/recurring/routes/index.ts(432,61): error TS2345: Argument of type '{ name?: string; description?: string; id?: number; type?: "income" | "expense"; amount?: number; categoryId?: number; payee?: string; reference?: string; isActive?: boolean; startDate?: string; endDate?: string; ... 8 more ...; tags?: string[]; }[]' is not assignable to parameter of type 'TRecurringTransactionUpdateData[]'.
+  Type '{ name?: string; description?: string; id?: number; type?: "income" | "expense"; amount?: number; categoryId?: number; payee?: string; reference?: string; isActive?: boolean; startDate?: string; endDate?: string; ... 8 more ...; tags?: string[]; }' is not assignable to type 'TRecurringTransactionUpdateData'.
+    Type '{ name?: string; description?: string; id?: number; type?: "income" | "expense"; amount?: number; categoryId?: number; payee?: string; reference?: string; isActive?: boolean; startDate?: string; endDate?: string; ... 8 more ...; tags?: string[]; }' is not assignable to type 'Partial<TRecurringTransactionCreateData>'.
+      Types of property 'tags' are incompatible.
+        Type 'string[]' is not assignable to type 'string'.
+apps/backend/modules/finance/features/savings/api/queries/index.ts(105,20): error TS2339: Property 'deadline' does not exist on type 'TSavingsGoalWithProgress'.
+apps/backend/modules/finance/features/savings/api/queries/index.ts(106,20): error TS2339: Property 'deadline' does not exist on type 'TSavingsGoalWithProgress'.
+apps/backend/modules/finance/features/savings/routes.ts(114,44): error TS2345: Argument of type '{ name?: string; description?: string; color?: string; icon?: string; category?: string; targetAmount?: number; currentAmount?: number; targetDate?: string; isCompleted?: boolean; priority?: "low" | "medium" | "high"; isActive?: boolean; monthlyTarget?: number; }' is not assignable to parameter of type 'TSavingsGoalCreateData'.
+  Property 'name' is optional in type '{ name?: string; description?: string; color?: string; icon?: string; category?: string; targetAmount?: number; currentAmount?: number; targetDate?: string; isCompleted?: boolean; priority?: "low" | "medium" | "high"; isActive?: boolean; monthlyTarget?: number; }' but required in type 'TSavingsGoalCreateData'.
+apps/backend/modules/finance/features/savings/routes.ts(270,55): error TS2345: Argument of type '{ date?: string; type?: "deposit" | "withdrawal"; amount?: number; note?: string; savingsGoalId?: number; }' is not assignable to parameter of type 'TSavingsTransactionCreateData'.
+  Property 'date' is optional in type '{ date?: string; type?: "deposit" | "withdrawal"; amount?: number; note?: string; savingsGoalId?: number; }' but required in type 'TSavingsTransactionCreateData'.
+apps/backend/modules/finance/features/transactions/routes.ts(140,51): error TS2345: Argument of type '{ date?: string; type?: "income" | "expense"; amount?: number; categoryId?: number; note?: string; }' is not assignable to parameter of type 'TTransactionCreateData'.
+  Property 'date' is optional in type '{ date?: string; type?: "income" | "expense"; amount?: number; categoryId?: number; note?: string; }' but required in type 'TTransactionCreateData'.
+apps/backend/modules/finance/features/transactions/routes.ts(163,51): error TS2345: Argument of type '{ date?: string; type?: "income" | "expense"; amount?: number; categoryId?: number; note?: string; }[]' is not assignable to parameter of type 'TTransactionCreateData[]'.
+  Type '{ date?: string; type?: "income" | "expense"; amount?: number; categoryId?: number; note?: string; }' is not assignable to type 'TTransactionCreateData'.
+    Property 'date' is optional in type '{ date?: string; type?: "income" | "expense"; amount?: number; categoryId?: number; note?: string; }' but required in type 'TTransactionCreateData'.
+apps/backend/modules/finance/shared/db/demo-data.ts(47,15): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | Placeholder<string, any> | "income" | "expense"; createdAt?: Date | SQL<...> | Placeholder<...>; ... 5 more ...; isDemo?: boolean | ... 1 more ... | Placeholder<...>; }): SQLiteInsertBase<...>', gave the following error.
+    Argument of type '{ name: string; type: string; color: string; icon: string; isDemo: boolean; }[]' is not assignable to parameter of type '{ name: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | Placeholder<string, any> | "income" | "expense"; createdAt?: Date | SQL<...> | Placeholder<...>; ... 5 more ...; isDemo?: boolean | ... 1 more ... | Placeholder<...>; }'.
+      Type '{ name: string; type: string; color: string; icon: string; isDemo: boolean; }[]' is missing the following properties from type '{ name: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | Placeholder<string, any> | "income" | "expense"; createdAt?: Date | SQL<...> | Placeholder<...>; ... 5 more ...; isDemo?: boolean | ... 1 more ... | Placeholder<...>; }': name, type
+  Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | Placeholder<string, any> | "income" | "expense"; createdAt?: Date | SQL<...> | Placeholder<...>; ... 5 more ...; isDemo?: boolean | ... 1 more ... | Placeholder<...>; }[]): SQLiteInsertBase<...>', gave the following error.
+    Argument of type '{ name: string; type: string; color: string; icon: string; isDemo: boolean; }[]' is not assignable to parameter of type '{ name: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | Placeholder<string, any> | "income" | "expense"; createdAt?: Date | SQL<...> | Placeholder<...>; ... 5 more ...; isDemo?: boolean | ... 1 more ... | Placeholder<...>; }[]'.
+      Type '{ name: string; type: string; color: string; icon: string; isDemo: boolean; }' is not assignable to type '{ name: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | Placeholder<string, any> | "income" | "expense"; createdAt?: Date | SQL<...> | Placeholder<...>; ... 5 more ...; isDemo?: boolean | ... 1 more ... | Placeholder<...>; }'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'SQL<unknown> | Placeholder<string, any> | "income" | "expense"'.
+apps/backend/modules/finance/shared/db/demo-data.ts(171,15): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { date: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | Placeholder<string, any> | "income" | "expense"; amount: number | SQL<...> | Placeholder<...>; ... 10 more ...; recurringTransactionId?: number | ... 1 more ... | Placeholder<...>; }): SQLiteInsertBase<...>', gave the following error.
+    Argument of type '{ amount: number; type: string; categoryId: number; date: string; note: string; isDemo: boolean; }[]' is not assignable to parameter of type '{ date: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | Placeholder<string, any> | "income" | "expense"; amount: number | SQL<unknown> | Placeholder<...>; ... 10 more ...; recurringTransactionId?: number | ... 1 more ... | Placeholder<...>; }'.
+      Type '{ amount: number; type: string; categoryId: number; date: string; note: string; isDemo: boolean; }[]' is missing the following properties from type '{ date: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | Placeholder<string, any> | "income" | "expense"; amount: number | SQL<unknown> | Placeholder<...>; ... 10 more ...; recurringTransactionId?: number | ... 1 more ... | Placeholder<...>; }': date, type, amount, categoryId
+  Overload 2 of 2, '(values: { date: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | Placeholder<string, any> | "income" | "expense"; amount: number | SQL<...> | Placeholder<...>; ... 10 more ...; recurringTransactionId?: number | ... 1 more ... | Placeholder<...>; }[]): SQLiteInsertBase<...>', gave the following error.
+    Argument of type '{ amount: number; type: string; categoryId: number; date: string; note: string; isDemo: boolean; }[]' is not assignable to parameter of type '{ date: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | Placeholder<string, any> | "income" | "expense"; amount: number | SQL<unknown> | Placeholder<...>; ... 10 more ...; recurringTransactionId?: number | ... 1 more ... | Placeholder<...>; }[]'.
+      Type '{ amount: number; type: string; categoryId: number; date: string; note: string; isDemo: boolean; }' is not assignable to type '{ date: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | Placeholder<string, any> | "income" | "expense"; amount: number | SQL<unknown> | Placeholder<...>; ... 10 more ...; recurringTransactionId?: number | ... 1 more ... | Placeholder<...>; }'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'SQL<unknown> | Placeholder<string, any> | "income" | "expense"'.
+apps/frontend/gr.tsx(388,16): error TS2304: Cannot find name 'Gradient'.
+apps/frontend/src/app/database-studio/page.tsx(1,32): error TS2307: Cannot find module '@/features/database-studio/components/ConnectionForm' or its corresponding type declarations.
+apps/frontend/src/app/database-studio/page.tsx(2,33): error TS2307: Cannot find module '@/features/database-studio/components/ConnectionsList' or its corresponding type declarations.
+apps/frontend/src/app/database-studio/page.tsx(3,58): error TS2307: Cannot find module '@/components/ui/tabs' or its corresponding type declarations.
+apps/frontend/src/app/finance/budgets/page.tsx(1,28): error TS2307: Cannot find module '@/features/budgets/actions' or its corresponding type declarations.
+apps/frontend/src/app/finance/budgets/page.tsx(2,28): error TS2307: Cannot find module '@/features/budgets/components/BudgetList' or its corresponding type declarations.
+apps/frontend/src/app/finance/categories/page.tsx(1,31): error TS2307: Cannot find module '@/features/categories/actions' or its corresponding type declarations.
+apps/frontend/src/app/finance/categories/page.tsx(2,30): error TS2307: Cannot find module '@/features/categories/components/CategoryList' or its corresponding type declarations.
+apps/frontend/src/app/finance/page.tsx(1,31): error TS2307: Cannot find module '@/features/dashboard' or its corresponding type declarations.
+apps/frontend/src/app/finance/recurring/page.tsx(1,43): error TS2307: Cannot find module '@/features/recurring-transactions' or its corresponding type declarations.
+apps/frontend/src/app/finance/reports/page.tsx(1,29): error TS2307: Cannot find module '@/features/reports' or its corresponding type declarations.
+apps/frontend/src/app/finance/savings/page.tsx(3,34): error TS2307: Cannot find module '@/features/savings/components/SavingsGoalsPage' or its corresponding type declarations.
+apps/frontend/src/app/finance/settings/page.tsx(1,30): error TS2307: Cannot find module '@/features/settings' or its corresponding type declarations.
+apps/frontend/src/app/finance/transactions/page.tsx(1,33): error TS2307: Cannot find module '@/features/transactions/actions' or its corresponding type declarations.
+apps/frontend/src/app/finance/transactions/page.tsx(2,33): error TS2307: Cannot find module '@/features/transactions/components/TransactionList' or its corresponding type declarations.
+apps/frontend/src/app/layout.tsx(3,27): error TS2307: Cannot find module '@/shared/components/layouts/app-layout' or its corresponding type declarations.
+apps/frontend/src/app/layout.tsx(4,31): error TS2307: Cannot find module '@/lib/providers/theme-provider' or its corresponding type declarations.
+apps/frontend/src/app/layout.tsx(5,8): error TS2307: Cannot find module './globals.css' or its corresponding type declarations.
+apps/frontend/src/components/error-boundary.tsx(4,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/components/error-boundary.tsx(5,22): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/components/sync-dashboard.tsx(4,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/components/sync-dashboard.tsx(5,22): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/components/sync-dashboard.tsx(6,26): error TS2307: Cannot find module '@/components/ui/progress' or its corresponding type declarations.
+apps/frontend/src/components/sync-dashboard.tsx(7,36): error TS2307: Cannot find module '@/lib/providers/database-provider' or its corresponding type declarations.
+apps/frontend/src/components/sync-dashboard.tsx(12,8): error TS2307: Cannot find module '@/features/categories/local-actions' or its corresponding type declarations.
+apps/frontend/src/components/sync-dashboard.tsx(17,8): error TS2307: Cannot find module '@/features/transactions/local-actions' or its corresponding type declarations.
+apps/frontend/src/components/sync-dashboard.tsx(22,8): error TS2307: Cannot find module '@/features/budgets/local-actions' or its corresponding type declarations.
+apps/frontend/src/components/sync-dashboard.tsx(23,33): error TS2307: Cannot find module '@/lib/database/init-local-db' or its corresponding type declarations.
+apps/frontend/src/components/ui/alert-dialog.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/alert-dialog.tsx(7,32): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/components/ui/alert-dialog.tsx(71,6): error TS2322: Type '{ ref?: Ref<HTMLDivElement>; key?: Key; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; suppressHydrationWarning?: boolean; ... 275 more ...; className: any; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Type '{ ref?: Ref<HTMLDivElement>; key?: Key; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; suppressHydrationWarning?: boolean; ... 275 more ...; className: any; }' is not assignable to type 'ClassAttributes<HTMLDivElement>'.
+    Types of property 'ref' are incompatible.
+      Type 'import("/home/remcostoeten/zero-sync-offline-blazing-fast-engine/apps/frontend/node_modules/@types/react/index").Ref<HTMLDivElement>' is not assignable to type 'React.Ref<HTMLDivElement>'.
+        Type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type 'Ref<HTMLDivElement>'.
+          Type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+            Type 'void | (() => VoidOrUndefinedOnly)' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+              Type '() => VoidOrUndefinedOnly' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'.
+                Type '() => VoidOrUndefinedOnly' is not assignable to type '() => VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                  Type 'VoidOrUndefinedOnly' is not assignable to type 'VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                    Type '{ [UNDEFINED_VOID_ONLY]: never; }' is not assignable to type 'VoidOrUndefinedOnly'.
+apps/frontend/src/components/ui/alert-dialog.tsx(84,6): error TS2322: Type '{ ref?: Ref<HTMLDivElement>; key?: Key; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; suppressHydrationWarning?: boolean; ... 275 more ...; className: any; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Type '{ ref?: Ref<HTMLDivElement>; key?: Key; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; suppressHydrationWarning?: boolean; ... 275 more ...; className: any; }' is not assignable to type 'ClassAttributes<HTMLDivElement>'.
+    Types of property 'ref' are incompatible.
+      Type 'import("/home/remcostoeten/zero-sync-offline-blazing-fast-engine/apps/frontend/node_modules/@types/react/index").Ref<HTMLDivElement>' is not assignable to type 'React.Ref<HTMLDivElement>'.
+        Type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type 'Ref<HTMLDivElement>'.
+          Type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+            Type 'void | (() => VoidOrUndefinedOnly)' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+              Type '() => VoidOrUndefinedOnly' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'.
+                Type '() => VoidOrUndefinedOnly' is not assignable to type '() => VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                  Type 'VoidOrUndefinedOnly' is not assignable to type 'VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                    Type '{ [UNDEFINED_VOID_ONLY]: never; }' is not assignable to type 'VoidOrUndefinedOnly'.
+apps/frontend/src/components/ui/alert.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/badge.tsx(3,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/button.tsx(5,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/button.tsx(51,6): error TS2322: Type '{ ref?: Ref<HTMLButtonElement>; key?: Key; disabled?: boolean; form?: string; formAction?: string | ((formData: FormData) => void | Promise<void>); ... 286 more ...; className: any; }' is not assignable to type 'ClassAttributes<HTMLButtonElement>'.
+  Types of property 'ref' are incompatible.
+    Type 'import("/home/remcostoeten/zero-sync-offline-blazing-fast-engine/apps/frontend/node_modules/@types/react/index").Ref<HTMLButtonElement>' is not assignable to type 'React.Ref<HTMLButtonElement>'.
+      Type '(instance: HTMLButtonElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type 'Ref<HTMLButtonElement>'.
+        Type '(instance: HTMLButtonElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type '(instance: HTMLButtonElement) => void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+          Type 'void | (() => VoidOrUndefinedOnly)' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+            Type '() => VoidOrUndefinedOnly' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'.
+              Type '() => VoidOrUndefinedOnly' is not assignable to type '() => VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                Type 'VoidOrUndefinedOnly' is not assignable to type 'VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                  Type '{ [UNDEFINED_VOID_ONLY]: never; }' is not assignable to type 'VoidOrUndefinedOnly'.
+apps/frontend/src/components/ui/calendar.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/calendar.tsx(8,32): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/components/ui/calendar.tsx(57,9): error TS2353: Object literal may only specify known properties, and 'IconLeft' does not exist in type 'Partial<CustomComponents>'.
+apps/frontend/src/components/ui/card.tsx(2,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/dialog.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/dialog.tsx(85,6): error TS2322: Type '{ ref?: Ref<HTMLDivElement>; key?: Key; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; suppressHydrationWarning?: boolean; ... 275 more ...; className: any; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Type '{ ref?: Ref<HTMLDivElement>; key?: Key; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; suppressHydrationWarning?: boolean; ... 275 more ...; className: any; }' is not assignable to type 'ClassAttributes<HTMLDivElement>'.
+    Types of property 'ref' are incompatible.
+      Type 'import("/home/remcostoeten/zero-sync-offline-blazing-fast-engine/apps/frontend/node_modules/@types/react/index").Ref<HTMLDivElement>' is not assignable to type 'React.Ref<HTMLDivElement>'.
+        Type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type 'Ref<HTMLDivElement>'.
+          Type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+            Type 'void | (() => VoidOrUndefinedOnly)' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+              Type '() => VoidOrUndefinedOnly' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'.
+                Type '() => VoidOrUndefinedOnly' is not assignable to type '() => VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                  Type 'VoidOrUndefinedOnly' is not assignable to type 'VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                    Type '{ [UNDEFINED_VOID_ONLY]: never; }' is not assignable to type 'VoidOrUndefinedOnly'.
+apps/frontend/src/components/ui/dialog.tsx(95,6): error TS2322: Type '{ ref?: Ref<HTMLDivElement>; key?: Key; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; suppressHydrationWarning?: boolean; ... 275 more ...; className: any; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Type '{ ref?: Ref<HTMLDivElement>; key?: Key; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; suppressHydrationWarning?: boolean; ... 275 more ...; className: any; }' is not assignable to type 'ClassAttributes<HTMLDivElement>'.
+    Types of property 'ref' are incompatible.
+      Type 'import("/home/remcostoeten/zero-sync-offline-blazing-fast-engine/apps/frontend/node_modules/@types/react/index").Ref<HTMLDivElement>' is not assignable to type 'React.Ref<HTMLDivElement>'.
+        Type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type 'Ref<HTMLDivElement>'.
+          Type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+            Type 'void | (() => VoidOrUndefinedOnly)' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+              Type '() => VoidOrUndefinedOnly' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'.
+                Type '() => VoidOrUndefinedOnly' is not assignable to type '() => VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                  Type 'VoidOrUndefinedOnly' is not assignable to type 'VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                    Type '{ [UNDEFINED_VOID_ONLY]: never; }' is not assignable to type 'VoidOrUndefinedOnly'.
+apps/frontend/src/components/ui/dropdown-menu.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/form.tsx(16,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/form.tsx(17,23): error TS2307: Cannot find module '@/components/ui/label' or its corresponding type declarations.
+apps/frontend/src/components/ui/form.tsx(81,8): error TS2322: Type '{ ref?: Ref<HTMLDivElement>; key?: Key; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; suppressHydrationWarning?: boolean; ... 275 more ...; className: any; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Type '{ ref?: Ref<HTMLDivElement>; key?: Key; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; suppressHydrationWarning?: boolean; ... 275 more ...; className: any; }' is not assignable to type 'ClassAttributes<HTMLDivElement>'.
+    Types of property 'ref' are incompatible.
+      Type 'import("/home/remcostoeten/zero-sync-offline-blazing-fast-engine/apps/frontend/node_modules/@types/react/index").Ref<HTMLDivElement>' is not assignable to type 'React.Ref<HTMLDivElement>'.
+        Type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type 'Ref<HTMLDivElement>'.
+          Type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type '(instance: HTMLDivElement) => void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+            Type 'void | (() => VoidOrUndefinedOnly)' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+              Type '() => VoidOrUndefinedOnly' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'.
+                Type '() => VoidOrUndefinedOnly' is not assignable to type '() => VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                  Type 'VoidOrUndefinedOnly' is not assignable to type 'VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                    Type '{ [UNDEFINED_VOID_ONLY]: never; }' is not assignable to type 'VoidOrUndefinedOnly'.
+apps/frontend/src/components/ui/form.tsx(129,6): error TS2322: Type '{ ref?: Ref<HTMLParagraphElement>; key?: Key; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; ... 276 more ...; className: any; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement>'.
+  Type '{ ref?: Ref<HTMLParagraphElement>; key?: Key; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; ... 276 more ...; className: any; }' is not assignable to type 'ClassAttributes<HTMLParagraphElement>'.
+    Types of property 'ref' are incompatible.
+      Type 'import("/home/remcostoeten/zero-sync-offline-blazing-fast-engine/apps/frontend/node_modules/@types/react/index").Ref<HTMLParagraphElement>' is not assignable to type 'React.Ref<HTMLParagraphElement>'.
+        Type '(instance: HTMLParagraphElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type 'Ref<HTMLParagraphElement>'.
+          Type '(instance: HTMLParagraphElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type '(instance: HTMLParagraphElement) => void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+            Type 'void | (() => VoidOrUndefinedOnly)' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+              Type '() => VoidOrUndefinedOnly' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'.
+                Type '() => VoidOrUndefinedOnly' is not assignable to type '() => VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                  Type 'VoidOrUndefinedOnly' is not assignable to type 'VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                    Type '{ [UNDEFINED_VOID_ONLY]: never; }' is not assignable to type 'VoidOrUndefinedOnly'.
+apps/frontend/src/components/ui/form.tsx(147,6): error TS2322: Type '{ children: string | number | bigint | true | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<...>; ... 280 more ...; className: any; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement>'.
+  Type '{ children: string | number | bigint | true | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<...>; ... 280 more ...; className: any; }' is not assignable to type 'ClassAttributes<HTMLParagraphElement>'.
+    Types of property 'ref' are incompatible.
+      Type 'import("/home/remcostoeten/zero-sync-offline-blazing-fast-engine/apps/frontend/node_modules/@types/react/index").Ref<HTMLParagraphElement>' is not assignable to type 'React.Ref<HTMLParagraphElement>'.
+        Type '(instance: HTMLParagraphElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type 'Ref<HTMLParagraphElement>'.
+          Type '(instance: HTMLParagraphElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type '(instance: HTMLParagraphElement) => void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+            Type 'void | (() => VoidOrUndefinedOnly)' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+              Type '() => VoidOrUndefinedOnly' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'.
+                Type '() => VoidOrUndefinedOnly' is not assignable to type '() => VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                  Type 'VoidOrUndefinedOnly' is not assignable to type 'VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                    Type '{ [UNDEFINED_VOID_ONLY]: never; }' is not assignable to type 'VoidOrUndefinedOnly'.
+apps/frontend/src/components/ui/input.tsx(2,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/label.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/popover.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/progress.tsx(3,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/select.tsx(7,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/separator.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/switch.tsx(4,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/tabs.tsx(6,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/textarea.tsx(3,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/components/ui/textarea.tsx(7,6): error TS2322: Type '{ ref?: Ref<HTMLTextAreaElement>; key?: Key; autoComplete?: string; cols?: number; dirName?: string; disabled?: boolean; form?: string; maxLength?: number; minLength?: number; ... 286 more ...; className: any; }' is not assignable to type 'DetailedHTMLProps<TextareaHTMLAttributes<HTMLTextAreaElement>, HTMLTextAreaElement>'.
+  Type '{ ref?: Ref<HTMLTextAreaElement>; key?: Key; autoComplete?: string; cols?: number; dirName?: string; disabled?: boolean; form?: string; maxLength?: number; minLength?: number; ... 286 more ...; className: any; }' is not assignable to type 'ClassAttributes<HTMLTextAreaElement>'.
+    Types of property 'ref' are incompatible.
+      Type 'import("/home/remcostoeten/zero-sync-offline-blazing-fast-engine/apps/frontend/node_modules/@types/react/index").Ref<HTMLTextAreaElement>' is not assignable to type 'React.Ref<HTMLTextAreaElement>'.
+        Type '(instance: HTMLTextAreaElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type 'Ref<HTMLTextAreaElement>'.
+          Type '(instance: HTMLTextAreaElement) => void | (() => VoidOrUndefinedOnly)' is not assignable to type '(instance: HTMLTextAreaElement) => void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+            Type 'void | (() => VoidOrUndefinedOnly)' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'. Two different types with this name exist, but they are unrelated.
+              Type '() => VoidOrUndefinedOnly' is not assignable to type 'void | (() => VoidOrUndefinedOnly)'.
+                Type '() => VoidOrUndefinedOnly' is not assignable to type '() => VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                  Type 'VoidOrUndefinedOnly' is not assignable to type 'VoidOrUndefinedOnly'. Two different types with this name exist, but they are unrelated.
+                    Type '{ [UNDEFINED_VOID_ONLY]: never; }' is not assignable to type 'VoidOrUndefinedOnly'.
+apps/frontend/src/components/ui/theme-switcher.tsx(6,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/budgets/actions.ts(3,23): error TS2307: Cannot find module '@/lib/database/connection' or its corresponding type declarations.
+apps/frontend/src/features/budgets/actions.ts(4,89): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/budgets/actions.ts(5,56): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/budgets/actions/optimization.ts(3,23): error TS2307: Cannot find module '@/lib/database/connection' or its corresponding type declarations.
+apps/frontend/src/features/budgets/actions/optimization.ts(9,8): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/budgets/actions/optimization.ts(11,79): error TS2307: Cannot find module '@/lib/gemini' or its corresponding type declarations.
+apps/frontend/src/features/budgets/actions/optimization.ts(12,37): error TS2307: Cannot find module '@/features/dashboard/actions/forecasting' or its corresponding type declarations.
+apps/frontend/src/features/budgets/actions/optimization.ts(157,34): error TS2365: Operator '+' cannot be applied to types 'number' and 'unknown'.
+apps/frontend/src/features/budgets/actions/optimization.ts(176,34): error TS2365: Operator '+' cannot be applied to types 'number' and 'unknown'.
+apps/frontend/src/features/budgets/actions/optimization.ts(195,34): error TS2365: Operator '+' cannot be applied to types 'number' and 'unknown'.
+apps/frontend/src/features/budgets/actions/optimization.ts(243,38): error TS2339: Property 'length' does not exist on type 'unknown'.
+apps/frontend/src/features/budgets/actions/optimization.ts(245,27): error TS2339: Property 'reduce' does not exist on type 'unknown'.
+apps/frontend/src/features/budgets/actions/optimization.ts(245,68): error TS2339: Property 'length' does not exist on type 'unknown'.
+apps/frontend/src/features/budgets/actions/optimization.ts(246,32): error TS2339: Property 'reduce' does not exist on type 'unknown'.
+apps/frontend/src/features/budgets/actions/optimization.ts(246,92): error TS2339: Property 'length' does not exist on type 'unknown'.
+apps/frontend/src/features/budgets/components/BudgetCard.tsx(4,47): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetCard.tsx(5,26): error TS2307: Cannot find module '@/components/ui/progress' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetCard.tsx(6,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetCard.tsx(7,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetCard.tsx(21,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetCard.tsx(23,32): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetCard.tsx(24,28): error TS2307: Cannot find module '@/lib/utils/date' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(13,8): error TS2307: Cannot find module '@/components/ui/dialog' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(22,8): error TS2307: Cannot find module '@/components/ui/form' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(29,8): error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(30,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(31,26): error TS2307: Cannot find module '@/components/ui/textarea' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(32,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(33,24): error TS2307: Cannot find module '@/components/ui/switch' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(34,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(35,26): error TS2307: Cannot find module '@/components/ui/calendar' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(36,57): error TS2307: Cannot find module '@/components/ui/popover' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(38,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(40,56): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetForm.tsx(42,27): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetList.tsx(4,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetList.tsx(5,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetList.tsx(6,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetList.tsx(9,77): error TS2305: Module '"../actions"' has no exported member 'BudgetWithSpending'.
+apps/frontend/src/features/budgets/components/BudgetList.tsx(10,31): error TS2307: Cannot find module '@/features/categories/actions' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetList.tsx(12,31): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/budgets/components/BudgetList.tsx(337,17): error TS2322: Type '(budgetId: number) => Promise<void>' is not assignable to type '(id: string) => void'.
+  Types of parameters 'budgetId' and 'id' are incompatible.
+    Type 'string' is not assignable to type 'number'.
+apps/frontend/src/features/budgets/components/BudgetList.tsx(361,15): error TS2322: Type '{ budget: any; onSuccess: () => Promise<void>; onCancel: () => void; }' is not assignable to type 'IntrinsicAttributes & BudgetFormProps'.
+  Property 'onSuccess' does not exist on type 'IntrinsicAttributes & BudgetFormProps'.
+apps/frontend/src/features/budgets/components/BudgetsPage.tsx(164,7): error TS2322: Type '{ budgets: any[]; summary: any; alerts: any; insights: any; onCreateBudget: (data: any) => Promise<void>; onUpdateBudget: (data: any) => Promise<void>; onDeleteBudget: (id: string) => Promise<...>; onRefreshBudget: (id: string) => Promise<...>; isLoading: boolean; }' is not assignable to type 'IntrinsicAttributes & BudgetListProps'.
+  Property 'budgets' does not exist on type 'IntrinsicAttributes & BudgetListProps'.
+apps/frontend/src/features/budgets/local-actions.ts(3,65): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/budgets/local-actions.ts(4,40): error TS2307: Cannot find module '@/lib/database/local-crud-factory' or its corresponding type declarations.
+apps/frontend/src/features/budgets/local-actions.ts(5,56): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/categories/actions.ts(3,23): error TS2307: Cannot find module '@/lib/database/connection' or its corresponding type declarations.
+apps/frontend/src/features/categories/actions.ts(4,45): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/categories/actions.ts(5,60): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/categories/actions.ts(76,36): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/categories/components/CategoryCard.tsx(1,47): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/categories/components/CategoryCard.tsx(2,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/categories/components/CategoryCard.tsx(3,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/categories/components/CategoryCard.tsx(5,31): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/categories/components/CategoryForm.tsx(6,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/categories/components/CategoryForm.tsx(7,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/categories/components/CategoryForm.tsx(8,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/categories/components/CategoryForm.tsx(9,60): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/categories/components/CategoryForm.tsx(11,31): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/categories/components/CategoryList.tsx(4,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/categories/components/CategoryList.tsx(5,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/categories/components/CategoryList.tsx(10,31): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/categories/local-actions.ts(3,72): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/categories/local-actions.ts(4,40): error TS2307: Cannot find module '@/lib/database/local-crud-factory' or its corresponding type declarations.
+apps/frontend/src/features/categories/local-actions.ts(5,60): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/categories/page.tsx(3,30): error TS2307: Cannot find module './components/category-list' or its corresponding type declarations.
+apps/frontend/src/features/categories/page.tsx(4,30): error TS2307: Cannot find module './components/category-form' or its corresponding type declarations.
+apps/frontend/src/features/categories/page.tsx(5,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/categories/page.tsx(10,25): error TS2339: Property 'success' does not exist on type 'TCategory[]'.
+apps/frontend/src/features/categories/page.tsx(14,55): error TS2339: Property 'error' does not exist on type 'TCategory[]'.
+apps/frontend/src/features/categories/page.tsx(38,56): error TS2339: Property 'data' does not exist on type 'TCategory[]'.
+apps/frontend/src/features/dashboard/actions.ts(3,23): error TS2307: Cannot find module '@/lib/database/connection' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/actions.ts(10,8): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/actions/forecasting.ts(3,23): error TS2307: Cannot find module '@/lib/database/connection' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/actions/forecasting.ts(10,8): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/actions/forecasting.ts(12,76): error TS2307: Cannot find module '@/lib/gemini' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/BudgetProgressWidget.tsx(4,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/BudgetProgressWidget.tsx(5,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/BudgetProgressWidget.tsx(6,26): error TS2307: Cannot find module '@/components/ui/progress' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/BudgetProgressWidget.tsx(7,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/BudgetProgressWidget.tsx(9,32): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/BudgetProgressWidget.tsx(10,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/DashboardTabs.tsx(5,22): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/DashboardTabs.tsx(6,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/DashboardTabs.tsx(15,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/OverviewWidget.tsx(4,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/OverviewWidget.tsx(5,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/OverviewWidget.tsx(16,32): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/OverviewWidget.tsx(17,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/RecentTransactionsWidget.tsx(4,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/RecentTransactionsWidget.tsx(5,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/RecentTransactionsWidget.tsx(6,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/RecentTransactionsWidget.tsx(8,32): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/RecentTransactionsWidget.tsx(9,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/SavingsGoalsWidget.tsx(4,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/SavingsGoalsWidget.tsx(5,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/SavingsGoalsWidget.tsx(6,26): error TS2307: Cannot find module '@/components/ui/progress' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/SavingsGoalsWidget.tsx(7,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/SavingsGoalsWidget.tsx(9,32): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/SavingsGoalsWidget.tsx(10,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/HistoryTab.tsx(4,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/HistoryTab.tsx(5,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/HistoryTab.tsx(6,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/HistoryTab.tsx(7,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/HistoryTab.tsx(19,44): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/HistoryTab.tsx(20,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/OverviewTab.tsx(4,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/OverviewTab.tsx(5,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/OverviewTab.tsx(6,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/OverviewTab.tsx(25,32): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/PrognosesTab.tsx(4,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/PrognosesTab.tsx(5,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/PrognosesTab.tsx(6,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/PrognosesTab.tsx(7,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/PrognosesTab.tsx(26,36): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/RecurringTab.tsx(4,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/RecurringTab.tsx(5,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/RecurringTab.tsx(6,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/RecurringTab.tsx(7,24): error TS2307: Cannot find module '@/components/ui/switch' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/RecurringTab.tsx(21,44): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/components/tabs/RecurringTab.tsx(22,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/page.tsx(14,47): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/dashboard/page.tsx(62,42): error TS2339: Property 'transactions' does not exist on type 'any[]'.
+apps/frontend/src/features/dashboard/page.tsx(64,48): error TS2339: Property 'totalCount' does not exist on type 'any[]'.
+apps/frontend/src/features/database-studio/components/ConnectionForm.tsx(4,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/database-studio/components/ConnectionForm.tsx(5,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/database-studio/components/ConnectionForm.tsx(6,23): error TS2307: Cannot find module '@/components/ui/label' or its corresponding type declarations.
+apps/frontend/src/features/database-studio/components/ConnectionForm.tsx(7,79): error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+apps/frontend/src/features/database-studio/components/ConnectionForm.tsx(8,75): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/database-studio/components/ConnectionForm.tsx(9,41): error TS2307: Cannot find module '@/components/ui/alert' or its corresponding type declarations.
+apps/frontend/src/features/database-studio/components/ConnectionsList.tsx(4,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/database-studio/components/ConnectionsList.tsx(5,75): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/database-studio/components/ConnectionsList.tsx(6,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/database-studio/components/ConnectionsList.tsx(7,41): error TS2307: Cannot find module '@/components/ui/alert' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/actions.ts(3,23): error TS2307: Cannot find module '@/lib/database/connection' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/actions.ts(10,8): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/actions.ts(15,8): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionCard.tsx(4,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionCard.tsx(5,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionCard.tsx(6,59): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionCard.tsx(7,27): error TS2307: Cannot find module '@/components/ui/separator' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionCard.tsx(20,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionCard.tsx(21,32): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(6,80): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(7,50): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(9,31): error TS2307: Cannot find module '@/features/categories/actions' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(11,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(12,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(13,23): error TS2307: Cannot find module '@/components/ui/label' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(14,26): error TS2307: Cannot find module '@/components/ui/textarea' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(21,8): error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(30,8): error TS2307: Cannot find module '@/components/ui/form' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(37,8): error TS2307: Cannot find module '@/components/ui/dialog' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(38,24): error TS2307: Cannot find module '@/components/ui/switch' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(39,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(40,27): error TS2307: Cannot find module '@/components/ui/separator' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionForm.tsx(49,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionList.tsx(7,39): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionList.tsx(15,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionList.tsx(16,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionList.tsx(23,8): error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionList.tsx(24,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionList.tsx(25,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionList.tsx(26,27): error TS2307: Cannot find module '@/components/ui/separator' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionList.tsx(36,8): error TS2307: Cannot find module '@/components/ui/alert-dialog' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionList.tsx(49,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/components/RecurringTransactionList.tsx(51,32): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/recurring-transactions/page.tsx(4,35): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/reports/actions.ts(3,23): error TS2307: Cannot find module '@/lib/database/connection' or its corresponding type declarations.
+apps/frontend/src/features/reports/actions.ts(10,8): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportDisplay.tsx(9,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportDisplay.tsx(10,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportDisplay.tsx(11,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportDisplay.tsx(12,26): error TS2307: Cannot find module '@/components/ui/progress' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportDisplay.tsx(13,27): error TS2307: Cannot find module '@/components/ui/separator' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportDisplay.tsx(27,32): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportDisplay.tsx(28,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportGenerator.tsx(4,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportGenerator.tsx(5,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportGenerator.tsx(6,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportGenerator.tsx(7,23): error TS2307: Cannot find module '@/components/ui/label' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportGenerator.tsx(14,8): error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+apps/frontend/src/features/reports/components/ReportGenerator.tsx(15,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/reports/page.tsx(17,35): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/savings/actions.ts(3,23): error TS2307: Cannot find module '@/lib/database/connection' or its corresponding type declarations.
+apps/frontend/src/features/savings/actions.ts(4,50): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/savings/actions.ts(5,66): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalCard.tsx(4,47): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalCard.tsx(5,26): error TS2307: Cannot find module '@/components/ui/progress' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalCard.tsx(6,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalCard.tsx(7,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalCard.tsx(19,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalCard.tsx(21,32): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalCard.tsx(22,28): error TS2307: Cannot find module '@/lib/utils/date' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalForm.tsx(13,8): error TS2307: Cannot find module '@/components/ui/dialog' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalForm.tsx(22,8): error TS2307: Cannot find module '@/components/ui/form' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalForm.tsx(29,8): error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalForm.tsx(30,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalForm.tsx(31,26): error TS2307: Cannot find module '@/components/ui/textarea' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalForm.tsx(32,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalForm.tsx(33,24): error TS2307: Cannot find module '@/components/ui/switch' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalForm.tsx(34,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalForm.tsx(35,26): error TS2307: Cannot find module '@/components/ui/calendar' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalForm.tsx(36,57): error TS2307: Cannot find module '@/components/ui/popover' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalForm.tsx(38,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalForm.tsx(40,66): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalList.tsx(4,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalList.tsx(5,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalList.tsx(6,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalList.tsx(7,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalList.tsx(14,8): error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalList.tsx(22,8): error TS2307: Cannot find module '@/components/ui/dropdown-menu' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalList.tsx(37,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/savings/components/SavingsGoalList.tsx(41,32): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/savings/local-actions.ts(3,80): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/savings/local-actions.ts(4,40): error TS2307: Cannot find module '@/lib/database/local-crud-factory' or its corresponding type declarations.
+apps/frontend/src/features/savings/local-actions.ts(5,66): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/settings/actions.ts(3,23): error TS2307: Cannot find module '@/lib/database/connection' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/DataSecuritySettings.tsx(16,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/DataSecuritySettings.tsx(17,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/DataSecuritySettings.tsx(18,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/DataSecuritySettings.tsx(19,23): error TS2307: Cannot find module '@/components/ui/label' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/DataSecuritySettings.tsx(20,24): error TS2307: Cannot find module '@/components/ui/switch' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/DataSecuritySettings.tsx(27,8): error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/DataSecuritySettings.tsx(38,8): error TS2307: Cannot find module '@/components/ui/alert-dialog' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/DataSecuritySettings.tsx(39,27): error TS2307: Cannot find module '@/components/ui/separator' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/DataSecuritySettings.tsx(40,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/DataSecuritySettings.tsx(56,28): error TS2307: Cannot find module '@/components/demo-toggle' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/NotificationSettings.tsx(9,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/NotificationSettings.tsx(10,24): error TS2307: Cannot find module '@/components/ui/switch' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/NotificationSettings.tsx(11,23): error TS2307: Cannot find module '@/components/ui/label' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/NotificationSettings.tsx(12,27): error TS2307: Cannot find module '@/components/ui/separator' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/UserPreferencesSettings.tsx(9,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/UserPreferencesSettings.tsx(10,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/UserPreferencesSettings.tsx(11,23): error TS2307: Cannot find module '@/components/ui/label' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/UserPreferencesSettings.tsx(18,8): error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+apps/frontend/src/features/settings/components/UserPreferencesSettings.tsx(19,27): error TS2307: Cannot find module '@/components/ui/separator' or its corresponding type declarations.
+apps/frontend/src/features/settings/page.tsx(8,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/settings/page.tsx(9,58): error TS2307: Cannot find module '@/components/ui/tabs' or its corresponding type declarations.
+apps/frontend/src/features/settings/page.tsx(10,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/settings/page.tsx(11,27): error TS2307: Cannot find module '@/components/ui/separator' or its corresponding type declarations.
+apps/frontend/src/features/settings/page.tsx(12,28): error TS2307: Cannot find module '@/components/demo-toggle' or its corresponding type declarations.
+apps/frontend/src/features/transactions/actions.ts(3,23): error TS2307: Cannot find module '@/lib/database/connection' or its corresponding type declarations.
+apps/frontend/src/features/transactions/actions.ts(4,68): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/transactions/actions.ts(5,66): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/transactions/actions.ts(413,45): error TS2307: Cannot find module '@/lib/gemini' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionCard.tsx(1,47): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionCard.tsx(2,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionCard.tsx(3,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionCard.tsx(5,34): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionForm.tsx(6,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionForm.tsx(7,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionForm.tsx(8,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionForm.tsx(9,66): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionForm.tsx(11,31): error TS2307: Cannot find module '@/features/categories/actions' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionForm.tsx(12,44): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionList.tsx(4,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionList.tsx(5,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionList.tsx(6,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionList.tsx(10,31): error TS2307: Cannot find module '@/features/categories/actions' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/TransactionList.tsx(12,44): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/natural-language-search.tsx(4,23): error TS2307: Cannot find module '@/components/ui/input' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/natural-language-search.tsx(5,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/natural-language-search.tsx(6,58): error TS2307: Cannot find module '@/components/ui/card' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/natural-language-search.tsx(7,23): error TS2307: Cannot find module '@/components/ui/badge' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/natural-language-search.tsx(9,20): error TS2307: Cannot find module '@/lib/utils' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/natural-language-search.tsx(10,51): error TS2307: Cannot find module '@/features/transactions/actions' or its corresponding type declarations.
+apps/frontend/src/features/transactions/components/natural-language-search.tsx(63,69): error TS2503: Cannot find namespace 'JSX'.
+apps/frontend/src/features/transactions/local-actions.ts(3,80): error TS2307: Cannot find module '@/lib/database/schemas' or its corresponding type declarations.
+apps/frontend/src/features/transactions/local-actions.ts(4,40): error TS2307: Cannot find module '@/lib/database/local-crud-factory' or its corresponding type declarations.
+apps/frontend/src/features/transactions/local-actions.ts(5,66): error TS2307: Cannot find module '@/lib/validation/schemas' or its corresponding type declarations.
+apps/frontend/src/lib/crud/factory.ts(3,23): error TS2307: Cannot find module '@/lib/database/connection' or its corresponding type declarations.
+apps/frontend/src/lib/database/conflict-resolver.ts(179,11): error TS2862: Type 'T' is generic and can only be indexed for reading.
+apps/frontend/src/lib/database/conflict-resolver.ts(184,12): error TS2339: Property 'updatedAt' does not exist on type 'T'.
+apps/frontend/src/lib/database/migrations.ts(32,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(33,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(34,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(35,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(38,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(39,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(40,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(41,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(49,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(55,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(61,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(66,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(71,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(79,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(96,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(110,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(113,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(124,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(133,22): error TS2339: Property 'execute' does not exist on type '() => Client'.
+apps/frontend/src/lib/database/migrations.ts(257,28): error TS2345: Argument of type 'Client' is not assignable to parameter of type '() => Client'.
+  Type 'Client' provides no match for the signature '(): Client'.
+apps/frontend/src/lib/database/migrations.ts(299,28): error TS2345: Argument of type 'Client' is not assignable to parameter of type '() => Client'.
+  Type 'Client' provides no match for the signature '(): Client'.
+apps/frontend/src/lib/database/sync-orchestrator.ts(8,8): error TS2307: Cannot find module '@/features/categories/local-actions' or its corresponding type declarations.
+apps/frontend/src/lib/database/sync-orchestrator.ts(12,8): error TS2307: Cannot find module '@/features/transactions/local-actions' or its corresponding type declarations.
+apps/frontend/src/lib/database/sync-orchestrator.ts(16,8): error TS2307: Cannot find module '@/features/budgets/local-actions' or its corresponding type declarations.
+apps/frontend/src/lib/hooks/use-local-database.ts(11,8): error TS2307: Cannot find module '@/lib/database/local-client' or its corresponding type declarations.
+apps/frontend/src/lib/providers/database-provider.tsx(4,34): error TS2307: Cannot find module '@/lib/hooks/use-local-database' or its corresponding type declarations.
+apps/frontend/src/lib/providers/database-provider.tsx(5,55): error TS2307: Cannot find module '@/lib/database/init-local-db' or its corresponding type declarations.
+apps/frontend/src/lib/providers/database-provider.tsx(6,67): error TS2307: Cannot find module '@/lib/database/local-crud-factory' or its corresponding type declarations.
+apps/frontend/src/lib/service-worker.ts(169,31): error TS2339: Property 'sync' does not exist on type 'ServiceWorkerRegistration'.
+apps/frontend/src/lib/validation/schemas.ts(7,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: readonly ["income", "expense", "debt", "investment", "savings"], params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>>; message?: string; }): ZodEnum<...>', gave the following error.
+    Object literal may only specify known properties, and 'required_error' does not exist in type '{ error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>>; message?: string; }'.
+  Overload 2 of 2, '(entries: Readonly<Record<string, EnumValue>>, params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>>; message?: string; }): ZodEnum<...>', gave the following error.
+    Argument of type 'string[]' is not assignable to parameter of type 'Readonly<Record<string, EnumValue>>'.
+      Index signature for type 'string' is missing in type 'string[]'.
+apps/frontend/src/lib/validation/schemas.ts(34,11): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: readonly ["income", "expense"], params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>>; message?: string; }): ZodEnum<{ income: "income"; expense: "expense"; }>', gave the following error.
+    Object literal may only specify known properties, and 'required_error' does not exist in type '{ error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>>; message?: string; }'.
+  Overload 2 of 2, '(entries: Readonly<Record<string, EnumValue>>, params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>>; message?: string; }): ZodEnum<...>', gave the following error.
+    Argument of type 'string[]' is not assignable to parameter of type 'Readonly<Record<string, EnumValue>>'.
+      Index signature for type 'string' is missing in type 'string[]'.
+apps/frontend/src/lib/validation/schemas.ts(139,13): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: readonly ["weekly", "monthly", "quarterly", "yearly"], params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>>; message?: string; }): ZodEnum<...>', gave the following error.
+    Object literal may only specify known properties, and 'required_error' does not exist in type '{ error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>>; message?: string; }'.
+  Overload 2 of 2, '(entries: Readonly<Record<string, EnumValue>>, params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>>; message?: string; }): ZodEnum<...>', gave the following error.
+    Argument of type 'string[]' is not assignable to parameter of type 'Readonly<Record<string, EnumValue>>'.
+      Index signature for type 'string' is missing in type 'string[]'.
+apps/frontend/src/shared/components/breadcrumbs.tsx(6,42): error TS2307: Cannot find module '@/config/features' or its corresponding type declarations.
+apps/frontend/src/shared/components/layouts/app-layout.tsx(6,42): error TS2307: Cannot find module '@/config/features' or its corresponding type declarations.
+apps/frontend/src/shared/components/layouts/app-layout.tsx(7,26): error TS2307: Cannot find module '@/lib/providers/theme-provider' or its corresponding type declarations.
+apps/frontend/src/shared/components/layouts/app-layout.tsx(40,16): error TS2304: Cannot find name 'ThemeSwitcher'.
+apps/frontend/src/shared/components/sidebar.tsx(14,62): error TS2307: Cannot find module '@/config/features' or its corresponding type declarations.
+error: "tsc" exited with code 2

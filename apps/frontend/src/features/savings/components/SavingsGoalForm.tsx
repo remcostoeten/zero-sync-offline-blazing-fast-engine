@@ -43,7 +43,7 @@ import { SavingsGoalWithProgress } from '../actions';
 type CreateFormData = z.infer<typeof createSavingsGoalSchema>;
 type UpdateFormData = z.infer<typeof updateSavingsGoalSchema>;
 
-interface SavingsGoalFormProps {
+type TProps = {
   goal?: SavingsGoalWithProgress;
   onSubmit: (data: CreateFormData | UpdateFormData) => void;
   trigger?: React.ReactNode;
@@ -78,7 +78,7 @@ export function SavingsGoalForm({
   trigger, 
   open, 
   onOpenChange 
-}: SavingsGoalFormProps) {
+}: TProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState(goal?.icon || '🎯');
   const [selectedColor, setSelectedColor] = useState(goal?.color || '#3B82F6');

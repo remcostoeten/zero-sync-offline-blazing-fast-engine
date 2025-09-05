@@ -170,6 +170,7 @@
 @layer base {
   * {
     @apply border-border;
+    border-color: rgb(20, 20, 20, 0.11);
   }
   body {
     @apply bg-background text-foreground;
@@ -178,4 +179,37 @@
 
 .text-background {
   color: var(--background) !important;
+}
+
+/* Custom scrollbar styles for testing console */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}
+
+.scrollbar-track-transparent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Ensure code blocks don't break out of containers */
+.code-container {
+  contain: layout style;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }

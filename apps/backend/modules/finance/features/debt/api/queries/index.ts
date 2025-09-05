@@ -411,10 +411,6 @@ async function getDebtPayments(filters: TPaymentFilters = {}): Promise<Array<TDe
     conditions.push(lte(debtPaymentsSchema.amount, filters.maxAmount));
   }
 
-  if (conditions.length > 0) {
-    query = query.where(and(...conditions));
-  }
-
   // Apply sorting
   const sortColumn = filters.sortBy === 'amount' ? debtPaymentsSchema.amount :
                     filters.sortBy === 'debtName' ? debtsSchema.name :
@@ -423,10 +419,17 @@ async function getDebtPayments(filters: TPaymentFilters = {}): Promise<Array<TDe
                     
   const sortDirection = filters.sortOrder === 'asc' ? asc(sortColumn) : desc(sortColumn);
   
-  return await query
-    .orderBy(sortDirection)
-    .limit(filters.limit || 50)
-    .offset(filters.offset || 0);
+  // Execute query with all chaining in one expression
+  return conditions.length > 0
+    ? await query
+        .where(and(...conditions))
+        .orderBy(sortDirection)
+        .limit(filters.limit || 50)
+        .offset(filters.offset || 0)
+    : await query
+        .orderBy(sortDirection)
+        .limit(filters.limit || 50)
+        .offset(filters.offset || 0);
 }
 
 async function generateAmortizationSchedule(
@@ -622,7 +625,10 @@ export {
   calculateDebtStatistics,
   generatePaymentStrategies,
   calculateCompoundInterest,
-  calculateSimpleInterest,
+  calculateSimpleInterest
+};
+
+export type {
   TDebtWithDetails,
   TAmortizationSchedule,
   TPaymentStrategy,

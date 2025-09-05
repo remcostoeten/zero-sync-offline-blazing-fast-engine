@@ -145,8 +145,7 @@ export function DatabaseStatusIndicator() {
   const { 
     isInitialized, 
     isInitializing, 
-    connectionStatus, 
-    syncStatus,
+    connectionStatus,
     lastSyncAt,
     error,
     forceSync 

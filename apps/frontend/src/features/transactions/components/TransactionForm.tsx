@@ -118,13 +118,8 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
   };
 
   return (
-    <Card className="w-full max-w-lg">
-      <CardHeader>
-        <CardTitle className="text-lg">
-          {isEditing ? 'Edit Transaction' : 'New Transaction'}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="w-full">
+      <div className="space-y-6">
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>

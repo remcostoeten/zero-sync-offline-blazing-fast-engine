@@ -223,14 +223,15 @@ async function getRecurringTransactions(filters: TRecurringTransactionFilters = 
     ));
   }
 
-  if (conditions.length > 0) {
-    query = query.where(and(...conditions));
-  }
-
-  // Execute base query
-  const recurring = await query
-    .limit(filters.limit || 50)
-    .offset(filters.offset || 0);
+  // Execute query with conditions
+  const recurring = conditions.length > 0
+    ? await query
+        .where(and(...conditions))
+        .limit(filters.limit || 50)
+        .offset(filters.offset || 0)
+    : await query
+        .limit(filters.limit || 50)
+        .offset(filters.offset || 0);
 
   // Calculate derived fields for each recurring transaction
   const recurringWithDetails: TRecurringTransactionWithDetails[] = recurring.map(item => {
@@ -472,7 +473,10 @@ export {
   getSchedulePreview,
   getRecurringTransactionsDueForGeneration,
   getRecurringTransactionStats,
-  calculateNextExecutionDate,
+  calculateNextExecutionDate
+};
+
+export type {
   TRecurringTransactionWithDetails,
   TSchedulePreview
 };

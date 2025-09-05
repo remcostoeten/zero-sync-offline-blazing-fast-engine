@@ -110,7 +110,7 @@ function createCrudFactory<TSchema extends SQLiteTable, TInsert, TSelect>(
         .delete(schema)
         .where(eq(schema['id' as keyof TSchema] as any, id));
 
-      return result.changes > 0;
+      return Array.isArray(result) ? result.length > 0 : result.rowsAffected > 0;
     }
 
     async function softDelete(id: number): Promise<boolean> {
@@ -123,7 +123,7 @@ function createCrudFactory<TSchema extends SQLiteTable, TInsert, TSelect>(
         .set({ deletedAt: new Date(), updatedAt: new Date() })
         .where(eq(schema['id' as keyof TSchema] as any, id));
 
-      return result.changes > 0;
+      return Array.isArray(result) ? result.length > 0 : result.rowsAffected > 0;
     }
 
     async function restore(id: number): Promise<boolean> {
@@ -136,7 +136,7 @@ function createCrudFactory<TSchema extends SQLiteTable, TInsert, TSelect>(
         .set({ deletedAt: null, updatedAt: new Date() })
         .where(eq(schema['id' as keyof TSchema] as any, id));
 
-      return result.changes > 0;
+      return Array.isArray(result) ? result.length > 0 : result.rowsAffected > 0;
     }
 
     // Alias methods for compatibility

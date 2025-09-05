@@ -105,7 +105,7 @@ export interface FinancialAdvice {
 }
 
 // Helper function to gather all financial data
-async function gatherFinancialData(): Promise<TFinancialData> {
+export async function gatherFinancialData(): Promise<TFinancialData> {
   const db = getDb();
   
   // Get recent transactions (last 12 months)
